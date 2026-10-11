@@ -1,0 +1,19 @@
+[project]
+name = "ingestor"
+version = "0.1.0"
+description = "Votoscope ingestor: bronze-silver-gold pipeline for election data"
+readme = "README.md"
+authors = [
+    { name = "Javier Martín", email = "javidevmar@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20.0",
+    "psycopg[binary]>=3.3.6",
+    "pydantic-settings>=2.15.0",
+    "sqlalchemy>=2.1.4",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
