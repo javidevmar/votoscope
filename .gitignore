@@ -66,3 +66,7 @@ htmlcov/
 *.sqlite3
 *.db
 node_modules
+
+# Bronze source data (local only)
+data/raw/*
+!data/raw/.gitkeep
