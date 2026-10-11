@@ -12,8 +12,8 @@ Pipeline de datos (Python) que convierte los ficheros electorales descargados en
 - **`.env.example`** — variables de entorno; copiar a `.env` para sobrescribir (gitignored).
 - **`src/ingestor/settings.py`** — configuración: `DATABASE_URL` (por defecto, el Postgres de docker-compose en `localhost:5433`) y `RAW_DIR` (por defecto, `../data/raw`).
 - **`src/ingestor/db.py`** — engine y factoría de sesiones de SQLAlchemy.
-- **`src/ingestor/models.py`** — definición del esquema (esquemas `bronze` y `silver`). Borrador pendiente de alinear al ERD: manda `../docs/db/schema.drawio`.
-- **`alembic/`** — migraciones. `env.py` toma la URL de `settings.py` (la de `alembic.ini` se deja vacía a propósito).
+- **`src/ingestor/models.py`** — definición del esquema, modelo v2 (inglés; esquemas `bronze` y `silver`). El ERD (`../docs/db/schema.drawio`) aún refleja el diseño anterior: pendiente de actualizar ([plan](../.agents/plans/model-sync.md)).
+- **`alembic/`** — migraciones; la inicial `2a1c9e836128` ya está aplicada en local. `env.py` toma la URL de `settings.py` (la de `alembic.ini` se deja vacía a propósito).
 - **`alembic.ini`** — configuración de Alembic.
 
 ## Logging
@@ -22,6 +22,11 @@ Pipeline de datos (Python) que convierte los ficheros electorales descargados en
 - Nivel por entorno: **`LOG_LEVEL`** (`DEBUG`/`INFO`/`WARNING`/`ERROR`/`CRITICAL`; por defecto `INFO`).
 - Loggers por módulo (`getLogger(__name__)`); formateo perezoso (`logger.info("mesa=%s", m)`, no f-strings); nunca secretos.
 - Pendiente de implementar (va con el primer entrypoint del pipeline).
+
+## Tests
+
+- **TDD con pytest** (dev-dependency aprobada; se añadirá al escribir el primer test). Los tests vivirán en `tests/`.
+- Prioridad: parsers de los ficheros de entrada y transformaciones bronce → plata.
 
 ## Dependencias
 
@@ -36,7 +41,7 @@ Pipeline de datos (Python) que convierte los ficheros electorales descargados en
 5. `uv run alembic check` — debe reportar que no hay diferencias (sin drift).
 6. Reflejar el cambio en `../docs/db/schema.drawio`: siempre ERD ↔ modelos ↔ migración.
 
-Nunca: DDL a mano, SQL de inicialización, editar una migración ya aplicada.
+Nunca: DDL a mano, SQL de inicialización, editar una migración ya aplicada (salvo si no se aplicó nunca en producción).
 
 ## Comandos
 
@@ -50,10 +55,11 @@ La base de datos se levanta desde la raíz del repo: `docker compose up -d --wai
 ## Datos
 
 - Ficheros fuente: `../data/raw/` (no versionados; nunca se modifican).
-- Cada fichero ingerido queda registrado en `bronze.ingesta` con su sha256.
+- Cada fichero ingerido queda registrado en `bronze.ingestion` con su sha256.
 
 ## Pendiente
 
-- Alinear `models.py` al ERD y generar la migración inicial (`alembic/versions/` está vacío).
+- Actualizar `../docs/db/schema.drawio` al modelo v2.
+- Primeros tests (pytest) con el loader.
 - Loader bronce → plata.
 - Vistas `gold`.

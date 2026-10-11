@@ -12,7 +12,7 @@ Votoscope es un agregador de resultados electorales de España.
 ## Dos partes
 
 1. **Ingestador — `ingestor/` (Python)**: pipeline bronce → plata → oro sobre PostgreSQL.
-   - **Bronce**: ficheros originales, inmutables, en `data/raw/`, más un registro por fichero en `bronze.ingesta` (ruta, sha256, tamaño, fuente, estado). Un fichero corregido entra como fichero nuevo.
+   - **Bronce**: ficheros originales, inmutables, en `data/raw/`, más un registro por fichero en `bronze.ingestion` (ruta, sha256, tamaño, fuente, estado). Un fichero corregido entra como fichero nuevo.
    - **Plata**: tablas normalizadas en el esquema `silver`. Sin agregados.
    - **Oro**: vistas en el esquema `gold`, una por consulta del frontend. Pendientes de crear.
 2. **Frontend — `web/` (Next.js)**: lee las vistas `gold` directamente de PostgreSQL, en servidor (Server Components). Sin API intermedia: solo dos partes. Pendiente de scaffold.
@@ -20,7 +20,7 @@ Votoscope es un agregador de resultados electorales de España.
 ## Flujo de datos
 
 ```
-data/raw/  →  bronze.ingesta (registro)  →  silver (normalizado)  →  gold (vistas)  →  web/
+data/raw/  →  bronze.ingestion (registro)  →  silver (normalizado)  →  gold (vistas)  →  web/
 ```
 
 El ingestador no descarga nada: trabaja sobre los ficheros que haya en `data/raw/`.

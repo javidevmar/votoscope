@@ -4,8 +4,8 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). El es
 
 ## Base de datos
 
-- Tablas y columnas en **inglés**, con el vocabulario del dominio (election, polling_station, census…). El ERD y los modelos actuales todavía usan español; se renombrarán al aplicar los [cambios pendientes](data-model.md).
-- PK sustitutas: `id` entero autoincremental (en el ERD figuran como `UniqueID`); `election` y `party` usan `uuid`.
+- Tablas y columnas en **inglés**, con el vocabulario del dominio (election, polling_station, census…). Modelos y migración ya siguen el modelo v2; el **ERD aún no** (pendiente, ver [data-model.md](data-model.md)).
+- PK sustitutas en todas las tablas: `id` entero autoincremental; los códigos naturales van aparte con `UNIQUE` (`ine_code`, `slug`, `(election_id, code)`, `(polling_station_id, election_id)`…). No se usan `uuid`.
 - Claves ajenas: `<tabla>_id` (polling_station_id, election_id…).
 - Agregados y porcentajes solo en `gold`; `silver` guarda hechos.
 - `data/raw/` es inmutable y no se versiona.
@@ -29,3 +29,10 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). El es
 - Solo si aporta de verdad y es utilizable (mantenida, compatible, sin duplicar lo existente).
 - Instalación con el gestor del proyecto: `uv add` en el ingestador; en la web, el gestor que se fije al hacer el scaffold.
 - Ya aprobadas (ingestador): SQLAlchemy, Alembic, psycopg, pydantic-settings.
+
+## Tests
+
+- **TDD** para la lógica (parsers, loader, transformaciones): primero el test que falla, luego el código mínimo, luego refactor.
+- Framework: **pytest** (dev-dependency aprobada); los tests del ingestador viven en `ingestor/tests/`.
+- CI: diferida; se montará cuando exista el loader.
+- Estrategia de tests de la web: se decidirá en su scaffold.
