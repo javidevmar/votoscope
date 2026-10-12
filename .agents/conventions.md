@@ -4,7 +4,7 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). El es
 
 ## Base de datos
 
-- Tablas y columnas en **inglés**, con el vocabulario del dominio (election, polling_station, census…). Modelos y migración ya siguen el modelo v2; el **ERD aún no** (pendiente, ver [data-model.md](data-model.md)).
+- Tablas y columnas en **inglés**, con el vocabulario del dominio (election, polling_station, census…). ERD, modelos y migración siguen el modelo v2.
 - PK sustitutas en todas las tablas: `id` entero autoincremental; los códigos naturales van aparte con `UNIQUE` (`ine_code`, `slug`, `(election_id, code)`, `(polling_station_id, election_id)`…). No se usan `uuid`.
 - Claves ajenas: `<tabla>_id` (polling_station_id, election_id…).
 - Agregados y porcentajes solo en `gold`; `silver` guarda hechos.

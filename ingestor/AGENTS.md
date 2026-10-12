@@ -12,7 +12,7 @@ Pipeline de datos (Python) que convierte los ficheros electorales descargados en
 - **`.env.example`** — variables de entorno; copiar a `.env` para sobrescribir (gitignored).
 - **`src/ingestor/settings.py`** — configuración: `DATABASE_URL` (por defecto, el Postgres de docker-compose en `localhost:5433`) y `RAW_DIR` (por defecto, `../data/raw`).
 - **`src/ingestor/db.py`** — engine y factoría de sesiones de SQLAlchemy.
-- **`src/ingestor/models.py`** — definición del esquema, modelo v2 (inglés; esquemas `bronze` y `silver`). El ERD (`../docs/db/schema.drawio`) aún refleja el diseño anterior: pendiente de actualizar ([plan](../.agents/plans/model-sync.md)).
+- **`src/ingestor/models.py`** — definición del esquema, modelo v2 (inglés; esquemas `bronze` y `silver`), sincronizado con el ERD (`../docs/db/schema.drawio`).
 - **`alembic/`** — migraciones; la inicial `2a1c9e836128` ya está aplicada en local. `env.py` toma la URL de `settings.py` (la de `alembic.ini` se deja vacía a propósito).
 - **`alembic.ini`** — configuración de Alembic.
 
@@ -59,7 +59,6 @@ La base de datos se levanta desde la raíz del repo: `docker compose up -d --wai
 
 ## Pendiente
 
-- Actualizar `../docs/db/schema.drawio` al modelo v2.
 - Primeros tests (pytest) con el loader.
 - Loader bronce → plata.
 - Vistas `gold`.
