@@ -7,6 +7,7 @@ truth for the database: never run DDL by hand (see AGENTS.md).
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import Any, ClassVar
 
 from sqlalchemy import (
     CheckConstraint,
@@ -20,6 +21,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+TableArgs = dict[str, Any] | tuple[Any, ...]
+
 
 class Base(DeclarativeBase):
     pass
@@ -32,7 +35,7 @@ class Ingestion(Base):
     """One row per source file ever ingested (bronze registry)."""
 
     __tablename__ = "ingestion"
-    __table_args__ = {"schema": "bronze"}
+    __table_args__: ClassVar[TableArgs] = {"schema": "bronze"}
 
     id: Mapped[int] = mapped_column(primary_key=True)
     file_path: Mapped[str] = mapped_column(Text)  # relative to data/raw/
@@ -55,7 +58,7 @@ class AutonomousCommunity(Base):
     """Autonomous community (``codigo_ccaa`` in the source files)."""
 
     __tablename__ = "autonomous_community"
-    __table_args__ = {"schema": "silver"}
+    __table_args__: ClassVar[TableArgs] = {"schema": "silver"}
 
     ine_code: Mapped[str] = mapped_column(String(2), primary_key=True)
     name: Mapped[str] = mapped_column(Text)
@@ -65,7 +68,7 @@ class Province(Base):
     """Province (``codigo_provincia``): the constituency for Congreso."""
 
     __tablename__ = "province"
-    __table_args__ = {"schema": "silver"}
+    __table_args__: ClassVar[TableArgs] = {"schema": "silver"}
 
     ine_code: Mapped[str] = mapped_column(String(2), primary_key=True)
     autonomous_community_ine_code: Mapped[str] = mapped_column(
@@ -82,7 +85,7 @@ class Municipality(Base):
     """
 
     __tablename__ = "municipality"
-    __table_args__ = {"schema": "silver"}
+    __table_args__: ClassVar[TableArgs] = {"schema": "silver"}
 
     id: Mapped[int] = mapped_column(primary_key=True)
     ine_code: Mapped[str] = mapped_column(String(5), unique=True)
@@ -100,7 +103,7 @@ class PollingStation(Base):
     """
 
     __tablename__ = "polling_station"
-    __table_args__ = (
+    __table_args__: ClassVar[TableArgs] = (
         UniqueConstraint("municipality_id", "district", "section", "code"),
         {"schema": "silver"},
     )
@@ -124,7 +127,7 @@ class Election(Base):
     """
 
     __tablename__ = "election"
-    __table_args__ = (
+    __table_args__: ClassVar[TableArgs] = (
         UniqueConstraint(
             "type",
             "date",
@@ -160,7 +163,7 @@ class Party(Base):
     """
 
     __tablename__ = "party"
-    __table_args__ = {"schema": "silver"}
+    __table_args__: ClassVar[TableArgs] = {"schema": "silver"}
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(Text)
@@ -177,7 +180,7 @@ class PartyElection(Base):
     """
 
     __tablename__ = "party_election"
-    __table_args__ = (
+    __table_args__: ClassVar[TableArgs] = (
         UniqueConstraint("election_id", "code"),
         {"schema": "silver"},
     )
@@ -201,7 +204,7 @@ class Turnout(Base):
     """
 
     __tablename__ = "turnout"
-    __table_args__ = (
+    __table_args__: ClassVar[TableArgs] = (
         UniqueConstraint("polling_station_id", "election_id"),
         {"schema": "silver"},
     )
@@ -210,7 +213,9 @@ class Turnout(Base):
     polling_station_id: Mapped[int] = mapped_column(
         ForeignKey("silver.polling_station.id")
     )
-    election_id: Mapped[int] = mapped_column(ForeignKey("silver.election.id"), index=True)
+    election_id: Mapped[int] = mapped_column(
+        ForeignKey("silver.election.id"), index=True
+    )
     census: Mapped[int]  # INE census
     blank_votes: Mapped[int]
     null_votes: Mapped[int]
@@ -220,7 +225,7 @@ class Vote(Base):
     """Votes obtained by one candidacy at one polling station."""
 
     __tablename__ = "vote"
-    __table_args__ = (
+    __table_args__: ClassVar[TableArgs] = (
         UniqueConstraint("polling_station_id", "party_election_id"),
         {"schema": "silver"},
     )
