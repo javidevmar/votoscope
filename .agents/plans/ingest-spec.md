@@ -1,6 +1,6 @@
 # Spec del loader bronce → plata
 
-Estado: abierto · Creado: 2026-10-12
+Estado: hecho · Creado: 2026-10-12 · Abierto: 2026-10-12 · Hecho: 2026-10-12 · Actualizado: 2026-10-12
 Objetivo: fijar el contrato del loader (bronce, alcance, recarga, validaciones, gazetteer, CLI) antes de implementarlo; se pliega al terminarlo.
 
 ## Notas

@@ -6,7 +6,7 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md).
 
 - **Postgres 18** en Docker, definido en `docker-compose.yml` (raíz del repo).
 - Levantar: `docker compose up -d --wait`. Parar y borrar datos: `docker compose down -v`.
-- Puerto host: **5433** (el 5432 de la máquina está ocupado por un Postgres local).
+- Puerto host: **5434** (el 5432 de la máquina está ocupado por un Postgres local).
 - Usuario, clave y base de datos: `votoscope`.
 - El volumen `pgdata` se monta en `/var/lib/postgresql` (Postgres 18 cambió el punto de montaje recomendado; no volver a `/var/lib/postgresql/data`).
 

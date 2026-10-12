@@ -7,7 +7,7 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md).
 Votoscope es un agregador de resultados electorales de España.
 
 - **MVP**: las últimas elecciones generales (Congreso), con resultados por **mesa** (la unidad más fina publicada), a partir de ficheros fuente descargados en local.
-- **Diseño extensible**: después, Senado, procesos anteriores y elecciones autonómicas/municipales, sin rehacer el esquema; en el ingestador, un adaptador por proceso electoral (todas las del Congreso comparten el suyo), desacoplados — [plans/ingest-spec.md](plans/ingest-spec.md).
+- **Diseño extensible**: después, Senado, procesos anteriores y elecciones autonómicas/municipales, sin rehacer el esquema; en el ingestador, un adaptador por proceso electoral (todas las del Congreso comparten el suyo), desacoplados — ver [`../ingestor/AGENTS.md`](../ingestor/AGENTS.md).
 
 ## Dos partes
 
@@ -38,9 +38,11 @@ Bronce por proceso: `data/raw/congreso/{código}/` con los 10 `.DAT` (los ZIP or
 ├── data/
 │   └── raw/                   ← ficheros fuente (bronce, gitignored)
 ├── refs/
-│   └── congreso/              ← generales 1986–2023, nivel mesa (referencia local, gitignored) — ver `.agents/data-sources.md`
+│   ├── congreso/              ← generales 1986–2023, nivel mesa (referencia local, gitignored) — ver `.agents/data-sources.md`
+│   └── ine/                   ← gazetteer INE: CCAA, provincias y municipios en CSV (gitignored) — ver `.agents/data-sources.md`
 ├── docs/
-│   └── db/schema.drawio       ← ERD de referencia
+│   ├── db/schema.drawio       ← ERD de referencia
+│   └── ingestor/ingesta.md    ← cómo funciona el ingestador (comandos y carga en silver)
 ├── ingestor/                  ← ingestador Python (ver ingestor/AGENTS.md)
 └── web/                       ← frontend Next.js (ver web/AGENTS.md)
 ```

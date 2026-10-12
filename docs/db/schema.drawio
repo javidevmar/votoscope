@@ -220,7 +220,7 @@
         <mxCell id="municipality_name_row_text" value="name text" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="municipality_name_row" vertex="1">
           <mxGeometry x="55" width="255" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="municipality_name_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="municipality_name_row" vertex="1">
+        <mxCell id="municipality_name_row_flags" value="NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="municipality_name_row" vertex="1">
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="polling_station" value="polling_station" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Arial;" parent="1" vertex="1">
