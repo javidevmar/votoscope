@@ -1,0 +1,43 @@
+name: ingestor
+
+on:
+  push:
+    paths:
+      - "ingestor/**"
+      - ".github/workflows/ingestor.yml"
+  pull_request:
+    paths:
+      - "ingestor/**"
+      - ".github/workflows/ingestor.yml"
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ingestor
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: votoscope
+          POSTGRES_PASSWORD: votoscope
+          POSTGRES_DB: votoscope
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql+psycopg://votoscope:votoscope@localhost:5432/votoscope
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v10
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest
+      - run: uv run alembic upgrade head
+      - run: uv run alembic check
