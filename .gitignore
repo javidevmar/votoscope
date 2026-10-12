@@ -61,6 +61,11 @@ wheels/
 htmlcov/
 *.log
 
+# draw.io temp/backup files
+.$*.drawio*
+*.drawio.bkp
+*.drawio.dtmp
+
 # Database & local data
 *.sqlite
 *.sqlite3
