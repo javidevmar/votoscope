@@ -25,6 +25,8 @@ data/raw/  →  bronze.ingestion (registro)  →  silver (normalizado)  →  gol
 
 El ingestador no descarga nada: trabaja sobre los ficheros que haya en `data/raw/`.
 
+Bronce por proceso: `data/raw/congreso/{código}/` con los 10 `.DAT` (los ZIP originales se quedan en `refs/congreso/`, ver [data-sources.md](data-sources.md)).
+
 ## Mapa del repositorio
 
 ```
@@ -35,6 +37,8 @@ El ingestador no descarga nada: trabaja sobre los ficheros que haya en `data/raw
 ├── docker-compose.yml         ← Postgres 18 local (host: 5433)
 ├── data/
 │   └── raw/                   ← ficheros fuente (bronce, gitignored)
+├── refs/
+│   └── congreso/              ← generales 1986–2023, nivel mesa (referencia local, gitignored) — ver `.agents/data-sources.md`
 ├── docs/
 │   └── db/schema.drawio       ← ERD de referencia
 ├── ingestor/                  ← ingestador Python (ver ingestor/AGENTS.md)

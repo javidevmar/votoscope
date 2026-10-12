@@ -11,11 +11,13 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). Actua
 - Proceso: skills de [`skills/`](skills/) instalados pero **fuera de la constitución por ahora**; tests con TDD + pytest; CI diferida al loader.
 - **Modelo v2** (inglés) implementado en `models.py`, migración inicial `2a1c9e836128` **aplicada** en local y ERD (`docs/db/schema.drawio`) **regenerado** a v2 (`alembic check` sin drift; `gold` aún vacío).
 - **PK natural INE** en `autonomous_community`/`province`: ERD actualizado (`ine_code` como PK; FK a CCAA/provincia renombradas a `autonomous_community_ine_code` / `province_ine_code`); pendiente el sync en `models.py` y migración.
+- **Datos de referencia**: generales al Congreso 1986–2023 (nivel MESA) descargadas y descomprimidas en `refs/congreso/` (local, gitignored); formato y variaciones en [`data-sources.md`](data-sources.md).
+- **Especificación cerrada** (ronda de decisiones 2026-10-12): spec de ingesta en [`plans/ingest-spec.md`](plans/ingest-spec.md); commits atómicos + push, ruff, CI al loader, fixtures herméticos y rol read-only de la web (al scaffold) reflejados en los docs temáticos.
 
 ## Pendiente, en orden
 
 1. Cerrar el sync de la PK natural INE (CCAA/provincia) en `models.py` + migración — plan: [`plans/geography-ine-pk.md`](plans/geography-ine-pk.md).
-2. Ingesta: spec de los ficheros de entrada, CLI, flujo bronce → plata, política de recarga, validaciones y carga de catálogos geográficos.
+2. Ingesta: implementar el loader según [`plans/ingest-spec.md`](plans/ingest-spec.md).
 3. Entrega: vistas `gold`, contrato gold ↔ front, topología de entornos y scaffold de `web/`.
 4. Cierre: menores (README, atribución) y CI (al llegar el loader).
 
