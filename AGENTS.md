@@ -6,6 +6,8 @@ Votoscope es un agregador de resultados electorales de España (MVP: últimas ge
 
 **Regla de oro**: el modelo de datos vive siempre sincronizado en tres sitios — ERD (`docs/db/schema.drawio`), modelos (`ingestor/src/ingestor/models.py`) y migraciones Alembic. Detalles en [`.agents/data-model.md`](.agents/data-model.md).
 
+Al finalizar una tarea, se dividen los cambios y se commitean en la rama actual (si es main, pregunta al usuario SIEMPRE). NO pushees nunca por tu cuenta salvo si te lo dice el usuario.
+
 ## Enrutador de documentación
 
 Lee los siguientes ficheros según la tabla siguiente:
