@@ -18,5 +18,8 @@ class Settings(BaseSettings):
     # Bronze: directory holding the immutable source files.
     raw_dir: Path = REPO_ROOT / "data" / "raw"
 
+    # Gazetteer: INE reference files (see .agents/data-sources.md).
+    ine_dir: Path = REPO_ROOT / "refs" / "ine"
+
 
 settings = Settings()

@@ -47,7 +47,7 @@ De `FICHEROS.doc` / `FICHEROS.rtf` (Ministerio del Interior), incluidos en cada 
 
 ## Formato
 
-- Registros de longitud fija, uno por línea; delimitador CR+LF según la especificación.
+- Registros de longitud fija, uno por línea; en la práctica el fin de línea es LF en toda la serie (la spec dice CR+LF; el único CRLF es el 04 de 2023).
 - Codificación ANSI (**Windows-1252/ISO-8859-1**): hay caracteres acentuados; leer en latin-1, no en UTF-8.
 - Campos numéricos alineados a la derecha y rellenos de ceros; alfanuméricos a la izquierda y rellenos de espacios.
 - Layout campo a campo en `FICHEROS.doc` (idéntico en las 13 descargas de referencia; md5 `51bb96ff0466418dbf407fd8f695ad2f`).
@@ -69,7 +69,7 @@ Los 10 primeros campos iguales que 09, más `candidatura6 · votos7`.
 
 Generales al Congreso **1986 → 2023** (13 procesos), nivel MESA, descomprimidas en `refs/congreso/{código}/` (ZIP original + los `.DAT` + `FICHEROS.doc`/`.rtf`). No se versiona (`.gitignore`): es material de referencia local para desarrollo y para el loader; el bronce del pipeline vivirá en `data/raw/` (ver [architecture.md](architecture.md)).
 
-El loader trabaja sobre una copia en `data/raw/congreso/{código}/` (solo los `.DAT`, sin ZIP) y lee 02/03/09/10; los 05–08 no se cargan y el 04 queda fuera (ver [plans/ingest-spec.md](plans/ingest-spec.md)).
+El loader trabaja sobre una copia en `data/raw/congreso/{código}/` (los `.DAT`, sin ZIP) y lee 02/03/09/10; el 05 solo se usa para nombrar municipios extintos, y 06–08 y el 04 quedan fuera (ver [`../ingestor/AGENTS.md`](../ingestor/AGENTS.md)).
 
 | código | fecha | candidaturas (03) | filas 09 | filas 10 |
 | --- | --- | --- | --- | --- |
@@ -91,17 +91,44 @@ Las filas de 09 incluyen las 72 del CERA agregado: mesas = filas 09 − 72.
 
 ## Gazetteer INE
 
-Los nombres de CCAA, provincia y municipio salen del fichero oficial del INE («Relación de municipios y sus códigos»), que se descargará a `refs/ine/` y se cargará con `load-geography` (idempotente). Para municipios de una elección que ya no existan en el gazetteer actual, el loader usa el nombre del 05 de esa misma elección (ver [plans/ingest-spec.md](plans/ingest-spec.md)).
+Los nombres de CCAA, provincia y municipio salen del fichero oficial del INE («Relación de municipios y sus códigos»), descargado a `refs/ine/` y cargado con `load-geography` (idempotente). Para municipios de una elección que ya no existan en el gazetteer actual, el loader usa el nombre del 05 de esa misma elección (ver [`../ingestor/AGENTS.md`](../ingestor/AGENTS.md)).
+
+`refs/ine/` contiene los originales en `raw/` y tres CSV UTF-8 listos para el loader (edición del INE a 1-1-2026, publicada 2026-02-04):
+
+| Fichero | Columnas | Filas |
+| --- | --- | --- |
+| `comunidades.csv` | `ine_code,name` (2 dígitos, 01–19) | 19 |
+| `provincias.csv` | `ine_code,name,autonomous_community_ine_code` (2 dígitos, 01–52) | 52 |
+| `municipios.csv` | `ine_code,name,province_ine_code` (5 dígitos) | 8.132 |
+
+Fuentes (todas en `https://www.ine.es/daco/daco42/codmun/`, enlaces de la página de la operación, `cid=1254736177031`):
+
+- `diccionario26.xlsx` («fichero completo», columnas `CODAUTO, CPRO, CMUN, DC, NOMBRE`) → `municipios.csv`; `26codmun.xlsx` (52 hojas) se usó para cotejar (0 discrepancias).
+- `cod_ccaa.htm` → `comunidades.csv`; `cod_provincia.htm` y `cod_ccaa_provincia.htm` → `provincias.csv` (el mapeo provincia→CCAA se validó contra la columna `CODAUTO` del diccionario: 0 inconsistencias).
+- Descarga con `curl` (User-Agent de navegador) y conversión puntual con `openpyxl` (sin tocar dependencias del proyecto).
+
+Avisos del gazetteer: la CCAA 08 se llama `Castilla - La Mancha` (literal de `cod_ccaa.htm`; otras tablas del INE la escriben sin espacios); 184 municipios usan códigos de municipio 9xx (asignación real del INE para altas posteriores a la numeración alfabética, p. ej. `28903` Tres Cantos); el INE no publica en esta operación las entidades CERA (se crean al ingerir).
 
 ## Diferencias observadas entre procesos (¡ojo si sorprende algo!)
 
-- **04 (1986 y 2000) solo lista a los elegidos** (350 filas, todas «S»); en el resto está la lista completa de candidatos más los 350 elegidos.
-- **04 de 2023 usa CRLF** (único fichero de la serie; registro de 121 en vez de 120) y el DNI va en blanco. El resto: LF.
+Revisión proceso a proceso de las 13 generales (2026-10-12); lo que sigue es lo que el loader tiene en cuenta:
+
+- **04 (1986 y 2000) solo lista a los elegidos** (350 filas, todas «S»); en el resto está la lista completa de candidatos más los 350 elegidos. **04 de 2023 usa CRLF** (único fichero de la serie; registro de 121 en vez de 120) y el DNI va en blanco.
 - **DNI (04, cols. 110–119)**: enmascarado de forma variable (ceros, espacios o primer carácter); nunca completo.
-- **Flag «datos oficiales» (09, col. 101)**: hasta 2004 solo van con «S» las 72 filas del CERA (las mesas van con «N»); desde 2008 van todas con «S».
+- **Orden del 10**: no está ordenado por mesa (sobre todo 1986–2000): el loader agrupa por clave, nunca por orden.
+- **Flag «datos oficiales» (09, col. 101)**: hasta 2004 solo van con «S» las 72 filas del CERA (las mesas van con «N»); desde 2008 van todas con «S». No se usa para filtrar.
 - **CERE (cols. 38–51 de 09)**: a ceros en generales (solo aplica a municipales/europeas).
-- **Nombres geográficos**: 09/10 no traen nombres, solo códigos; 05/07 sí (en mayúsculas en procesos antiguos, capitalizados en los recientes). El mapeo completo código INE → nombre requiere un gazetteer, aún pendiente.
-- **Municipios extintos**: códigos presentes en elecciones antiguas que ya no existen hoy (13 en 1986, 8 en 1989, 5 en 1996, 4 en 2004). No se descartan: se cargan con el nombre del 05 de su elección (ver [plans/ingest-spec.md](plans/ingest-spec.md)).
+- **CERA**: 72 filas en 09 (52 provinciales + 19 CCAA + 1 nacional); las de provincia `99` son sumas del nivel provincial y triplican el CERA si se suman todas: el loader solo ingiere las 52 provinciales. El censo CERA va en el campo censo (en 1986, en censo de escrutinio); no es 0. 05 y 06 no traen fila 999.
+- **Municipios extintos**: 13 códigos de 1986 que ya no están en el gazetteer INE actual (VILLOROBE, OZA DE LOS RIOS, CERDEDO, DARRICAL, EL ROBLEDO, ALCORLO, TORRECILLA DEL DUCADO, FRESNEDO, PEDROSA DEL REY, PALMEROLA, CESURAS, COTOBADE, GATOVA); el loader los crea con el nombre del 05 de su elección. En el resto de procesos no aparece ninguno nuevo.
+- **Códigos de municipio ≥ 901**: son municipios reales (p. ej. El Ejido `04902`, Las Tres Villas `04901`); solo `999` es CERA.
+- **Sección (09/10, cols. 19–22)**: hasta 1993, 4 dígitos; desde 1996, 3 dígitos + espacio o letra (A/B/C); CERA `0000`. Silver la guarda sin ceros a la izquierda («1», «11C») para que una sección sea una fila entre elecciones. La mesa es una letra (A–U); `U` es mesa única, no CERA.
+- **05**: en Barcelona, Madrid, Málaga, Sevilla, Valencia y Zaragoza hay filas de distrito además del total municipal (`distrito=99`, el que usa el loader para los nombres). Los 05 son de edición posterior a su elección (el de 1986, de 2011).
+- **Validación 09 ↔ 10 (votos por mesa)**: cuadra en 2004 y 2008–2023 (salvo 2015). No cuadra en 1986 (7 mesas, −563 votos), 1989 (15, −1.605), 1993 (16, −1.179), 1996 (16, −1.013) y 2000 (8, −461): el 10 pierde las primeras candidaturas en la primera mesa del primer municipio de algunas provincias (el 06 y el 09 las corroboran). En 2015 es al revés: 26.356 mesas con diferencias (neto −43.291) y el campo «candidaturas» del 09 es el inconsistente (06/07/08 cuadran con el 10). El adaptador degrada esta validación a warning en esos años.
+- **2015, códigos CERA del 10**: las mesas CERA provinciales publican la candidatura como `9xxxxx`; el código real del 03 es `0xxxxx` (mapeo 9→0, verificado 605/605). En mesas normales no hay códigos `9xxxxx`.
+- **2015, 03**: 673 filas = 605 candidaturas provinciales + 68 «cabeceras» `9xxxxx` (PP `903316`, PSOE `903484`…); el loader agrupa por cabecera nacional (56 partidos) y el resto de años lista cada partido una sola vez.
+- **07/08 frente a 09/10**: el ministerio publica dos recuentos que no cuadran entre sí en varios procesos (1986, −9.642; 1989, −14.871; 1996, +979 en CERA; 2004, +3.788; 2008, +3 en Murcia; 2023, +175 en Toledo); en 2015 el 07/08 corrobora al 10. El MVP carga 09/10 y no usa 07/08; además el 08 acumula por cabecera, no por suma directa de códigos.
+- **Nombres geográficos**: 09/10 no traen nombres, solo códigos; 05/07 sí (en mayúsculas en procesos antiguos, capitalizados en los recientes). El mapeo actual sale del gazetteer INE y el histórico del 05 de cada elección.
+- **Mesas sin votos**: hay mesas con censo y avances pero sin votos (p. ej. 2 en 2004, 8 en 2019-04, 3 en 2023); se cargan tal cual, con votos a cero.
 
 ## Añadir otro proceso
 
