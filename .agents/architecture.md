@@ -7,7 +7,7 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md).
 Votoscope es un agregador de resultados electorales de España.
 
 - **MVP**: las últimas elecciones generales (Congreso), con resultados por **mesa** (la unidad más fina publicada), a partir de ficheros fuente descargados en local.
-- **Diseño extensible**: después, Senado, procesos anteriores y elecciones autonómicas/municipales, sin rehacer el esquema.
+- **Diseño extensible**: después, Senado, procesos anteriores y elecciones autonómicas/municipales, sin rehacer el esquema; en el ingestador, un adaptador por proceso electoral (todas las del Congreso comparten el suyo), desacoplados — [plans/ingest-spec.md](plans/ingest-spec.md).
 
 ## Dos partes
 

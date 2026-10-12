@@ -17,7 +17,7 @@ Objetivo: fijar el contrato del loader (bronce, alcance, recarga, validaciones, 
 
 **CLI.** `uv run ingestor load-geography` y `uv run ingestor ingest <ruta>` — `<ruta>` puede ser una carpeta de elección o una raíz con varias (recorre todas; las ya procesadas se saltan por sha256).
 
-**Estructura.** Paquetes `parsers/` (uno por fichero) y `loaders/` (geografía, elección, hechos), más `cli.py`, `logging.py`, `db.py`, `settings.py`, `models.py`.
+**Estructura y adaptadores.** `parsers/` (uno por fichero: 02, 03, 09, 10) es la capa de longitud fija, agnóstica al proceso. `adapters/` contiene un módulo por tipo de proceso (`congreso.py` en el MVP): define qué ficheros se leen, las reglas del proceso (CERA, flag `datos_oficiales`, peculiaridades por año como el CRLF de 2023) y sus validaciones. Todas las del Congreso (1986–2023) comparten el mismo adaptador; Senado, autonómicas y municipales tendrán módulos propios, desacoplados (sin condicionales cruzados; si un proceso necesitara otro layout, añade su parser, no modifica los comunes). Dispatch por código de proceso (`02` → Congreso). `loaders/` es la persistencia genérica (geografía, elección, hechos), más `cli.py`, `logging.py`, `db.py`, `settings.py`, `models.py`.
 
 **Tests y CI.** Fixtures en `tests/fixtures/` (recortes reales mínimos + casos sintéticos); tests sin red ni `refs/`. CI al loader: GitHub Actions (`uv sync` + ruff + pytest + `alembic check` con Postgres de servicio).
 
