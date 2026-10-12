@@ -7,11 +7,13 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). Nombr
 - Dependencias y ejecución siempre con **uv** (nunca pip directo).
 - Type hints en todo el código; SQLAlchemy 2 con `Mapped[...]`.
 - Docstrings y comentarios: inglés, concisos.
-- Lint/format: por definir (ruff cuando lo configuremos).
+- Lint/format: **ruff** con configuración por defecto (se añade al arrancar el loader).
 
 ## Commits
 
 - Conventional commits, en inglés (`chore:`, `feat:`, `fix:`…).
+- Commits atómicos: un propósito por commit.
+- Al cerrar una tarea terminada: push al remoto.
 
 ## Frontend
 

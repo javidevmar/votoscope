@@ -34,5 +34,6 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). El es
 
 - **TDD** para la lógica (parsers, loader, transformaciones): primero el test que falla, luego el código mínimo, luego refactor.
 - Framework: **pytest** (dev-dependency aprobada); los tests del ingestador viven en `ingestor/tests/`.
-- CI: diferida; se montará cuando exista el loader.
+- Fixtures de los parsers: `ingestor/tests/fixtures/` (recortes reales mínimos + casos sintéticos); los tests no dependen de `refs/` ni de la red.
+- CI: al montar el loader — GitHub Actions (`uv sync` + ruff + pytest + `alembic check` con Postgres de servicio).
 - Estrategia de tests de la web: se decidirá en su scaffold.

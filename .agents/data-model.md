@@ -31,6 +31,13 @@ Nunca se escribe DDL a mano ni ficheros SQL de inicialización. Nunca se edita u
 - `silver.turnout`: censo, blancos y nulos por mesa y elección; los votantes se derivan: `sum(vote.votes) + blank_votes + null_votes`.
 - `silver.vote`: votos por candidatura y mesa; UK (mesa, candidatura).
 
+## Fuera del MVP
+
+- Candidatos (fichero 04, con DNI): sin tabla; el MVP no carga personas.
+- Agregados 05–08: no se cargan (derivables de 09/10); el 05 solo se usará como fuente de nombres para municipios extintos.
+- Senado, autonómicas y municipales: el modelo es extensible, pero van después del MVP.
+
 ## Pendiente
 
 - Reflejar en `models.py` y migración la PK natural INE de CCAA/provincia (ERD ya al día; la inicial `2a1c9e836128` solo está aplicada en local) — plan: [`plans/geography-ine-pk.md`](plans/geography-ine-pk.md).
+- Gazetteer INE, `load-geography` y `municipality.name` nullable (municipios extintos) al implementar el loader — spec: [`plans/ingest-spec.md`](plans/ingest-spec.md).

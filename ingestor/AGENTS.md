@@ -60,5 +60,5 @@ La base de datos se levanta desde la raíz del repo: `docker compose up -d --wai
 ## Pendiente
 
 - Primeros tests (pytest) con el loader.
-- Loader bronce → plata.
+- Loader bronce → plata — spec: [`../.agents/plans/ingest-spec.md`](../.agents/plans/ingest-spec.md).
 - Vistas `gold`.
