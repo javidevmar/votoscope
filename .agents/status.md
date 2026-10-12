@@ -14,7 +14,8 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). Actua
 
 ## Pendiente, en orden
 
-1. Entrega: vistas `gold`, contrato gold ↔ front, topología de entornos y scaffold de `web/`.
-2. Cierre: menores (README, atribución).
+1. Identidad de partidos (generales + sondeos): normalización y deduplicación de nombres con catálogo compartido y recarga de `silver`; plan en [`plans/party-norm.md`](plans/party-norm.md).
+2. Entrega: vistas `gold`, contrato gold ↔ front, topología de entornos y scaffold de `web/`.
+3. Cierre: menores (README, atribución).
 
 Transversal: logging por niveles (`LOG_LEVEL`) hecho en el ingestador; pendiente en la web ([conventions.md](conventions.md)).
