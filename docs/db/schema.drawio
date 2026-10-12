@@ -1,11 +1,109 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mxfile host="Electron" type="device">
-  <diagram id="votoscope-schema" name="Votoscope schema">
+  <diagram id="bronze" name="Bronze">
     <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1600" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="title" value="Votoscope — data model (bronze + silver)" style="text;html=1;fontSize=18;fontStyle=1;align=left;verticalAlign=middle;" parent="1" vertex="1">
+        <mxCell id="title_bronze" value="Votoscope — bronze (ingestión)" style="text;html=1;fontSize=18;fontStyle=1;align=left;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="40" y="0" width="600" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion" value="ingestion" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Arial;" parent="1" vertex="1">
+          <mxGeometry x="40" y="60" width="400" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_id_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=1;strokeColor=#666666;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
+          <mxGeometry y="30" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_id_row_key" value="PK" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_id_row" vertex="1">
+          <mxGeometry width="55" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_id_row_text" value="id integer" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=1;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_id_row" vertex="1">
+          <mxGeometry x="55" width="255" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_id_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_id_row" vertex="1">
+          <mxGeometry x="310" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_sha256_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
+          <mxGeometry y="60" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_sha256_row_key" value="UK" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_sha256_row" vertex="1">
+          <mxGeometry width="55" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_sha256_row_text" value="sha256 varchar(64)" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_sha256_row" vertex="1">
+          <mxGeometry x="55" width="255" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_sha256_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_sha256_row" vertex="1">
+          <mxGeometry x="310" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_file_path_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
+          <mxGeometry y="90" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_file_path_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_file_path_row" vertex="1">
+          <mxGeometry width="55" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_file_path_row_text" value="file_path text" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_file_path_row" vertex="1">
+          <mxGeometry x="55" width="255" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_file_path_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_file_path_row" vertex="1">
+          <mxGeometry x="310" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_size_bytes_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
+          <mxGeometry y="120" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_size_bytes_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_size_bytes_row" vertex="1">
+          <mxGeometry width="55" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_size_bytes_row_text" value="size_bytes integer" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_size_bytes_row" vertex="1">
+          <mxGeometry x="55" width="255" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_size_bytes_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_size_bytes_row" vertex="1">
+          <mxGeometry x="310" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_source_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
+          <mxGeometry y="150" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_source_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_source_row" vertex="1">
+          <mxGeometry width="55" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_source_row_text" value="source text" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_source_row" vertex="1">
+          <mxGeometry x="55" width="255" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_source_row_flags" value="NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_source_row" vertex="1">
+          <mxGeometry x="310" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_status_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
+          <mxGeometry y="180" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_status_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_status_row" vertex="1">
+          <mxGeometry width="55" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_status_row_text" value="status varchar(20)" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_status_row" vertex="1">
+          <mxGeometry x="55" width="255" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_status_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_status_row" vertex="1">
+          <mxGeometry x="310" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_created_at_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
+          <mxGeometry y="210" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_created_at_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_created_at_row" vertex="1">
+          <mxGeometry width="55" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_created_at_row_text" value="created_at timestamptz" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_created_at_row" vertex="1">
+          <mxGeometry x="55" width="255" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ingestion_created_at_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_created_at_row" vertex="1">
+          <mxGeometry x="310" width="90" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="silver" name="Silver">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title_silver" value="Votoscope — silver (normalizado)" style="text;html=1;fontSize=18;fontStyle=1;align=left;verticalAlign=middle;" parent="1" vertex="1">
           <mxGeometry x="40" y="0" width="600" height="30" as="geometry" />
         </mxCell>
         <mxCell id="autonomous_community" value="autonomous_community" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Arial;" parent="1" vertex="1">
@@ -513,93 +611,6 @@
           <mxGeometry x="55" width="255" height="30" as="geometry" />
         </mxCell>
         <mxCell id="vote_votes_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="vote_votes_row" vertex="1">
-          <mxGeometry x="310" width="90" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion" value="ingestion" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Arial;" parent="1" vertex="1">
-          <mxGeometry x="1950" y="40" width="400" height="240" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_id_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=1;strokeColor=#666666;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
-          <mxGeometry y="30" width="400" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_id_row_key" value="PK" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_id_row" vertex="1">
-          <mxGeometry width="55" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_id_row_text" value="id integer" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=1;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_id_row" vertex="1">
-          <mxGeometry x="55" width="255" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_id_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_id_row" vertex="1">
-          <mxGeometry x="310" width="90" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_sha256_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
-          <mxGeometry y="60" width="400" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_sha256_row_key" value="UK" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_sha256_row" vertex="1">
-          <mxGeometry width="55" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_sha256_row_text" value="sha256 varchar(64)" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_sha256_row" vertex="1">
-          <mxGeometry x="55" width="255" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_sha256_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_sha256_row" vertex="1">
-          <mxGeometry x="310" width="90" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_file_path_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
-          <mxGeometry y="90" width="400" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_file_path_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_file_path_row" vertex="1">
-          <mxGeometry width="55" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_file_path_row_text" value="file_path text" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_file_path_row" vertex="1">
-          <mxGeometry x="55" width="255" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_file_path_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_file_path_row" vertex="1">
-          <mxGeometry x="310" width="90" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_size_bytes_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
-          <mxGeometry y="120" width="400" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_size_bytes_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_size_bytes_row" vertex="1">
-          <mxGeometry width="55" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_size_bytes_row_text" value="size_bytes integer" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_size_bytes_row" vertex="1">
-          <mxGeometry x="55" width="255" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_size_bytes_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_size_bytes_row" vertex="1">
-          <mxGeometry x="310" width="90" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_source_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
-          <mxGeometry y="150" width="400" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_source_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_source_row" vertex="1">
-          <mxGeometry width="55" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_source_row_text" value="source text" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_source_row" vertex="1">
-          <mxGeometry x="55" width="255" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_source_row_flags" value="NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_source_row" vertex="1">
-          <mxGeometry x="310" width="90" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_status_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
-          <mxGeometry y="180" width="400" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_status_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_status_row" vertex="1">
-          <mxGeometry width="55" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_status_row_text" value="status varchar(20)" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_status_row" vertex="1">
-          <mxGeometry x="55" width="255" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_status_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_status_row" vertex="1">
-          <mxGeometry x="310" width="90" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_created_at_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="ingestion" vertex="1">
-          <mxGeometry y="210" width="400" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_created_at_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="ingestion_created_at_row" vertex="1">
-          <mxGeometry width="55" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_created_at_row_text" value="created_at timestamptz" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="ingestion_created_at_row" vertex="1">
-          <mxGeometry x="55" width="255" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="ingestion_created_at_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_created_at_row" vertex="1">
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="rel_community_province" value="" style="edgeStyle=entityRelationEdgeStyle;startArrow=ERone;endArrow=ERzeroToMany;startFill=0;endFill=1;html=1;" parent="1" source="autonomous_community_ine_code_row" target="province_autonomous_community_ine_code_row" edge="1">

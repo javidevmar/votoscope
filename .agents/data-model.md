@@ -4,7 +4,7 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md).
 
 ## Fuente de verdad
 
-- ERD de referencia: **`docs/db/schema.drawio`** (draw.io nativo, editable).
+- ERD de referencia: **`docs/db/schema.drawio`** (draw.io nativo, editable; una página por esquema: *Bronze* e *Silver*).
 - Modelos: **`ingestor/src/ingestor/models.py`** (SQLAlchemy 2).
 - Migraciones: **`ingestor/alembic/`** — son la fuente de verdad de la base de datos.
 - Esquemas: `bronze` (registro de ingestas), `silver` (hechos normalizados) y `gold` (vistas para el frontend, aún vacío).
