@@ -6,6 +6,11 @@ Contexto del ingestador. Antes de tocar nada, lee también el `AGENTS.md` de la 
 
 Pipeline de datos (Python) que convierte los ficheros electorales descargados en local en tablas normalizadas de PostgreSQL y, más adelante, en las vistas `gold` que consume el frontend. Patrón medallón: bronce (ficheros + registro) → plata (`silver`) → oro (`gold`).
 
+## Documentación
+
+- Cómo funciona el ingestador (comandos, comportamiento y carga en `silver`): [`../docs/ingestor/ingesta.md`](../docs/ingestor/ingesta.md).
+- **Todo cambio que afecte a cómo funciona** (CLI, flujo de ingesta, validaciones, geografía o lo que acaba en `silver`) **revisa y actualiza esa documentación en el mismo commit.**
+
 ## Ficheros
 
 - **`pyproject.toml`** — proyecto gestionado con uv. Dependencias: SQLAlchemy 2, Alembic, psycopg 3, pydantic-settings; dev: pytest, ruff. Script de consola: `ingestor`.

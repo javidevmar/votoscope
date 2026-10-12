@@ -41,7 +41,8 @@ Bronce por proceso: `data/raw/congreso/{código}/` con los 10 `.DAT` (los ZIP or
 │   ├── congreso/              ← generales 1986–2023, nivel mesa (referencia local, gitignored) — ver `.agents/data-sources.md`
 │   └── ine/                   ← gazetteer INE: CCAA, provincias y municipios en CSV (gitignored) — ver `.agents/data-sources.md`
 ├── docs/
-│   └── db/schema.drawio       ← ERD de referencia
+│   ├── db/schema.drawio       ← ERD de referencia
+│   └── ingestor/ingesta.md    ← cómo funciona el ingestador (comandos y carga en silver)
 ├── ingestor/                  ← ingestador Python (ver ingestor/AGENTS.md)
 └── web/                       ← frontend Next.js (ver web/AGENTS.md)
 ```
