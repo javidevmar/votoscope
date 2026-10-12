@@ -9,24 +9,12 @@
           <mxGeometry x="40" y="0" width="600" height="30" as="geometry" />
         </mxCell>
         <mxCell id="autonomous_community" value="autonomous_community" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Arial;" parent="1" vertex="1">
-          <mxGeometry x="40" y="40" width="400" height="120" as="geometry" />
+          <mxGeometry x="40" y="40" width="400" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="autonomous_community_id_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=1;strokeColor=#666666;whiteSpace=wrap;html=1;" parent="autonomous_community" vertex="1">
+        <mxCell id="autonomous_community_ine_code_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=1;strokeColor=#666666;whiteSpace=wrap;html=1;" parent="autonomous_community" vertex="1">
           <mxGeometry y="30" width="400" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="autonomous_community_id_row_key" value="PK" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="autonomous_community_id_row" vertex="1">
-          <mxGeometry width="55" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="autonomous_community_id_row_text" value="id integer" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=1;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="autonomous_community_id_row" vertex="1">
-          <mxGeometry x="55" width="255" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="autonomous_community_id_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="autonomous_community_id_row" vertex="1">
-          <mxGeometry x="310" width="90" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="autonomous_community_ine_code_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="autonomous_community" vertex="1">
-          <mxGeometry y="60" width="400" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="autonomous_community_ine_code_row_key" value="UK" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="autonomous_community_ine_code_row" vertex="1">
+        <mxCell id="autonomous_community_ine_code_row_key" value="PK" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="autonomous_community_ine_code_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
         </mxCell>
         <mxCell id="autonomous_community_ine_code_row_text" value="ine_code varchar(2)" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="autonomous_community_ine_code_row" vertex="1">
@@ -36,7 +24,7 @@
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="autonomous_community_name_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="autonomous_community" vertex="1">
-          <mxGeometry y="90" width="400" height="30" as="geometry" />
+          <mxGeometry y="60" width="400" height="30" as="geometry" />
         </mxCell>
         <mxCell id="autonomous_community_name_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="autonomous_community_name_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
@@ -48,24 +36,12 @@
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="province" value="province" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Arial;" parent="1" vertex="1">
-          <mxGeometry x="40" y="340" width="400" height="150" as="geometry" />
+          <mxGeometry x="40" y="340" width="400" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="province_id_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=1;strokeColor=#666666;whiteSpace=wrap;html=1;" parent="province" vertex="1">
+        <mxCell id="province_ine_code_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=1;strokeColor=#666666;whiteSpace=wrap;html=1;" parent="province" vertex="1">
           <mxGeometry y="30" width="400" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="province_id_row_key" value="PK" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="province_id_row" vertex="1">
-          <mxGeometry width="55" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="province_id_row_text" value="id integer" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=1;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="province_id_row" vertex="1">
-          <mxGeometry x="55" width="255" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="province_id_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="province_id_row" vertex="1">
-          <mxGeometry x="310" width="90" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="province_ine_code_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="province" vertex="1">
-          <mxGeometry y="60" width="400" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="province_ine_code_row_key" value="UK" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="province_ine_code_row" vertex="1">
+        <mxCell id="province_ine_code_row_key" value="PK" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="province_ine_code_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
         </mxCell>
         <mxCell id="province_ine_code_row_text" value="ine_code varchar(2)" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="province_ine_code_row" vertex="1">
@@ -74,20 +50,20 @@
         <mxCell id="province_ine_code_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="province_ine_code_row" vertex="1">
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="province_autonomous_community_id_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="province" vertex="1">
-          <mxGeometry y="90" width="400" height="30" as="geometry" />
+        <mxCell id="province_autonomous_community_ine_code_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="province" vertex="1">
+          <mxGeometry y="60" width="400" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="province_autonomous_community_id_row_key" value="FK1" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="province_autonomous_community_id_row" vertex="1">
+        <mxCell id="province_autonomous_community_ine_code_row_key" value="FK1" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="province_autonomous_community_ine_code_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="province_autonomous_community_id_row_text" value="autonomous_community_id integer" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="province_autonomous_community_id_row" vertex="1">
+        <mxCell id="province_autonomous_community_ine_code_row_text" value="autonomous_community_ine_code varchar(2)" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="province_autonomous_community_ine_code_row" vertex="1">
           <mxGeometry x="55" width="255" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="province_autonomous_community_id_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="province_autonomous_community_id_row" vertex="1">
+        <mxCell id="province_autonomous_community_ine_code_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="province_autonomous_community_ine_code_row" vertex="1">
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="province_name_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="province" vertex="1">
-          <mxGeometry y="120" width="400" height="30" as="geometry" />
+          <mxGeometry y="90" width="400" height="30" as="geometry" />
         </mxCell>
         <mxCell id="province_name_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="province_name_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
@@ -125,16 +101,16 @@
         <mxCell id="municipality_ine_code_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="municipality_ine_code_row" vertex="1">
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="municipality_province_id_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="municipality" vertex="1">
+        <mxCell id="municipality_province_ine_code_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="municipality" vertex="1">
           <mxGeometry y="90" width="400" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="municipality_province_id_row_key" value="FK1" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="municipality_province_id_row" vertex="1">
+        <mxCell id="municipality_province_ine_code_row_key" value="FK1" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="municipality_province_ine_code_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="municipality_province_id_row_text" value="province_id integer" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="municipality_province_id_row" vertex="1">
+        <mxCell id="municipality_province_ine_code_row_text" value="province_ine_code varchar(2)" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="municipality_province_ine_code_row" vertex="1">
           <mxGeometry x="55" width="255" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="municipality_province_id_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="municipality_province_id_row" vertex="1">
+        <mxCell id="municipality_province_ine_code_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="municipality_province_ine_code_row" vertex="1">
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="municipality_name_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="municipality" vertex="1">
@@ -263,16 +239,16 @@
         <mxCell id="election_name_row_flags" value="NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="election_name_row" vertex="1">
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="election_autonomous_community_id_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="election" vertex="1">
+        <mxCell id="election_autonomous_community_ine_code_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="election" vertex="1">
           <mxGeometry y="150" width="400" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="election_autonomous_community_id_row_key" value="UK/FK1" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="election_autonomous_community_id_row" vertex="1">
+        <mxCell id="election_autonomous_community_ine_code_row_key" value="UK/FK1" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="election_autonomous_community_ine_code_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="election_autonomous_community_id_row_text" value="autonomous_community_id integer" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="election_autonomous_community_id_row" vertex="1">
+        <mxCell id="election_autonomous_community_ine_code_row_text" value="autonomous_community_ine_code varchar(2)" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="election_autonomous_community_ine_code_row" vertex="1">
           <mxGeometry x="55" width="255" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="election_autonomous_community_id_row_flags" value="NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="election_autonomous_community_id_row" vertex="1">
+        <mxCell id="election_autonomous_community_ine_code_row_flags" value="NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="election_autonomous_community_ine_code_row" vertex="1">
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="election_municipality_id_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="election" vertex="1">
@@ -626,16 +602,16 @@
         <mxCell id="ingestion_created_at_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="ingestion_created_at_row" vertex="1">
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="rel_community_province" value="" style="edgeStyle=entityRelationEdgeStyle;startArrow=ERone;endArrow=ERzeroToMany;startFill=0;endFill=1;html=1;" parent="1" source="autonomous_community_id_row" target="province_autonomous_community_id_row" edge="1">
+        <mxCell id="rel_community_province" value="" style="edgeStyle=entityRelationEdgeStyle;startArrow=ERone;endArrow=ERzeroToMany;startFill=0;endFill=1;html=1;" parent="1" source="autonomous_community_ine_code_row" target="province_autonomous_community_ine_code_row" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="rel_province_municipality" value="" style="edgeStyle=entityRelationEdgeStyle;startArrow=ERone;endArrow=ERzeroToMany;startFill=0;endFill=1;html=1;" parent="1" source="province_id_row" target="municipality_province_id_row" edge="1">
+        <mxCell id="rel_province_municipality" value="" style="edgeStyle=entityRelationEdgeStyle;startArrow=ERone;endArrow=ERzeroToMany;startFill=0;endFill=1;html=1;" parent="1" source="province_ine_code_row" target="municipality_province_ine_code_row" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel_municipality_polling_station" value="" style="edgeStyle=entityRelationEdgeStyle;startArrow=ERone;endArrow=ERzeroToMany;startFill=0;endFill=1;html=1;" parent="1" source="municipality_id_row" target="polling_station_municipality_id_row" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="rel_election_community" value="" style="edgeStyle=entityRelationEdgeStyle;startArrow=ERzeroToOne;endArrow=ERzeroToMany;startFill=0;endFill=1;html=1;" parent="1" source="autonomous_community_id_row" target="election_autonomous_community_id_row" edge="1">
+        <mxCell id="rel_election_community" value="" style="edgeStyle=entityRelationEdgeStyle;startArrow=ERzeroToOne;endArrow=ERzeroToMany;startFill=0;endFill=1;html=1;" parent="1" source="autonomous_community_ine_code_row" target="election_autonomous_community_ine_code_row" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="rel_election_municipality" value="" style="edgeStyle=entityRelationEdgeStyle;startArrow=ERzeroToOne;endArrow=ERzeroToMany;startFill=0;endFill=1;html=1;" parent="1" source="municipality_id_row" target="election_municipality_id_row" edge="1">

@@ -5,8 +5,8 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). El es
 ## Base de datos
 
 - Tablas y columnas en **inglés**, con el vocabulario del dominio (election, polling_station, census…). ERD, modelos y migración siguen el modelo v2.
-- PK sustitutas en todas las tablas: `id` entero autoincremental; los códigos naturales van aparte con `UNIQUE` (`ine_code`, `slug`, `(election_id, code)`, `(polling_station_id, election_id)`…). No se usan `uuid`.
-- Claves ajenas: `<tabla>_id` (polling_station_id, election_id…).
+- PK: código natural cuando es único y estable (`autonomous_community.ine_code`, `province.ine_code`); en el resto, PK sustituta `id` entero autoincremental, con los códigos naturales aparte con `UNIQUE` (`ine_code`, `slug`, `(election_id, code)`, `(polling_station_id, election_id)`…). No se usan `uuid`.
+- Claves ajenas: `<tabla>_<clave referenciada>` (`autonomous_community_ine_code`, `province_ine_code`; `polling_station_id`, `election_id`…).
 - Agregados y porcentajes solo en `gold`; `silver` guarda hechos.
 - `data/raw/` es inmutable y no se versiona.
 
