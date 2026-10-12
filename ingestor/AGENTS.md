@@ -12,8 +12,8 @@ Pipeline de datos (Python) que convierte los ficheros electorales descargados en
 - **`.env.example`** — variables de entorno; copiar a `.env` para sobrescribir (gitignored).
 - **`src/ingestor/settings.py`** — configuración: `DATABASE_URL` (por defecto, el Postgres de docker-compose en `localhost:5433`) y `RAW_DIR` (por defecto, `../data/raw`).
 - **`src/ingestor/db.py`** — engine y factoría de sesiones de SQLAlchemy.
-- **`src/ingestor/models.py`** — definición del esquema, modelo v2 (inglés; esquemas `bronze` y `silver`). Pendiente: PK natural INE de `autonomous_community`/`province` (el ERD ya la refleja) — [plan](../.agents/plans/geography-ine-pk.md).
-- **`alembic/`** — migraciones; la inicial `2a1c9e836128` ya está aplicada en local. `env.py` toma la URL de `settings.py` (la de `alembic.ini` se deja vacía a propósito).
+- **`src/ingestor/models.py`** — definición del esquema, modelo v2 (inglés; esquemas `bronze` y `silver`; PK natural INE en `autonomous_community`/`province`).
+- **`alembic/`** — migraciones; la inicial `2a1c9e836128` (regenerada con la PK natural INE) ya está aplicada en local. `env.py` toma la URL de `settings.py` (la de `alembic.ini` se deja vacía a propósito).
 - **`alembic.ini`** — configuración de Alembic.
 
 ## Logging

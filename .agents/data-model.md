@@ -39,5 +39,4 @@ Nunca se escribe DDL a mano ni ficheros SQL de inicialización. Nunca se edita u
 
 ## Pendiente
 
-- Reflejar en `models.py` y migración la PK natural INE de CCAA/provincia (ERD ya al día; la inicial `2a1c9e836128` solo está aplicada en local) — plan: [`plans/geography-ine-pk.md`](plans/geography-ine-pk.md).
 - Gazetteer INE, `load-geography` y `municipality.name` nullable (municipios extintos) al implementar el loader — spec: [`plans/ingest-spec.md`](plans/ingest-spec.md).
