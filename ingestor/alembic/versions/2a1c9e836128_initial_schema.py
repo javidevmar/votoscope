@@ -38,11 +38,9 @@ def upgrade() -> None:
     schema='bronze'
     )
     op.create_table('autonomous_community',
-    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('ine_code', sa.String(length=2), nullable=False),
     sa.Column('name', sa.Text(), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('ine_code'),
+    sa.PrimaryKeyConstraint('ine_code'),
     schema='silver'
     )
     op.create_table('party',
@@ -55,39 +53,37 @@ def upgrade() -> None:
     schema='silver'
     )
     op.create_table('province',
-    sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('ine_code', sa.String(length=2), nullable=False),
-    sa.Column('autonomous_community_id', sa.Integer(), nullable=False),
+    sa.Column('autonomous_community_ine_code', sa.String(length=2), nullable=False),
     sa.Column('name', sa.Text(), nullable=False),
-    sa.ForeignKeyConstraint(['autonomous_community_id'], ['silver.autonomous_community.id'], ),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('ine_code'),
+    sa.ForeignKeyConstraint(['autonomous_community_ine_code'], ['silver.autonomous_community.ine_code'], ),
+    sa.PrimaryKeyConstraint('ine_code'),
     schema='silver'
     )
-    op.create_index(op.f('ix_silver_province_autonomous_community_id'), 'province', ['autonomous_community_id'], unique=False, schema='silver')
+    op.create_index(op.f('ix_silver_province_autonomous_community_ine_code'), 'province', ['autonomous_community_ine_code'], unique=False, schema='silver')
     op.create_table('municipality',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('ine_code', sa.String(length=5), nullable=False),
-    sa.Column('province_id', sa.Integer(), nullable=False),
+    sa.Column('province_ine_code', sa.String(length=2), nullable=False),
     sa.Column('name', sa.Text(), nullable=False),
-    sa.ForeignKeyConstraint(['province_id'], ['silver.province.id'], ),
+    sa.ForeignKeyConstraint(['province_ine_code'], ['silver.province.ine_code'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('ine_code'),
     schema='silver'
     )
-    op.create_index(op.f('ix_silver_municipality_province_id'), 'municipality', ['province_id'], unique=False, schema='silver')
+    op.create_index(op.f('ix_silver_municipality_province_ine_code'), 'municipality', ['province_ine_code'], unique=False, schema='silver')
     op.create_table('election',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('type', sa.String(length=20), nullable=False),
     sa.Column('date', sa.Date(), nullable=False),
     sa.Column('name', sa.Text(), nullable=True),
-    sa.Column('autonomous_community_id', sa.Integer(), nullable=True),
+    sa.Column('autonomous_community_ine_code', sa.String(length=2), nullable=True),
     sa.Column('municipality_id', sa.Integer(), nullable=True),
-    sa.CheckConstraint('num_nonnulls(autonomous_community_id, municipality_id) <= 1', name='election_scope_at_most_one'),
-    sa.ForeignKeyConstraint(['autonomous_community_id'], ['silver.autonomous_community.id'], ),
+    sa.CheckConstraint('num_nonnulls(autonomous_community_ine_code, municipality_id) <= 1', name='election_scope_at_most_one'),
+    sa.ForeignKeyConstraint(['autonomous_community_ine_code'], ['silver.autonomous_community.ine_code'], ),
     sa.ForeignKeyConstraint(['municipality_id'], ['silver.municipality.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('type', 'date', 'autonomous_community_id', 'municipality_id', postgresql_nulls_not_distinct=True),
+    sa.UniqueConstraint('type', 'date', 'autonomous_community_ine_code', 'municipality_id', postgresql_nulls_not_distinct=True),
     schema='silver'
     )
     op.create_table('polling_station',
@@ -155,9 +151,9 @@ def downgrade() -> None:
     op.drop_table('party_election', schema='silver')
     op.drop_table('polling_station', schema='silver')
     op.drop_table('election', schema='silver')
-    op.drop_index(op.f('ix_silver_municipality_province_id'), table_name='municipality', schema='silver')
+    op.drop_index(op.f('ix_silver_municipality_province_ine_code'), table_name='municipality', schema='silver')
     op.drop_table('municipality', schema='silver')
-    op.drop_index(op.f('ix_silver_province_autonomous_community_id'), table_name='province', schema='silver')
+    op.drop_index(op.f('ix_silver_province_autonomous_community_ine_code'), table_name='province', schema='silver')
     op.drop_table('province', schema='silver')
     op.drop_table('party', schema='silver')
     op.drop_table('autonomous_community', schema='silver')

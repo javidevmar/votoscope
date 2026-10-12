@@ -57,8 +57,7 @@ class AutonomousCommunity(Base):
     __tablename__ = "autonomous_community"
     __table_args__ = {"schema": "silver"}
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    ine_code: Mapped[str] = mapped_column(String(2), unique=True)
+    ine_code: Mapped[str] = mapped_column(String(2), primary_key=True)
     name: Mapped[str] = mapped_column(Text)
 
 
@@ -68,10 +67,9 @@ class Province(Base):
     __tablename__ = "province"
     __table_args__ = {"schema": "silver"}
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    ine_code: Mapped[str] = mapped_column(String(2), unique=True)
-    autonomous_community_id: Mapped[int] = mapped_column(
-        ForeignKey("silver.autonomous_community.id"), index=True
+    ine_code: Mapped[str] = mapped_column(String(2), primary_key=True)
+    autonomous_community_ine_code: Mapped[str] = mapped_column(
+        String(2), ForeignKey("silver.autonomous_community.ine_code"), index=True
     )
     name: Mapped[str] = mapped_column(Text)
 
@@ -88,7 +86,9 @@ class Municipality(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     ine_code: Mapped[str] = mapped_column(String(5), unique=True)
-    province_id: Mapped[int] = mapped_column(ForeignKey("silver.province.id"), index=True)
+    province_ine_code: Mapped[str] = mapped_column(
+        String(2), ForeignKey("silver.province.ine_code"), index=True
+    )
     name: Mapped[str] = mapped_column(Text)
 
 
@@ -118,9 +118,9 @@ class PollingStation(Base):
 class Election(Base):
     """An election process held in a place.
 
-    ``autonomous_community_id`` / ``municipality_id`` state where it is held:
-    null for national elections (Congreso, Senado, Europeas), the community
-    for regional ones, the municipality for municipal ones.
+    ``autonomous_community_ine_code`` / ``municipality_id`` state where it is
+    held: null for national elections (Congreso, Senado, Europeas), the
+    community for regional ones, the municipality for municipal ones.
     """
 
     __tablename__ = "election"
@@ -128,12 +128,12 @@ class Election(Base):
         UniqueConstraint(
             "type",
             "date",
-            "autonomous_community_id",
+            "autonomous_community_ine_code",
             "municipality_id",
             postgresql_nulls_not_distinct=True,
         ),
         CheckConstraint(
-            "num_nonnulls(autonomous_community_id, municipality_id) <= 1",
+            "num_nonnulls(autonomous_community_ine_code, municipality_id) <= 1",
             name="election_scope_at_most_one",
         ),
         {"schema": "silver"},
@@ -144,8 +144,8 @@ class Election(Base):
     type: Mapped[str] = mapped_column(String(20))
     date: Mapped[date] = mapped_column(Date)
     name: Mapped[str | None] = mapped_column(Text)
-    autonomous_community_id: Mapped[int | None] = mapped_column(
-        ForeignKey("silver.autonomous_community.id")
+    autonomous_community_ine_code: Mapped[str | None] = mapped_column(
+        String(2), ForeignKey("silver.autonomous_community.ine_code")
     )
     municipality_id: Mapped[int | None] = mapped_column(
         ForeignKey("silver.municipality.id")
