@@ -92,7 +92,9 @@ class Municipality(Base):
     province_ine_code: Mapped[str] = mapped_column(
         String(2), ForeignKey("silver.province.ine_code"), index=True
     )
-    name: Mapped[str] = mapped_column(Text)
+    name: Mapped[str | None] = mapped_column(
+        Text
+    )  # null if absent from INE and file 05
 
 
 class PollingStation(Base):
