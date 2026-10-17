@@ -15,6 +15,15 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). Nombr
 - Commits atómicos: un propósito por commit.
 - **Cuándo**: el commiteo atómico es el paso final, tras implementar y revisar, y solo con el OK explícito del usuario.
 
+## Ramas, PRs e iniciativas
+
+- Ramas por feature desde `main`: `feature/<nombre>`. Nunca se trabaja directo en `main`.
+- **Iniciativa = plan abierto** (`.agents/plans/`): sus features lo declaran en el campo `"initiative"` de `feature_list.json` y se agrupan en un **stack de PRs** (una rama y un PR por feature; el trabajo se divide).
+- Ramas del stack: la primera feature vive en `feature/<slug>` (el `Rama:` del plan) y las siguientes se apilan encima: `feature/<slug>-<sufijo>`, creadas desde la rama de la feature anterior.
+- PRs: `gh pr create --base <rama-padre>` (`main` solo para la base del stack). GitHub agrupa el stack y re-apunta los hijos al mergear.
+- Features sueltas: `feature/<nombre>` desde `main` y PR a `main`.
+- El push también requiere OK explícito del usuario.
+
 ## Frontend
 
 - Por definir al hacer el scaffold de `web/`.

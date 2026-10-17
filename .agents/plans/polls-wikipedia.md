@@ -1,7 +1,8 @@
 # Sondeos desde Wikipedia (generales 2026)
 
-Estado: abierto · Creado: 2026-10-12 · Abierto: 2026-10-12 · Actualizado: 2026-10-12
+Estado: abierto · Creado: 2026-10-12 · Abierto: 2026-10-12 · Actualizado: 2026-10-12, 2026-10-17
 Objetivo: ingerir las encuestas de intención de voto al Congreso de la página «Opinion polling for the 2026 Spanish general election» (Wikipedia en inglés) como hechos en `silver`, desde snapshots de revisión fija en bronce, sincronizados **dos veces al día** para captar cada sondeo nuevo, y dejar fijado el contrato para las vistas `gold` de la web.
+Rama: feature/polls
 
 ## Decisiones a confirmar al arrancar
 
