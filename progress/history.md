@@ -44,3 +44,14 @@ Las sesiones anteriores al arnés SDD están registradas en `.agents/plans/` y e
 - **Cambios:** `polls/parsers/wikitext.py` (279 líneas: `Cell`/`Row`/`Table`, `parse_tables`, `clean`; solo stdlib) y 24 tests sintéticos sin red (`tests/test_wikitext.py`); bullet del lexer en `ingestor/AGENTS.md`.
 - **Verificación:** `./init.sh` verde (74 tests, ruff, `alembic check` sin drift); reviewer **APPROVED** con sondas adversariales (rowspans solapados, plantillas anidadas, bloque sin cierre). Limitaciones documentadas: attrs con `|` entre comillas y tablas anidadas malformadas (inexistentes en la fuente).
 - **Cierre:** feature 7 `done`; PR del stack (piso 3) con spec + implementación. Siguiente: feature 8 `polls_adapter` (spec aprobada por el usuario).
+
+---
+
+## 2026-10-17 — Feature 8 `polls_adapter` (adaptador de Wikipedia) + opción A (columnas desconocidas)
+
+- **Agente:** leader + implementer + reviewer (rama `feature/polls-adapter`, stack sobre `feature/polls-lexer`).
+- **Cambios:** `polls/adapters/wikipedia_polls.py` (secciones y tablas por año, cabecera a dos filas, columnas por rótulo, fechas, CIS/reestimaciones, 15 partidos); 25 tests + 6 fixtures (recortes reales del snapshot `1380713440` — descargado con `fetch-polls` — + sintéticas); docs.
+- **Decisión del usuario (opción A):** la columna de partido desconocida ya no se descarta — warning + resultados con el rótulo crudo; la resolución de identidad pasa al loader (feature 9, R31) y la curación fina al catálogo de party-norm (features 12–14 encoladas; delivery renumerada a 15–17).
+- **Caso real:** la página ya trae la columna `FA` (Broad Front); antes se perdía, ahora fluye y se dará de alta como `fa`/«FA».
+- **Verificación:** `./init.sh` verde (99 tests, ruff, `alembic check` sin drift); reviewer **APPROVED**, incluido el re-review del delta R8.
+- **Cierre:** feature 8 `done`. Siguiente: feature 9 `polls_load` (spec con R31 pendiente de aprobación).
