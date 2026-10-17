@@ -2,6 +2,8 @@
 
 Contexto del frontend. Antes de tocar nada, lee también el `AGENTS.md` de la raíz del repo.
 
+Proceso: toda feature con `sdd: true` en [`../feature_list.json`](../feature_list.json) pasa por su spec en `../specs/<name>/` antes de tocar código; ver [`../AGENTS.md`](../AGENTS.md) y [`../.agents/specs.md`](../.agents/specs.md).
+
 ## Qué es
 
 Frontend del agregador, en Next.js (App Router). Consume las vistas del esquema `gold` de PostgreSQL directamente desde el servidor (Server Components). No hay API intermedia: los datos van de la base de datos a la web.

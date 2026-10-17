@@ -2,6 +2,8 @@
 
 Contexto del ingestador. Antes de tocar nada, lee también el `AGENTS.md` de la raíz del repo.
 
+Proceso: toda feature con `sdd: true` en [`../feature_list.json`](../feature_list.json) pasa por su spec en `../specs/<name>/` antes de tocar código; ver [`../AGENTS.md`](../AGENTS.md) y [`../.agents/specs.md`](../.agents/specs.md).
+
 ## Qué es
 
 Pipeline de datos (Python) que convierte los ficheros electorales descargados en local en tablas normalizadas de PostgreSQL y, más adelante, en las vistas `gold` que consume el frontend. Patrón medallón: bronce (ficheros + registro) → plata (`silver`) → oro (`gold`).
