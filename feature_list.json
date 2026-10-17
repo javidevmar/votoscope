@@ -1,0 +1,201 @@
+{
+  "project": "votoscope",
+  "description": "Agregador de resultados electorales de España. Ingestador Python (bronce-plata-oro) y frontend Next.js. La cola de trabajo vive aquí.",
+  "rules": {
+    "one_feature_at_a_time": true,
+    "require_tests_to_close": true,
+    "require_approved_spec_to_implement": true,
+    "valid_status": ["pending", "spec_ready", "in_progress", "done", "blocked"],
+    "sdd_required_when": "feature has \"sdd\": true"
+  },
+  "features": [
+    {
+      "id": 1,
+      "name": "db_environment",
+      "title": "Entorno local: Postgres, uv y Alembic",
+      "description": "Postgres 18 en docker-compose y esqueleto del ingestador con uv + SQLAlchemy 2 + Alembic.",
+      "acceptance": [
+        "docker-compose.yml levanta Postgres 18 (host 5434) con volumen pgdata",
+        "ingestor/ es un proyecto uv con SQLAlchemy, Alembic, psycopg y pydantic-settings",
+        "uv run alembic upgrade head aplica la migración inicial en local"
+      ],
+      "status": "done"
+    },
+    {
+      "id": 2,
+      "name": "model_v2",
+      "title": "Modelo v2 (inglés) y ERD sincronizado",
+      "description": "Esquema silver normalizado: geografía con códigos INE, elección, partido, candidatura, mesa, participación y voto.",
+      "acceptance": [
+        "src/ingestor/models.py con el modelo v2 (PK natural INE en autonomous_community y province; PK sustitutas id en el resto)",
+        "Migraciones 2a1c9e836128 y 06a250c36252 aplicadas; alembic check sin drift",
+        "docs/db/schema.drawio regenerado con las páginas Bronze y Silver"
+      ],
+      "status": "done"
+    },
+    {
+      "id": 3,
+      "name": "geography_loader",
+      "title": "Gazetteer INE → silver",
+      "description": "Comando load-geography: carga CCAA, provincias y municipios desde los CSV del INE, idempotente.",
+      "acceptance": [
+        "uv run ingestor load-geography carga y actualiza nombres desde refs/ine/ sin duplicar",
+        "municipality.name es nullable para municipios extintos",
+        "tests de los CSV con fixtures locales (sin red ni refs/)"
+      ],
+      "status": "done"
+    },
+    {
+      "id": 4,
+      "name": "ingest_pipeline",
+      "title": "Ingesta bronce → plata de las generales al Congreso",
+      "description": "Parsers de longitud fija (02/03/05/09/10), adaptador de Congreso, loaders, CLI ingest, logging y CI.",
+      "acceptance": [
+        "uv run ingestor ingest <ruta> registra los ficheros en bronze.ingestion por sha256 y carga silver (hechos: vote, turnout; candidaturas: party_election)",
+        "recarga con --force borra y reinserta los hechos de la elección en una transacción",
+        "validaciones: candidaturas de 10 ⊆ 03, mesas de 10 ⊆ 09, suma de votos de 10 == 09 por mesa (relajada donde el ministerio no cuadra)",
+        "tests con fixtures en ingestor/tests/fixtures/ y CI (.github/workflows/ingestor.yml) verde"
+      ],
+      "status": "done"
+    },
+    {
+      "id": 5,
+      "name": "polls_model",
+      "title": "Modelo silver de sondeos: pollster, poll, poll_result",
+      "description": "Tres tablas nuevas para los sondeos de Wikipedia, con la regla de sincronización ERD ↔ modelos ↔ migración.",
+      "acceptance": [
+        "silver.pollster (slug UK), silver.poll (pollster_id FK, source, election_type, election_id nullable, fieldwork_start/end, sample_size, turnout con CHECK 0-100, revision_id) y silver.poll_result (poll_id FK, party_id FK, pct CHECK 0-100, seats_min/max, UK(poll_id, party_id))",
+        "migración autogenerada aplicada y alembic check sin drift",
+        "docs/db/schema.drawio: páginas nuevas *Bronze polls* y *Silver polls* (party y election como cajas atenuadas)",
+        ".agents/data-model.md actualizado: «una página por esquema y dominio»"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 6,
+      "name": "polls_fetch",
+      "title": "fetch-polls: snapshot de revisión fija",
+      "description": "Comando que resuelve la revisión actual de la página de sondeos y descarga su wikitexto al bronce.",
+      "acceptance": [
+        "uv run ingestor fetch-polls descarga data/raw/polls/wikipedia-en/2026-general/{revid}.wikitext vía API (revisión fija, redirects=1)",
+        "si esa revisión ya está en disco no la repite: el ciclo sin novedades es una sola llamada a la API y exit 0",
+        "--page permite apuntar a otra página; urllib de la stdlib, User-Agent identificativo, timeout y un reintento",
+        "tests sin red: parseo de la respuesta de la API con fixture JSON y camino «sin novedades»",
+        "matiz «los sondeos se descargan por CLI» reflejado en .agents/architecture.md e ingestor/AGENTS.md"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 7,
+      "name": "polls_lexer",
+      "title": "Lexer de wikitexto (parsers/wikitext.py)",
+      "description": "Lexer genérico de tablas de wikitexto: bloques, filas, celdas, rowspan y limpieza de plantillas y referencias.",
+      "acceptance": [
+        "parsers/wikitext.py tokeniza bloques {|…|}, filas |- y celdas |/! y expande rowspan a las filas siguientes",
+        "limpieza: {{efn|…}}, <ref>…</ref>, ''' , {{smaller|X}}→X, {{font|…|text=X}}→X y <br>",
+        "tests con casos sintéticos de cada construcción (sin red)"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 8,
+      "name": "polls_adapter",
+      "title": "Adaptador de Wikipedia (adapters/wikipedia_polls.py)",
+      "description": "Reglas de la fuente: secciones y tablas por año, cabecera a dos filas, filas → sondeo, fechas y números.",
+      "acceptance": [
+        "adapters/wikipedia_polls.py produce sondeos con firma, fechas (rangos, cruce de año, fecha de publicación como aproximación), muestra, participación y resultados por partido",
+        "columnas de partido descubiertas por cabecera (nunca por posición); columna desconocida → warning y se ignora; la columna Lead se ignora",
+        "mapeo a slugs de silver.party; SALF y Aliança.cat se crean; reestimaciones del CIS (Target Point, Ateneo del Dato…) se cargan como filas con source literal",
+        "filas separadoras y la fila del resultado de 2023 se saltan",
+        "fixtures recortadas reales + sintéticas en tests/fixtures/wikipedia_polls/"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 9,
+      "name": "polls_load",
+      "title": "ingest-polls: carga bronce → plata de los sondeos",
+      "description": "Loader y comando que registra el snapshot en bronce, lo parsea y carga silver con guard de revisión.",
+      "acceptance": [
+        "uv run ingestor ingest-polls [ruta] registra el fichero en bronze.ingestion (source wikipedia-en, sha256) y carga pollster/poll/poll_result en una transacción",
+        "guard de revisión: un snapshot anterior al ya cargado se ignora con warning; --force lo reprocesa",
+        "validaciones mínimas: cada fila con firma y ≥2 partidos, rangos de pct/seats, suma de porcentajes ≤ 100.5 como warning",
+        "fallo → rollback y estado failed en bronze.ingestion",
+        "docs/ingestor/ingesta.md actualizado con los comandos nuevos"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 10,
+      "name": "polls_schedule",
+      "title": "Sincronización 2×/día de los sondeos",
+      "description": "Job periódico que consulta la revisión actual y solo descarga e ingiere si cambió.",
+      "acceptance": [
+        "entrada de cron/launchd documentada en .agents/environment.md (mientras el destino sea el Postgres local)",
+        "esqueleto de workflow con schedule: para cuando exista entorno de despliegue",
+        "test del camino «sin novedades»: no descarga, exit 0"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 11,
+      "name": "polls_run",
+      "title": "Ejecución real y cotejo de los sondeos",
+      "description": "fetch-polls + ingest-polls sobre la página real y verificación manual de una muestra.",
+      "acceptance": [
+        "fetch-polls + ingest-polls ejecutados en local sobre la página de 2026; silver cargado",
+        "cotejo de un puñado de filas contra la página (firma, fechas, % y escaños) documentado",
+        "sección «Sondeos (Wikipedia)» en .agents/data-sources.md con formato, rarezas y licencia CC BY-SA"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 12,
+      "name": "delivery_gold",
+      "title": "Vistas gold y contrato gold ↔ front",
+      "description": "Vistas del esquema gold (una por consulta del frontend) y el contrato que consumirá web/.",
+      "acceptance": [
+        "vistas gold para resultados y sondeos (agregados y porcentajes solo aquí)",
+        "contrato gold ↔ front documentado (qué vista alimenta qué pantalla)",
+        "topología de entornos decidida y documentada",
+        "ERD ↔ modelos ↔ migración para lo que toque el esquema"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 13,
+      "name": "web_scaffold",
+      "title": "Scaffold de la web (Next.js)",
+      "description": "Aplicación Next.js en web/ que lee las vistas gold desde el servidor, con rol de Postgres de solo lectura.",
+      "acceptance": [
+        "app Next.js (App Router) en web/ que consulta gold.* en Server Components; sin API intermedia",
+        "rol de Postgres de solo lectura (SELECT solo sobre gold) creado por migración",
+        "logging por niveles con LOG_LEVEL en servidor",
+        "web/AGENTS.md y .agents/conventions.md actualizados (estrategia de tests y logging)"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 14,
+      "name": "close_minor",
+      "title": "Cierre: README y atribución",
+      "description": "README del repositorio y atribución de fuentes (infoelectoral y Wikipedia CC BY-SA).",
+      "acceptance": [
+        "README con qué es el proyecto y cómo levantarlo",
+        "atribución de la fuente infoelectoral y de Wikipedia (CC BY-SA, enlace a la revisión)",
+        ".agents/status.md y documentos de contexto al día"
+      ],
+      "sdd": true,
+      "status": "pending"
+    }
+  ]
+}
