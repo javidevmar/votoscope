@@ -1,0 +1,37 @@
+====Voting intention estimates====
+
+=====2026=====
+{| class="wikitable"
+|-
+! Polling firm/Commissioner
+! Fieldwork date
+! Sample size
+! Turnout
+! PP
+! PSOE
+! Lead
+|-
+| Alpha/Medio
+| 29 Dec–5 Jan
+| 1,000
+|?
+| 30.0
+| 28.0
+| 2.0
+|-
+| Beta/Medio
+| 5 Oct
+|?
+| 67.6
+| 31.0
+| 27.0
+| 4.0
+|-
+| Gamma/Medio
+|?
+| 800
+| 66
+| 29.0
+| 28.0
+| 1.0
+|}
