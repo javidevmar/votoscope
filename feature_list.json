@@ -134,7 +134,7 @@
         "docs/ingestor/ingesta.md actualizado con los comandos nuevos"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 10,
