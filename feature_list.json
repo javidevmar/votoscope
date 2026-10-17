@@ -101,7 +101,7 @@
         "tests con casos sintéticos de cada construcción (sin red)"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 8,
