@@ -35,3 +35,12 @@ Las sesiones anteriores al arnés SDD están registradas en `.agents/plans/` y e
 - **Arnés (petición del usuario):** specs numeradas a 3 cifras (`005_polls_model`…; regla en `spec-author.md`), `specs.md`, `init.sh` y `CHECKPOINTS.md` al día.
 - **Verificación:** `./init.sh` verde (50 tests, ruff, `alembic check` sin drift); reviewer **APPROVED** (`progress/review_polls_fetch.md`; fixtures verificadas en vivo contra la API). El refactor se commiteó tras el review (movimiento mecánico verificado).
 - **Cierre:** feature 6 `done`; stack: `feature/polls` → `feature/polls-fetch` (PR) → `feature/polls-lexer` (spec 7 aprobada). Siguiente: implementar la 7.
+
+---
+
+## 2026-10-17 — Feature 7 `polls_lexer` (lexer genérico de wikitexto)
+
+- **Agente:** leader + implementer + reviewer (rama `feature/polls-lexer`, stack sobre `feature/polls-fetch`).
+- **Cambios:** `polls/parsers/wikitext.py` (279 líneas: `Cell`/`Row`/`Table`, `parse_tables`, `clean`; solo stdlib) y 24 tests sintéticos sin red (`tests/test_wikitext.py`); bullet del lexer en `ingestor/AGENTS.md`.
+- **Verificación:** `./init.sh` verde (74 tests, ruff, `alembic check` sin drift); reviewer **APPROVED** con sondas adversariales (rowspans solapados, plantillas anidadas, bloque sin cierre). Limitaciones documentadas: attrs con `|` entre comillas y tablas anidadas malformadas (inexistentes en la fuente).
+- **Cierre:** feature 7 `done`; PR del stack (piso 3) con spec + implementación. Siguiente: feature 8 `polls_adapter` (spec aprobada por el usuario).
