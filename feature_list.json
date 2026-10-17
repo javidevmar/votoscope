@@ -134,7 +134,7 @@
         "docs/ingestor/ingesta.md actualizado con los comandos nuevos"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 10,
@@ -246,6 +246,21 @@
         "README con qué es el proyecto y cómo levantarlo",
         "atribución de la fuente infoelectoral y de Wikipedia (CC BY-SA, enlace a la revisión)",
         ".agents/status.md y documentos de contexto al día"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 18,
+      "name": "source_norm",
+      "initiative": "polls-wikipedia",
+      "title": "Normalizar las fuentes de los sondeos (encuestadora, medio y reestimador)",
+      "description": "El literal de la cabecera mezcla papeles — CIS y su reestimador, encuestadora y medio —; separarlos de forma consistente y documentar las reglas.",
+      "acceptance": [
+        "las reglas de extracción distinguen encuestadora, medio y reestimador cuando el literal lo contiene (p. ej. `CIS (Target Point)` → CIS + reestimador Target Point; `SocioMétrica/El Español` → SocioMétrica + medio El Español), sin inventar datos cuando no aplica",
+        "la distinción queda representada en silver (esquema o derivación documentada como decisión) y la recarga del snapshot la aplica de forma idempotente",
+        "tests con los literales reales de la página (CIS y sus reestimaciones, medios y encuestadoras solas)",
+        "plan polls-wikipedia.md y docs del ingestador actualizados"
       ],
       "sdd": true,
       "status": "pending"
