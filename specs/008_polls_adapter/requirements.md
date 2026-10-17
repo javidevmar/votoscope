@@ -34,7 +34,7 @@ El sistema DEBE exponer para `SALF` y `Aliança.cat` el slug y el nombre con el 
 
 ## R8
 
-SI el rótulo de una columna de partido no está en el mapeo ENTONCES el sistema DEBE registrar un warning con el rótulo y DEBE ignorar esa columna (sus celdas no producen resultados).
+SI el rótulo de una columna de partido no está en el mapeo ENTONCES el sistema DEBE registrar un warning con el rótulo y DEBE emitir sus resultados con el rótulo crudo como clave (la resolución de identidad es del loader, feature 9).
 
 ## R9
 
@@ -125,7 +125,7 @@ El sistema DEBE actualizar `ingestor/AGENTS.md` (bullet de `adapters/`) para doc
 | Criterio de `acceptance` (feature_list.json) | Requirements |
 | --- | --- |
 | «`polls/adapters/wikipedia_polls.py` produce sondeos con firma, fechas (rangos, cruce de año, fecha de publicación como aproximación), muestra, participación y resultados por partido» | R1, R2, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R26 |
-| «columnas de partido descubiertas por cabecera (nunca por posición); columna desconocida → warning y se ignora; la columna Lead se ignora» | R3, R4, R5, R8, R9 |
+| «columnas de partido descubiertas por cabecera (nunca por posición); columna desconocida → warning y se conserva con el rótulo crudo; la columna Lead se ignora» | R3, R4, R5, R8, R9 |
 | «mapeo a slugs de `silver.party`; SALF y Aliança.cat se crean; reestimaciones del CIS (Target Point, Ateneo del Dato…) se cargan como filas con source literal» | R6, R7, R20, R21 |
 | «filas separadoras y la fila del resultado de 2023 se saltan» | R10, R11 |
 | «fixtures recortadas reales + sintéticas en `tests/fixtures/wikipedia_polls/`» | R28 |
@@ -135,7 +135,7 @@ El sistema DEBE actualizar `ingestor/AGENTS.md` (bullet de `adapters/`) para doc
 
 ## Notas de alcance
 
-- **`FA` (Frente Amplio)**: el snapshot verificado trae esa columna en la tabla `2026 (after FA)`, que no está en el mapeo del plan. Cae en R8: warning y se ignora. Añadirla es curación de identidades de partido (plan §Flecos), fuera de esta feature.
+- **`FA` (Broad Front / Frente Amplio)**: el snapshot verificado trae esa columna en varias tablas (p. ej. `2026 (after FA)`), fuera del mapeo del plan. Cae en R8: warning y sus resultados se emiten con el rótulo crudo `FA`; el loader (feature 9) lo dará de alta como `fa`/«FA», y la curación fina llega con el catálogo de party-norm (feature 14).
 - **Creación de partidos**: el adaptador no toca la base de datos; expone slug y nombre (R7) para que la carga (feature 9, `get-or-create`) cree `salf` y `alianca-cat`.
 - **Sin cambios de modelo**: esta feature no toca `docs/db/schema.drawio`, `models.py` ni Alembic (la regla de oro no aplica).
 

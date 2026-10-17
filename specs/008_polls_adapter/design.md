@@ -68,7 +68,7 @@ Detalles que fijan el contrato:
 
 - `poll_tables` es pública para los tests (R2) y para depurar: devuelve `(año, Table)` del lexer, en orden de página. `parse_polls` la usa y aplana a `PollRow`.
 - Los dataclasses se llaman `PollRow`/`PollResultRow` (no `Poll`/`PollResult`) para no chocar con `models.py` en el loader de la feature 9.
-- `results` es un diccionario slug → resultado: omite los partidos sin valores (R14), de modo que `len(row.results)` es exactamente «partidos con valor» de la validación de la feature 9. El orden es el de las columnas.
+- `results` es un diccionario clave → resultado (slug del mapeo o rótulo crudo de una columna desconocida, R8): omite los partidos sin valores (R14), de modo que `len(row.results)` es exactamente «partidos con valor» de la validación de la feature 9. El orden es el de las columnas.
 
 ## Flujo de `parse_polls`
 
@@ -84,7 +84,7 @@ Detalles que fijan el contrato:
   - rótulo en `FIXED_COLUMNS` → rol fijo (firm/date/sample/turnout);
   - rótulo `Lead` → ignorada (R9);
   - rótulo en `PARTY_COLUMNS` → columna de partido con su slug;
-  - cualquier otro → `logger.warning("unknown party column: %s", label)` y columna ignorada (R8).
+  - cualquier otro → `logger.warning("unknown party column: %s", label)` y columna con el **rótulo crudo como clave** (R8): el adaptador no inventa slugs; la identidad la resuelve el loader (feature 9).
 - Las demás filas de cabecera (la de `{{party color|…}}`) se saltan porque su primera celda es de cabecera (`Cell.header`); la primera fila es la de rótulos (R3).
 - `_label(cell_text)`: primer wikilink `[[…]]`; se parte por `|`; último parámetro; si empieza por `link=` se usa su valor; sin wikilink, el texto tal cual. Formas reales: `[[File:Logo del PP (2022).svg|27px|link=People's Party (Spain)|PP]]` → `PP`; `[[File:Adelante Andalucía Isotipo, 2021.svg|30px|link=Adelante Andalucía (2021)]]` → `Adelante Andalucía (2021)`; `[[Se Acabó La Fiesta|SALF]]` → `SALF`.
 - `_Plan`: índices de las cuatro columnas fijas + `dict[índice, slug]` de las de partido. Los datos se leen **por índice de columna** una vez construido el plan a partir de la cabecera: el orden de las columnas puede cambiar entre años (R5).
@@ -109,7 +109,7 @@ Detalles que fijan el contrato:
 | `SALF` | `salf` | Se Acabó La Fiesta |
 | `Aliança.cat` | `alianca-cat` | Aliança Catalana |
 
-El rótulo de Adelante Andalucía es el resuelto del snapshot real (`link=Adelante Andalucía (2021)`); el plan lo escribe como «Adelante Andalucía». Si la wiki renombra el artículo, la columna cae en R8 (warning + ignorada): deriva aceptada por el plan (§Flecos). Los nombres solo se usan al crear un partido que falte; los fija el plan para `salf`/`alianca-cat`.
+El rótulo de Adelante Andalucía es el resuelto del snapshot real (`link=Adelante Andalucía (2021)`); el plan lo escribe como «Adelante Andalucía». Si la wiki renombra el artículo, la columna cae en R8 (warning + rótulo crudo; el loader la da de alta): deriva aceptada por el plan (§Flecos). Los nombres solo se usan al crear un partido que falte; los fija el plan para `salf`/`alianca-cat`.
 
 ## Lectura de filas (R10–R14, R20–R21)
 
@@ -157,7 +157,7 @@ El lexer convierte `<br/>` en `\n`; por eso el texto de una celda de partido es 
 
 | Subcadena | Caso | R |
 | --- | --- | --- |
-| `unknown party column` | rótulo no mapeado (p. ej. `FA`) | R8 |
+| `unknown party column` | rótulo no mapeado (p. ej. `FA`) → se conserva con el rótulo crudo | R8 |
 | `not a polls table` | primera fila sin los cuatro rótulos fijos | R24 |
 | `column count mismatch` | fila desalineada | R23 |
 | `section not found` | falta `Voting intention estimates` | R25 |
@@ -197,7 +197,7 @@ Sin red; `FIXTURES = Path(__file__).parent / "fixtures" / "wikipedia_polls"`; he
 | `test_party_columns_mapping` (15 rótulos/slugs únicos; nombres de SALF y Aliança.cat) | — | R6, R7 |
 | `test_synthetic_columns_mapping` (orden distinto; wikilinks; AA por `link=`) | `synthetic_columns` | R5, R6, R7 |
 | `test_fixed_columns_by_label` (fijas desordenadas; muestra/participación correctas) | `synthetic_columns` | R4 |
-| `test_unknown_column_warns_and_ignored` (`FA`) | `synthetic_columns` | R8 |
+| `test_unknown_column_warns_and_kept` (`FA` → warning + resultado con clave `FA`) | `synthetic_columns` | R8 |
 | `test_lead_column_ignored_without_warning` | `synthetic_columns`, `real_2026_head` | R9 |
 | `test_color_header_row_ignored` (sin warnings de columna en el recorte real) | `real_2026_head` | R3 |
 | `test_party_cells` (`–`, `?`, `<2.0`, rango, nota sola, `<br />`, solo pct, `?`+escaños) | `synthetic_cells` | R12, R13, R14 |
