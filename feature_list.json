@@ -87,16 +87,16 @@
         "matiz «los sondeos se descargan por CLI» reflejado en .agents/architecture.md e ingestor/AGENTS.md"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 7,
       "name": "polls_lexer",
       "initiative": "polls-wikipedia",
-      "title": "Lexer de wikitexto (parsers/wikitext.py)",
+      "title": "Lexer de wikitexto (polls/parsers/wikitext.py)",
       "description": "Lexer genérico de tablas de wikitexto: bloques, filas, celdas, rowspan y limpieza de plantillas y referencias.",
       "acceptance": [
-        "parsers/wikitext.py tokeniza bloques {|…|}, filas |- y celdas |/! y expande rowspan a las filas siguientes",
+        "polls/parsers/wikitext.py tokeniza bloques {|…|}, filas |- y celdas |/! y expande rowspan a las filas siguientes",
         "limpieza: {{efn|…}}, <ref>…</ref>, ''' , {{smaller|X}}→X, {{font|…|text=X}}→X y <br>",
         "tests con casos sintéticos de cada construcción (sin red)"
       ],
@@ -107,10 +107,10 @@
       "id": 8,
       "name": "polls_adapter",
       "initiative": "polls-wikipedia",
-      "title": "Adaptador de Wikipedia (adapters/wikipedia_polls.py)",
+      "title": "Adaptador de Wikipedia (polls/adapters/wikipedia_polls.py)",
       "description": "Reglas de la fuente: secciones y tablas por año, cabecera a dos filas, filas → sondeo, fechas y números.",
       "acceptance": [
-        "adapters/wikipedia_polls.py produce sondeos con firma, fechas (rangos, cruce de año, fecha de publicación como aproximación), muestra, participación y resultados por partido",
+        "polls/adapters/wikipedia_polls.py produce sondeos con firma, fechas (rangos, cruce de año, fecha de publicación como aproximación), muestra, participación y resultados por partido",
         "columnas de partido descubiertas por cabecera (nunca por posición); columna desconocida → warning y se ignora; la columna Lead se ignora",
         "mapeo a slugs de silver.party; SALF y Aliança.cat se crean; reestimaciones del CIS (Target Point, Ateneo del Dato…) se cargan como filas con source literal",
         "filas separadoras y la fila del resultado de 2023 se saltan",
