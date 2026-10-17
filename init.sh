@@ -58,7 +58,7 @@ try:
             print(f"[FAIL]  Estado inválido en feature {f['id']}: {f['status']}")
             sys.exit(1)
         if f.get("sdd") and f["status"] in requires_spec:
-            spec_dir = os.path.join("specs", f["name"])
+            spec_dir = os.path.join("specs", f"{f['id']:03d}_{f['name']}")
             for fname in ("requirements.md", "design.md", "tasks.md"):
                 if not os.path.isfile(os.path.join(spec_dir, fname)):
                     spec_errors.append(

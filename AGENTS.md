@@ -33,7 +33,7 @@ Tras implementar y revisar, los cambios se quedan en el working tree y se divide
 
 - **Una sola feature a la vez.** No mezcles cambios de varias features en la misma sesión.
 - **No declares una feature `done` sin pruebas verdes.** `./init.sh` tiene que terminar en verde.
-- **No saltes la fase de spec.** Toda feature con `"sdd": true` necesita `specs/<name>/` aprobado antes de tocar código.
+- **No saltes la fase de spec.** Toda feature con `"sdd": true` necesita `specs/<NNN>_<name>/` aprobado antes de tocar código.
 - **No saltes la puerta de aprobación humana.** El leader se detiene en `spec_ready` y espera el «aprobado».
 - **No commitees sin el OK del usuario.** El commiteo atómico es el paso final: tras implementar y revisar, los cambios se quedan en el working tree hasta que el usuario los revise y dé su OK.
 - **Documenta lo que haces** en `progress/current.md` mientras trabajas.
@@ -47,8 +47,8 @@ pending → [spec-author] → spec_ready → ⏸ HUMANO → in_progress → [imp
 ```
 
 1. El `leader` detecta la primera feature `pending` con `"sdd": true`.
-2. Lanza al `spec-author`, que crea `specs/<name>/{requirements,design,tasks}.md` y marca la feature `spec_ready`.
-3. **Pausa.** El humano lee el spec en `specs/<name>/` y aprueba (o pide cambios).
+2. Lanza al `spec-author`, que crea `specs/<NNN>_<name>/{requirements,design,tasks}.md` y marca la feature `spec_ready`.
+3. **Pausa.** El humano lee el spec en `specs/<NNN>_<name>/` y aprueba (o pide cambios).
 4. Aprobado: el `leader` pasa la feature a `in_progress` y lanza al `implementer`.
 5. El `implementer` ejecuta `tasks.md` una a una, marcándolas `[x]`, con su test por task.
 6. El `reviewer` verifica la trazabilidad `R<n>` ↔ test y que no queden tasks `[ ]`; aprueba o rechaza.

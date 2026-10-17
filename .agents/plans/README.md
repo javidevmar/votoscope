@@ -4,7 +4,7 @@ Registro de iniciativas y su diseño para agentes: continuidad entre sesiones, n
 
 ## Relación con SDD
 
-Los planes son **contexto de iniciativa** (diseño, decisiones, riesgos); no son tickets. La ejecución vive en [`../../feature_list.json`](../../feature_list.json): cada feature pasa por `specs/<name>/` antes de tocar código (proceso en [`../specs.md`](../specs.md)). Las features que desarrollan un plan lo citan en su descripción; el plan se lee solo cuando toca esa tarea.
+Los planes son **contexto de iniciativa** (diseño, decisiones, riesgos); no son tickets. La ejecución vive en [`../../feature_list.json`](../../feature_list.json): cada feature pasa por `specs/<NNN>_<name>/` antes de tocar código (proceso en [`../specs.md`](../specs.md)). Las features que desarrollan un plan lo citan en su descripción; el plan se lee solo cuando toca esa tarea.
 
 ## Formato
 

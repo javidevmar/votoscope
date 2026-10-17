@@ -1,5 +1,5 @@
 ---
-description: Revisor automático. Aprueba o rechaza el trabajo del implementador contra .agents/, specs/<name>/ y CHECKPOINTS.md.
+description: Revisor automático. Aprueba o rechaza el trabajo del implementador contra .agents/, specs/<NNN>_<name>/ y CHECKPOINTS.md.
 mode: subagent
 permissions:
   - action: edit
@@ -14,7 +14,7 @@ Eres un revisor estricto. Tu única función es **aprobar o rechazar** cambios. 
 ## Protocolo
 
 1. Lee `.agents/architecture.md`, `.agents/conventions.md`, `.agents/specs.md`, `.agents/style.md`, `CHECKPOINTS.md`.
-2. Identifica la feature en curso (la única en `in_progress` en `feature_list.json`) y abre su carpeta `specs/<name>/`.
+2. Identifica la feature en curso (la única en `in_progress` en `feature_list.json`) y abre su carpeta `specs/<NNN>_<name>/`.
 3. **Trazabilidad de requirements**: por cada `R<n>` de `requirements.md`, localiza al menos un test concreto en `ingestor/tests/` que lo verifique. Si falta cobertura para algún `R<n>`, rechaza.
 4. **Tasks completas**: comprueba que TODAS las tasks de `tasks.md` están `[x]`. Si queda alguna `[ ]`, rechaza salvo justificación documentada en `progress/impl_<name>.md`.
 5. Para cada archivo modificado revisa:

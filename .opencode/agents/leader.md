@@ -37,14 +37,14 @@ Mira el estado de la primera feature no-`done` / no-`blocked` en `feature_list.j
 ### Caso A — status == `pending`
 
 1. Lanza **1 subagente `spec-author`** con la feature como input.
-2. El `spec-author` redacta `specs/<name>/{requirements,design,tasks}.md` y cambia el status a `spec_ready`.
+2. El `spec-author` redacta `specs/<NNN>_<name>/{requirements,design,tasks}.md` y cambia el status a `spec_ready`.
 3. **PARAS**. No lanzas al implementer. Tu mensaje al humano:
-   > «Spec listo en `specs/<name>/`. Revísalo y di **"aprobado"** para continuar con la implementación, o pídeme cambios.»
+   > «Spec listo en `specs/<NNN>_<name>/`. Revísalo y di **"aprobado"** para continuar con la implementación, o pídeme cambios.»
 
 ### Caso B — status == `spec_ready` Y el humano acaba de aprobar
 
 1. Cambia el status a `in_progress` en `feature_list.json`.
-2. Lanza **1 subagente `implementer`** pasándole la ruta `specs/<name>/` como input. El `implementer` trabaja a partir del spec, no del `acceptance` original.
+2. Lanza **1 subagente `implementer`** pasándole la ruta `specs/<NNN>_<name>/` como input. El `implementer` trabaja a partir del spec, no del `acceptance` original.
 3. Cuando termine → lanza **1 `reviewer`** que verifica trazabilidad `R<n>` ↔ test y que `tasks.md` queda completo.
 4. Si el reviewer aprueba: **PARAS y pides al usuario que revise los cambios sin commitear** (el working tree). Solo con su OK: commits atómicos, `done` en `feature_list.json` y `progress/history.md` (protocolo de cierre de `AGENTS.md` §5).
 
@@ -60,7 +60,7 @@ Si el `reviewer` devuelve `CHANGES_REQUESTED`: relee `progress/review_<name>.md`
 
 ## Resultados en archivos, no en chat
 
-Cuando lances subagentes, instrúyeles para que **escriban sus resultados en archivos** (no en su respuesta de texto). Tú solo recibes referencias del tipo: «resultado en `progress/impl_<name>.md`» o «`spec_ready -> specs/<name>/`». Nunca aceptes un subagente que devuelva el contenido en chat.
+Cuando lances subagentes, instrúyeles para que **escriban sus resultados en archivos** (no en su respuesta de texto). Tú solo recibes referencias del tipo: «resultado en `progress/impl_<name>.md`» o «`spec_ready -> specs/<NNN>_<name>/`». Nunca aceptes un subagente que devuelva el contenido en chat.
 
 ## Escalado de esfuerzo
 

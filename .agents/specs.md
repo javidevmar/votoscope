@@ -7,13 +7,13 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md).
 Cada feature nueva (`"sdd": true` en [`../feature_list.json`](../feature_list.json)) tiene una carpeta dedicada en cuanto deja `pending`:
 
 ```
-specs/<feature-name>/
+specs/<NNN>_<name>/
 ├── requirements.md   # QUÉ se necesita (EARS)
 ├── design.md         # CÓMO se construirá (decisiones técnicas)
 └── tasks.md          # PASOS concretos a implementar
 ```
 
-El `<feature-name>` coincide con el campo `name` de `feature_list.json`.
+El nombre de la carpeta es `<NNN>_<name>`: el `id` de la feature en `feature_list.json` con 3 cifras (relleno con ceros) y su campo `name` (p. ej. `specs/006_polls_fetch/`).
 
 ## Estados de una feature
 
