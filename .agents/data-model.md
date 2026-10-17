@@ -4,7 +4,7 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md).
 
 ## Fuente de verdad
 
-- ERD de referencia: **`docs/db/schema.drawio`** (draw.io nativo, editable; una página por esquema: *Bronze* e *Silver*).
+- ERD de referencia: **`docs/db/schema.drawio`** (draw.io nativo, editable; una página por esquema y dominio (Bronze, Silver, Bronze polls, Silver polls)).
 - Modelos: **`ingestor/src/ingestor/models.py`** (SQLAlchemy 2).
 - Migraciones: **`ingestor/alembic/`** — son la fuente de verdad de la base de datos.
 - Esquemas: `bronze` (registro de ingestas), `silver` (hechos normalizados) y `gold` (vistas para el frontend, aún vacío).
@@ -30,6 +30,9 @@ Nunca se escribe DDL a mano ni ficheros SQL de inicialización. Nunca se edita u
 - `silver.party_election`: candidatura por elección (código de fuente, `short_name` y `name` propios); UK (elección, código).
 - `silver.turnout`: censo, blancos y nulos por mesa y elección; los votantes se derivan: `sum(vote.votes) + blank_votes + null_votes`.
 - `silver.vote`: votos por candidatura y mesa; UK (mesa, candidatura).
+- `silver.pollster`: firma encuestadora (nombre, `slug` único).
+- `silver.poll`: sondeo del snapshot de Wikipedia; `election_type` y `election_id` nullable (la fuente publica sondeos de 2026 sin elección todavía); fechas de campo, muestra, participación y `revision_id` (BIGINT); `source` guarda la cabecera literal.
+- `silver.poll_result`: porcentaje y proyección de escaños (`seats_min`–`seats_max`) de un partido en un sondeo; UK (`poll_id`, `party_id`).
 
 ## Fuera del MVP
 

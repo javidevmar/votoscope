@@ -7,13 +7,16 @@ truth for the database: never run DDL by hand (see AGENTS.md).
 from __future__ import annotations
 
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Any, ClassVar
 
 from sqlalchemy import (
+    BigInteger,
     CheckConstraint,
     Date,
     DateTime,
     ForeignKey,
+    Numeric,
     String,
     Text,
     UniqueConstraint,
@@ -240,3 +243,56 @@ class Vote(Base):
         ForeignKey("silver.party_election.id"), index=True
     )
     votes: Mapped[int]
+
+
+# Polls (opinion polls from the Wikipedia snapshot).
+
+
+class Pollster(Base):
+    """Polling firm signing a poll (extracted from the source literal)."""
+
+    __tablename__ = "pollster"
+    __table_args__: ClassVar[TableArgs] = {"schema": "silver"}
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(Text)
+    slug: Mapped[str] = mapped_column(String(60), unique=True)
+
+
+class Poll(Base):
+    """One opinion poll from the Wikipedia snapshot."""
+
+    __tablename__ = "poll"
+    __table_args__: ClassVar[TableArgs] = (
+        CheckConstraint("turnout >= 0 AND turnout <= 100", name="poll_turnout_range"),
+        {"schema": "silver"},
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    pollster_id: Mapped[int] = mapped_column(ForeignKey("silver.pollster.id"))
+    source: Mapped[str] = mapped_column(Text)  # header literal
+    election_type: Mapped[str] = mapped_column(String(20))  # congress | ...
+    election_id: Mapped[int | None] = mapped_column(ForeignKey("silver.election.id"))
+    fieldwork_start: Mapped[date | None] = mapped_column(Date)
+    fieldwork_end: Mapped[date | None] = mapped_column(Date)
+    sample_size: Mapped[int | None]
+    turnout: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    revision_id: Mapped[int] = mapped_column(BigInteger)
+
+
+class PollResult(Base):
+    """Percentage and seat projection of one party in one poll."""
+
+    __tablename__ = "poll_result"
+    __table_args__: ClassVar[TableArgs] = (
+        UniqueConstraint("poll_id", "party_id"),
+        CheckConstraint("pct >= 0 AND pct <= 100", name="poll_result_pct_range"),
+        {"schema": "silver"},
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    poll_id: Mapped[int] = mapped_column(ForeignKey("silver.poll.id"), index=True)
+    party_id: Mapped[int] = mapped_column(ForeignKey("silver.party.id"), index=True)
+    pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2))
+    seats_min: Mapped[int | None]
+    seats_max: Mapped[int | None]
