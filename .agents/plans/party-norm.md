@@ -1,6 +1,6 @@
 # Identidad canónica de partidos (normalización y deduplicación)
 
-Estado: abierto · Creado: 2026-10-12 · Abierto: 2026-10-12
+Estado: abierto · Creado: 2026-10-12 · Abierto: 2026-10-12 · Actualizado: 2026-10-17
 Objetivo: unificar la identidad de partido entre las generales del Congreso y los sondeos de Wikipedia —catálogo compartido + resolución por nombre normalizado— y recalcular `silver`.
 
 ## Diagnóstico (local, 2026-10-12)
@@ -23,11 +23,26 @@ Objetivo: unificar la identidad de partido entre las generales del Congreso y lo
 - **Alcance de la curación inicial**: las 15 etiquetas de sondeos, las marcas del 2023 (59 filas) y las familias del diagnóstico. Los micro-partidos de un solo proceso caen por la vía normal (paso 3) sin ficha. `party.color` (hoy nulo en las 547) sigue fuera: se curará con `gold`, como dice el plan de sondeos.
 - Al terminar la recarga, los `party` sin candidaturas se borran con el `DELETE` de mantenimiento de abajo; no es DDL de esquema.
 
+## Curación
+
+- **Fichas generadas desde la BD**: los `name` y `aliases` se copian literalmente de los nombres ya ingeridos en `silver` (extracción de abajo), sin reescribirlos ni inventarlos — así ninguna etiqueta del catálogo deja de cuadrar con lo ingerido. Para cada marca partida, el canónico es uno de los `party` ingeridos (su slug y su nombre); las grafías ingeridas que no coincidan por normalización pasan a `aliases` tal cual. Excepción: las etiquetas de sondeos que aún no tienen `03` (SALF, Aliança.cat), cuyo literal fija el plan de sondeos.
+- **El bucle**: ingerir y mirar los avisos (el warning del resolver es la cola de candidatos) → decidir (misma marca: alias; marca distinta: no se escribe nada) → editar el catálogo → `ingest --force` de los afectados (local: los 13) y borrar huérfanos → verificar con las consultas de abajo. El diff del catálogo es el registro de cada decisión.
+- **Ante la duda, no fusionar**: una serie partida se ve y se arregla con un alias + reingesta; una fusión entre marcas distintas distorsiona en silencio. Sin fuzzy-matching: normalización exacta o alias explícito.
+- Aplicar una curación posterior (nuevo alias, marca nueva) = editar el catálogo y reingerir los procesos afectados; con sondeos, recargar su snapshot.
+
+Extracción para redactar el catálogo:
+
+```sql
+SELECT p.slug, p.name, array_agg(DISTINCT pe.short_name ORDER BY pe.short_name) AS siglas
+FROM silver.party p JOIN silver.party_election pe ON pe.party_id = p.id
+GROUP BY p.id ORDER BY p.slug;
+```
+
 ## Tareas
 
 Cada una, un commit atómico; TDD donde toca (los tests fijan grafías y desenlaces, incluido el warning del alta).
 
-1. **Catálogo + resolución** — `data/party_catalog.toml`, `parties.py` y tests: normalización, precedencia (catálogo → nombre existente → alta), desempates y altas con warning; integridad del catálogo (slugs y claves de alias únicos; las 15 etiquetas de sondeos cubiertas).
+1. **Catálogo + resolución** — `data/party_catalog.toml` (fichas redactadas con la extracción de nombres de `silver`, ver Curación), `parties.py` y tests: normalización, precedencia (catálogo → nombre existente → alta), desempates y altas con warning; integridad del catálogo (slugs y claves de alias únicos; las 15 etiquetas de sondeos cubiertas).
 2. **Loader de elecciones** — `_resolve_parties` pasa por `parties.py`; test con dos procesos de siglas punteadas → un solo `party`; actualizar [`../data-model.md`](../data-model.md) (la identidad deja de ser provisional), [`../../docs/ingestor/ingesta.md`](../../docs/ingestor/ingesta.md) y [`../../ingestor/AGENTS.md`](../../ingestor/AGENTS.md) si su descripción deja de cuadrar.
 3. **Recarga y verificación** — `ingest --force` de los 13 procesos; comprobaciones de abajo; borrar huérfanos.
 4. **Sondeos** — el adaptador resuelve sus columnas contra el mismo catálogo y sustituye su tabla de mapeo (editar `polls-wikipedia.md` en la misma tarea). Test de que `poll_result.party_id` y `party_election.party_id` de la misma marca coinciden. El trabajo vive en ese plan.
