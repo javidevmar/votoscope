@@ -157,7 +157,8 @@
       "title": "Ejecución real y cotejo de los sondeos",
       "description": "fetch-polls + ingest-polls sobre la página real y verificación manual de una muestra.",
       "acceptance": [
-        "fetch-polls + ingest-polls ejecutados en local sobre la página de 2026; silver cargado",
+        "fetch-polls + ingest-polls ejecutados en local sobre la página de 2026; silver cargado con todas las encuestas de la página (las cuatro tablas, desde las generales del 23-jul-2023)",
+        "conteo de completitud documentado: sondeos cargados vs filas declaradas por la página (≈584), con las filas saltadas por diseño identificadas (separadoras, resultado de 2023, columnas fuera de alcance)",
         "cotejo de un puñado de filas contra la página (firma, fechas, % y escaños) documentado",
         "sección «Sondeos (Wikipedia)» en .agents/data-sources.md con formato, rarezas y licencia CC BY-SA"
       ],

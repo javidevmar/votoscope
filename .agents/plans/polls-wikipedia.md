@@ -92,7 +92,7 @@ Cada una es un commit atómico (tests incluidos, TDD donde toca); ningún cambio
 4. **Adaptador** — `polls/adapters/wikipedia_polls.py` + mapeo de partidos + fixtures recortadas + tests.
 5. **Carga** — `polls/loaders/polls.py` + CLI `ingest-polls` + [`docs/ingestor/ingesta.md`](../../docs/ingestor/ingesta.md), con el pase de resolución de `poll.election_id`.
 6. **Programación** — job cada 12 h: entrada de cron/launchd documentada en [`environment.md`](../environment.md) y esqueleto de workflow con `schedule:` para cuando haya entorno; test del camino «sin novedades» (no descarga, exit 0).
-7. **Ejecución real** — `fetch-polls` + `ingest-polls` en local; cotejo de un puñado de filas contra la página; nueva sección «Sondeos (Wikipedia)» en [`data-sources.md`](../data-sources.md) con formato y rarezas.
+7. **Ejecución real** — `fetch-polls` + `ingest-polls` en local; **conteo de completitud** (sondeos cargados vs filas declaradas de la página, ≈584); cotejo de un puñado de filas contra la página; nueva sección «Sondeos (Wikipedia)» en [`data-sources.md`](../data-sources.md) con formato y rarezas.
 8. **Cierre** — plegar lo durable a los docs, `status.md`, plan a `hecho`.
 
 ## Flecos y riesgos
