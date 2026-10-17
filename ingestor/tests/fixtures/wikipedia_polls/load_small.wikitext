@@ -1,0 +1,33 @@
+====Voting intention estimates====
+
+=====2026=====
+
+{| class="wikitable"
+|-
+! Polling firm/Commissioner
+! Fieldwork date
+! Sample size
+! Turnout
+! PP
+! PSOE
+! SALF
+! Lead
+|-
+| Alpha/Medio
+| 1–2 Oct
+| 1,000
+| 67.6
+| {{Party shading/PP}}| '''32.6'''<br/>{{font|size=75%|font=Verdana|text=141}}
+| 30.1<br/>{{font|size=75%|font=Verdana|text=110}}
+| 3.2<br/>{{font|size=75%|font=Verdana|text=0}}
+| 2.5
+|-
+| CIS (Target Point)
+|?
+|?
+|?
+| 31.0<br/>{{font|size=75%|font=Verdana|text=135/137}}
+| 29.5<br/>{{font|size=75%|font=Verdana|text=112}}
+| 2.9<br/>?
+| 1.5
+|}

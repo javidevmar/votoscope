@@ -26,8 +26,8 @@ Los datos electorales se siguen descargando a mano; los sondeos de Wikipedia se 
   - `parsers/` — longitud fija, agnóstica al proceso: un módulo por fichero (`file02`, `file03`, `file05`, `file09`, `file10`) y helpers en `common.py`.
   - `adapters/` — reglas por proceso electoral; registro por código (`congreso.py` para el 02; Senado/autonómicas/municipales añadirán módulo propio).
   - `loaders/` — persistencia: `geography.py` (`load-geography`), `election.py` (bronce + plata de una elección).
-- **`src/ingestor/polls/`** — dominio de sondeos: `fetch.py` (descarga del snapshot: resuelve la revisión actual vía API y baja su wikitexto a `data/raw/polls/`; solo `urllib` de la stdlib); `parsers/wikitext.py`, lexer genérico de tablas de wikitexto (sondeos de Wikipedia); `adapters/wikipedia_polls.py`, reglas de la fuente de sondeos (secciones y tablas por año, cabecera, partidos).
-- **`src/ingestor/cli.py`** / **`logging.py`** — entrypoints (`ingestor load-geography`, `ingestor ingest <ruta>`, `ingestor fetch-polls`) y `configure_logging()`.
+- **`src/ingestor/polls/`** — dominio de sondeos: `fetch.py` (descarga del snapshot: resuelve la revisión actual vía API y baja su wikitexto a `data/raw/polls/`; solo `urllib` de la stdlib); `parsers/wikitext.py`, lexer genérico de tablas de wikitexto (sondeos de Wikipedia); `adapters/wikipedia_polls.py`, reglas de la fuente de sondeos (secciones y tablas por año, cabecera, partidos); `loaders/polls.py`, carga bronce → plata de los snapshots (`ingest-polls`) con guard de revisión y pase de resolución de elección.
+- **`src/ingestor/cli.py`** / **`logging.py`** — entrypoints (`ingestor load-geography`, `ingestor ingest <ruta>`, `ingestor fetch-polls`, `ingestor ingest-polls [ruta]`) y `configure_logging()`.
 - **`alembic/`** — migraciones; `2a1c9e836128` (inicial, regenerada con la PK natural INE) y `06a250c36252` (`municipality.name` nullable), aplicadas en local. `env.py` toma la URL de `settings.py` (la de `alembic.ini` se deja vacía a propósito).
 - **`alembic.ini`** — configuración de Alembic.
 - **`tests/`** — pytest; `tests/fixtures/` con recortes reales mínimos (sin red ni `refs/`).
@@ -56,6 +56,7 @@ Los datos electorales se siguen descargando a mano; los sondeos de Wikipedia se 
 - **Validaciones**: candidaturas de 10 ⊆ 03; mesas de 10 ⊆ 09; suma de votos de 10 == campo «votos a candidaturas» de 09 por mesa. Esta última se degrada a warning en los procesos donde los propios ficheros del ministerio no cuadran (años en `RELAXED_STATION_TOTALS` del adaptador; detalle en [`../.agents/data-sources.md`](../.agents/data-sources.md)).
 - **Geografía**: `load-geography` es idempotente y actualiza nombres desde `refs/ine/`; la ingesta crea los pseudo-municipios CERA (`<provincia>999`) y los municipios que ya no existen (nombre del 05 de su elección, o null con warning).
 - **Adaptadores**: un módulo por proceso en `elections/adapters/`; el registro despacha por el código de proceso del fichero 02 (Congreso = `02`).
+- **Sondeos** (`ingest-polls`): los snapshots `.wikitext` de `data/raw/polls/` se registran en bronce (fuente `wikipedia-en`) y se cargan en `pollster`/`poll`/`poll_result`; `silver` refleja el último snapshot (reemplazo total, guard por `revision_id` y `--force`). Al inicio de cada ejecución corre el pase que enlaza cada sondeo con la primera elección nacional posterior a su trabajo de campo.
 
 1. Editar `src/ingestor/models.py`.
 2. `uv run alembic revision --autogenerate -m "descripción corta"`.
@@ -75,6 +76,7 @@ Nunca: DDL a mano, SQL de inicialización, editar una migración ya aplicada (sa
 - `uv run ingestor load-geography` — cargar el gazetteer INE (`refs/ine/`) en `silver`.
 - `uv run ingestor ingest <ruta>` — ingerir una carpeta de elección o una raíz con varias (las ya procesadas se saltan por sha256; `--force` recarga).
 - `uv run ingestor fetch-polls [--page <título>]` — descargar el snapshot de revisión fija de la página de sondeos a `data/raw/polls/wikipedia-en/` (sin novedades = una sola llamada a la API).
+- `uv run ingestor ingest-polls [ruta] [--force]` — cargar los snapshots `.wikitext` (ruta, o `RAW_DIR/polls/` recursivo) en `silver`; los `processed` se saltan y `--force` recarga.
 - `uv run pytest` / `uv run ruff check .` — tests y lint.
 
 La base de datos se levanta desde la raíz del repo: `docker compose up -d --wait`.

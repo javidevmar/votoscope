@@ -1,5 +1,5 @@
-"""Command line entrypoints: ``ingestor load-geography``, ``ingestor ingest``
-and ``ingestor fetch-polls``."""
+"""Command line entrypoints: ``ingestor load-geography``, ``ingestor ingest``,
+``ingestor fetch-polls`` and ``ingestor ingest-polls``."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from ingestor.elections.loaders.geography import load_geography
 from ingestor.errors import IngestError
 from ingestor.logging import configure_logging
 from ingestor.polls.fetch import DEFAULT_PAGE, fetch_snapshot
+from ingestor.polls.loaders.polls import ingest_polls_path
 from ingestor.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,23 @@ def main(argv: list[str] | None = None) -> int:
         help="Wikipedia page title (default: 2026 general election)",
     )
 
+    polls = subparsers.add_parser(
+        "ingest-polls",
+        help="ingest polls snapshots into silver (skips processed; --force reloads)",
+    )
+    polls.add_argument(
+        "path",
+        type=Path,
+        nargs="?",
+        default=None,
+        help="snapshot file or directory (default: RAW_DIR/polls)",
+    )
+    polls.add_argument(
+        "--force",
+        action="store_true",
+        help="reload snapshots even if processed or older than the loaded revision",
+    )
+
     args = parser.parse_args(argv)
     try:
         if args.command == "load-geography":
@@ -59,6 +77,16 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "fetch-polls":
             fetch_snapshot(args.page, raw_dir=settings.raw_dir)
             return 0
+        if args.command == "ingest-polls":
+            outcomes = ingest_polls_path(
+                SessionLocal,
+                args.path or settings.raw_dir / "polls",
+                settings.raw_dir,
+                force=args.force,
+            )
+            for outcome in outcomes:
+                logger.info("%s: %s", outcome.file, outcome.status)
+            return 1 if any(outcome.status == "failed" for outcome in outcomes) else 0
         outcomes = ingest_path(
             SessionLocal, args.path, settings.raw_dir, force=args.force
         )
