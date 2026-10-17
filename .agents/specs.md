@@ -2,9 +2,6 @@
 
 Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md).
 
-> Flujo Kiro-style: requirements → design → tasks → código.
-> El código no se escribe hasta que el spec está aprobado por un humano.
-
 ## Estructura
 
 Cada feature nueva (`"sdd": true` en [`../feature_list.json`](../feature_list.json)) tiene una carpeta dedicada en cuanto deja `pending`:
@@ -80,7 +77,7 @@ Captura **antes** de tocar código:
 - Qué alternativa se descartó y por qué (mínimo una).
 - Si la feature toca el modelo de datos: los tres sitios de la regla de oro (ERD ↔ `models.py` ↔ migración) y el detalle concreto de cada uno.
 
-NO es ingeniería desde primeros principios: apóyate en [`architecture.md`](architecture.md), [`conventions.md`](conventions.md) y [`style.md`](style.md). El `design.md` documenta los puntos donde la feature roza la frontera de esas reglas.
+Apóyate en [`architecture.md`](architecture.md), [`conventions.md`](conventions.md) y [`style.md`](style.md); el `design.md` documenta los puntos donde la feature roza la frontera de esas reglas.
 
 ## tasks.md — checklist ejecutable
 

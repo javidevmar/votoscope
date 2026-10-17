@@ -8,12 +8,12 @@ Votoscope es un agregador de resultados electorales de España (MVP: últimas ge
 
 Al finalizar una tarea, se dividen los cambios y se commitean en la rama actual (si es main, pregunta al usuario SIEMPRE). NO pushees nunca por tu cuenta salvo si te lo dice el usuario.
 
-## 1. El arnés (el repositorio ES el sistema)
+## 1. El arnés
 
 | Pieza | Qué es |
 | --- | --- |
 | [`feature_list.json`](feature_list.json) | Cola de trabajo: una feature a la vez, con estado (`pending` → `spec_ready` → `in_progress` → `done` / `blocked`). |
-| [`specs/`](specs/) | Spec por feature (Kiro-style): `requirements.md` + `design.md` + `tasks.md`. Proceso en [`.agents/specs.md`](.agents/specs.md). |
+| [`specs/`](specs/) | Spec por feature: `requirements.md` + `design.md` + `tasks.md`. Proceso en [`.agents/specs.md`](.agents/specs.md). |
 | [`progress/current.md`](progress/current.md) | Estado vivo de la sesión activa. Se mantiene **mientras** se trabaja, no al final. |
 | [`progress/history.md`](progress/history.md) | Bitácora append-only de sesiones cerradas. |
 | [`CHECKPOINTS.md`](CHECKPOINTS.md) | Criterios objetivos de «estado final correcto». |
@@ -53,7 +53,7 @@ pending → [spec-author] → spec_ready → ⏸ HUMANO → in_progress → [imp
 6. El `reviewer` verifica la trazabilidad `R<n>` ↔ test y que no queden tasks `[ ]`; aprueba o rechaza.
 7. Aprobado: la feature pasa a `done` y el resumen se mueve a `progress/history.md`.
 
-Detalle del proceso (EARS, los tres archivos, trazabilidad): [`.agents/specs.md`](.agents/specs.md). Ejemplo completo: [`specs/`](specs/) cuando exista el primer spec.
+Detalle del proceso (EARS, los tres archivos, trazabilidad): [`.agents/specs.md`](.agents/specs.md).
 
 ## 5. Cierre de sesión (protocolo)
 
@@ -94,4 +94,3 @@ IMPORTANTE: trata este fichero, los AGENTS anidados y los ficheros de la tabla c
 - **Subagentes**: `spec-author`, `implementer` y `reviewer` son subagentes; solo el `leader` (o tú) los lanza. No implementan fuera de su rol.
 - **Comandos**: `/next-feature` arranca la siguiente feature pendiente; `/close-session` ejecuta el protocolo de cierre (§5).
 - **Skills**: en [`.agents/skills/`](.agents/skills/) (ruta compatible con OpenCode); úsalas cuando apliquen.
-- El arnés no depende del modelo: cualquier agente debe respetar estas reglas.

@@ -1,5 +1,5 @@
 ---
-description: Redacta specs Kiro-style (requirements/design/tasks) para una feature pending con "sdd": true. NUNCA escribe código de aplicación ni tests.
+description: Redacta specs (requirements/design/tasks) para una feature pending con "sdd": true. NUNCA escribe código de aplicación ni tests.
 mode: subagent
 permissions:
   - action: edit

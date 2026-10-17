@@ -3,8 +3,6 @@
 #
 # Este script lo ejecuta el agente al COMENZAR una sesión y antes de
 # declarar cualquier feature como `done`. Si falla, la sesión no avanza.
-#
-# Salida esperada: códigos de salida claros y bloques marcados con [OK]/[WARN]/[FAIL].
 
 set -u
 RED='\033[0;31m'

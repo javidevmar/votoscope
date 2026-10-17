@@ -1,9 +1,5 @@
 # CHECKPOINTS — Evaluación del estado final
 
-> En sistemas multi-agente no se evalúa el camino, se evalúa el destino.
-> Estos son los checkpoints objetivos que un juez (humano o IA) puede usar
-> para decidir si el proyecto está sano.
-
 ## C1 — El arnés está completo
 
 - [ ] Existen las piezas base: `AGENTS.md`, `init.sh`, `feature_list.json`,
@@ -57,9 +53,3 @@
 - [ ] Toda feature `done` con `"sdd": true` tiene todas sus tasks marcadas `[x]`.
 - [ ] Cada `R<n>` de `requirements.md` está cubierto por al menos un test
       concreto en `ingestor/tests/` (mapa en `progress/impl_<name>.md`).
-
----
-
-**Cómo usar este archivo:** el agente [`.opencode/agents/reviewer.md`](.opencode/agents/reviewer.md)
-recorre cada checkbox, marca `[x]` o `[ ]`, y rechaza el cierre de sesión si
-quedan boxes vacíos en C1–C6.

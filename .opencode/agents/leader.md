@@ -58,7 +58,7 @@ Sesión interrumpida. Pregunta al humano si reanudas al `implementer` o abortas.
 
 Si el `reviewer` devuelve `CHANGES_REQUESTED`: relee `progress/review_<name>.md`, lanza de nuevo al `implementer` con los cambios requeridos y repite.
 
-## Regla anti-teléfono-descompuesto
+## Resultados en archivos, no en chat
 
 Cuando lances subagentes, instrúyeles para que **escriban sus resultados en archivos** (no en su respuesta de texto). Tú solo recibes referencias del tipo: «resultado en `progress/impl_<name>.md`» o «`spec_ready -> specs/<name>/`». Nunca aceptes un subagente que devuelva el contenido en chat.
 
