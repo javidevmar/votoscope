@@ -123,6 +123,7 @@
       "acceptance": [
         "uv run ingestor ingest-polls [ruta] registra el fichero en bronze.ingestion (source wikipedia-en, sha256) y carga pollster/poll/poll_result en una transacción",
         "guard de revisión: un snapshot anterior al ya cargado se ignora con warning; --force lo reprocesa",
+        "resolución de elección: cada sondeo con election_id nulo se enlaza a la primera elección nacional al Congreso posterior a su trabajo de campo (mismo election_type); sin ella queda nulo, y el pase corre en cada ejecución aunque no haya snapshot nuevo",
         "validaciones mínimas: cada fila con firma y ≥2 partidos, rangos de pct/seats, suma de porcentajes ≤ 100.5 como warning",
         "fallo → rollback y estado failed en bronze.ingestion",
         "docs/ingestor/ingesta.md actualizado con los comandos nuevos"
