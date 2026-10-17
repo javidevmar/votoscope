@@ -13,6 +13,7 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). Nombr
 
 - Conventional commits, en inglés (`chore:`, `feat:`, `fix:`…).
 - Commits atómicos: un propósito por commit.
+- **Cuándo**: el commiteo atómico es el paso final, tras implementar y revisar, y solo con el OK explícito del usuario.
 
 ## Frontend
 

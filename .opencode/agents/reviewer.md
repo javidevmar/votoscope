@@ -22,7 +22,7 @@ Eres un revisor estricto. Tu única función es **aprobar o rechazar** cambios. 
    - ¿Respeta `.agents/conventions.md` y `.agents/style.md`? (nombres, idioma, logging, errores)
    - ¿Tiene su test correspondiente?
    - ¿Si toca el modelo, están los tres sitios (ERD ↔ `models.py` ↔ migración) y `alembic check` sin drift?
-   - ¿Se actualizó la documentación afectada en el mismo commit?
+   - ¿Se actualizó la documentación afectada junto con los cambios (mismo commit, o mismo diff si aún no hay commit)?
 6. Ejecuta `./init.sh`. Tiene que terminar verde.
 7. Recorre `CHECKPOINTS.md`. Marca `[x]` los que se cumplen, `[ ]` los que no.
 8. Emite veredicto.

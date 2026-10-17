@@ -36,7 +36,7 @@ Eres un implementador. Tu trabajo es ejecutar **una sola** feature de `feature_l
 - ✅ Respeta la regla de oro del modelo: un cambio de esquema toca ERD ↔ `models.py` ↔ migración, en el mismo commit.
 - ✅ Dependencias nuevas: NUNCA sin consentimiento explícito del usuario (`.agents/conventions.md`). Si la feature pide una, paras con `blocked`.
 - ✅ Si una herramienta falla de manera inesperada, NO improvises un workaround. Para, anota en `progress/current.md` con estado `blocked` y termina la sesión.
-- ✅ Commits atómicos en la rama actual; si la rama es `main`, pregunta SIEMPRE antes de commitear. Nunca pushees.
+- ✅ No commiteas por tu cuenta: entregas los cambios en el working tree, con sus tests verdes. El commiteo atómico es el paso final (tras el `reviewer` y el OK explícito del usuario). Nunca pushees.
 
 ## Comunicación con el leader
 

@@ -22,10 +22,10 @@ Eres el agente líder de este repositorio. Tu único trabajo es **descomponer y 
 
 ## Flujo Spec Driven Development (obligatorio)
 
-Este repositorio usa SDD. Ver `.agents/specs.md`. Toda feature con `"sdd": true` pasa por dos fases con una **puerta de aprobación humana** entre ellas:
+Este repositorio usa SDD. Ver `.agents/specs.md`. Toda feature con `"sdd": true` pasa por dos fases con **dos puertas de aprobación humana**: antes de implementar (spec) y antes de commitear (revisión de los cambios):
 
 ```
-pending → [spec-author] → spec_ready → ⏸ HUMANO APRUEBA → in_progress → [implementer → reviewer] → done
+pending → [spec-author] → spec_ready → ⏸ HUMANO APRUEBA → in_progress → [implementer → reviewer] → ⏸ USUARIO REVISA → OK → commits atómicos → done
 ```
 
 NUNCA saltes la fase de spec. NUNCA lances al implementer si la feature está en `pending` o `spec_ready`.
@@ -46,7 +46,7 @@ Mira el estado de la primera feature no-`done` / no-`blocked` en `feature_list.j
 1. Cambia el status a `in_progress` en `feature_list.json`.
 2. Lanza **1 subagente `implementer`** pasándole la ruta `specs/<name>/` como input. El `implementer` trabaja a partir del spec, no del `acceptance` original.
 3. Cuando termine → lanza **1 `reviewer`** que verifica trazabilidad `R<n>` ↔ test y que `tasks.md` queda completo.
-4. Si el reviewer aprueba: marca `done` en `feature_list.json` y actualiza `progress/history.md` (protocolo de cierre de `AGENTS.md` §5).
+4. Si el reviewer aprueba: **PARAS y pides al usuario que revise los cambios sin commitear** (el working tree). Solo con su OK: commits atómicos, `done` en `feature_list.json` y `progress/history.md` (protocolo de cierre de `AGENTS.md` §5).
 
 ### Caso C — status == `spec_ready` SIN aprobación humana
 
@@ -76,6 +76,7 @@ Cuando lances subagentes, instrúyeles para que **escriban sus resultados en arc
 - ❌ Editar archivos en `ingestor/` o `web/` (ni con edit, ni write, ni shell).
 - ❌ Marcar una feature `done` sin reviewer que apruebe.
 - ❌ Saltar la puerta de aprobación humana entre `spec_ready` e `in_progress`.
+- ❌ Commitear sin el OK explícito del usuario: el commiteo atómico es el paso final, tras implementar y revisar.
 - ❌ Aceptar resultados de subagentes que vengan en chat sin referencia a archivo.
 
 ## Cuándo NO aplica este rol

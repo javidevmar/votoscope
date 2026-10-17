@@ -41,8 +41,8 @@
       del `.gitignore`, `*.tmp`, `.DS_Store`…).
 - [ ] `progress/history.md` tiene una entrada por la última sesión.
 - [ ] Cada feature trabajada quedó en su estado correcto en `feature_list.json`.
-- [ ] Los commits son atómicos y la documentación afectada se actualizó en el
-      mismo commit que el cambio.
+- [ ] Los commits son atómicos, hechos con el OK explícito del usuario, y la
+      documentación afectada se actualizó en el mismo commit que el cambio.
 
 ## C6 — Spec Driven Development
 
