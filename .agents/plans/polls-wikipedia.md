@@ -47,7 +47,7 @@ Rama: feature/polls
 ## Parser (wikitexto)
 
 - Formato elegido: **wikitexto**, no HTML. Es la fuente canónica, más pequeño y sin ruido de render (referencias como superíndices, entidades). Verificado que las tablas de intención de voto usan una celda por línea (sin `||`) y solo tres formas de prefijo de celda: `| valor`, `rowspan="N"| valor` y `style="…"| valor` / `{{Party shading/X}}| valor`.
-- Estructura: `parsers/wikitext.py` (lexer genérico: bloques `{|…|}`, filas `|-`, celdas `|`/`!`, expansión de `rowspan`, limpieza de `{{efn}}`, `<ref>`, `'''`, `{{smaller|X}}`→X, `{{font|…|text=X}}`→X, `<br>`) + `adapters/wikipedia_polls.py` (reglas de esta fuente: secciones y tablas por año, cabecera, filas → `Poll`/`PollResult`, fechas, números, mapeo de partidos, saltos).
+- Estructura: `polls/parsers/wikitext.py` (lexer genérico: bloques `{|…|}`, filas `|-`, celdas `|`/`!`, expansión de `rowspan`, limpieza de `{{efn}}`, `<ref>`, `'''`, `{{smaller|X}}`→X, `{{font|…|text=X}}`→X, `<br>`) + `polls/adapters/wikipedia_polls.py` (reglas de esta fuente: secciones y tablas por año, cabecera, filas → `Poll`/`PollResult`, fechas, números, mapeo de partidos, saltos).
 - Mapeo de columnas → `silver.party` (slug existente; si falta, se crea con nombre legible): PP→`pp`, PSOE→`psoe`, Vox→`vox`, Sumar→`sumar`, ERC→`erc`, Junts→`jxcat-junts`, EH Bildu→`eh-bildu`, PNV→`eaj-pnv`, BNG→`bng`, CCa→`cca`, UPN→`u-p-n`, Adelante Andalucía→`adelante-andalucia`, Podemos→`podemos`. SALF→`salf` («Se Acabó La Fiesta») y Aliança.cat→`alianca-cat` («Aliança Catalana») no existen: se crean. Queda viva la deuda de curación de identidades de partido ya anotada en [`data-model.md`](../data-model.md); cuando se ingiera la elección de 2026 se revisará que el loader de elecciones no duplique estas.
 - Columna de partido desconocida (la wiki añade una) → warning y se ignora la columna; los tests fijan las 15 conocidas.
 - Tests con fixtures en `tests/fixtures/wikipedia_polls/`: recortes reales (cabecera + primeras filas de 2026, incluido el bloque del CIS con `rowspan`; cola de 2023 con separadores y fila de resultado) + casos sintéticos (cruce de año, `<br />`, `–` vs `?`, `<2.0`, rango de escaños, celda-nota). Sin red y sin `refs/`.
@@ -88,9 +88,9 @@ Cada una es un commit atómico (tests incluidos, TDD donde toca); ningún cambio
 
 1. **Modelo** — ERD con las páginas *Bronze polls* y *Silver polls* + `models.py` + migración; `alembic check` limpio; [`data-model.md`](../data-model.md) al día.
 2. **Fetch** — `fetch-polls` + tests de URL/parseo de la API con fixture JSON (sin red); matiz de descarga en [`architecture.md`](../architecture.md) y [`ingestor/AGENTS.md`](../../ingestor/AGENTS.md).
-3. **Lexer** — `parsers/wikitext.py` + tests.
-4. **Adaptador** — `adapters/wikipedia_polls.py` + mapeo de partidos + fixtures recortadas + tests.
-5. **Carga** — `loaders/polls.py` + CLI `ingest-polls` + [`docs/ingestor/ingesta.md`](../../docs/ingestor/ingesta.md), con el pase de resolución de `poll.election_id`.
+3. **Lexer** — `polls/parsers/wikitext.py` + tests.
+4. **Adaptador** — `polls/adapters/wikipedia_polls.py` + mapeo de partidos + fixtures recortadas + tests.
+5. **Carga** — `polls/loaders/polls.py` + CLI `ingest-polls` + [`docs/ingestor/ingesta.md`](../../docs/ingestor/ingesta.md), con el pase de resolución de `poll.election_id`.
 6. **Programación** — job cada 12 h: entrada de cron/launchd documentada en [`environment.md`](../environment.md) y esqueleto de workflow con `schedule:` para cuando haya entorno; test del camino «sin novedades» (no descarga, exit 0).
 7. **Ejecución real** — `fetch-polls` + `ingest-polls` en local; cotejo de un puñado de filas contra la página; nueva sección «Sondeos (Wikipedia)» en [`data-sources.md`](../data-sources.md) con formato y rarezas.
 8. **Cierre** — plegar lo durable a los docs, `status.md`, plan a `hecho`.

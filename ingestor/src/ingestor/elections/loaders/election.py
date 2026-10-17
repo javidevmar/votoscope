@@ -26,7 +26,9 @@ from pathlib import Path
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
-from ingestor.adapters import CongresoAdapter, adapter_for_directory
+from ingestor.elections.adapters import CongresoAdapter, adapter_for_directory
+from ingestor.elections.parsers import file02, file03, file05, file09, file10
+from ingestor.elections.parsers.file02 import ProcessIdentification
 from ingestor.errors import IngestError
 from ingestor.models import (
     Election,
@@ -39,8 +41,6 @@ from ingestor.models import (
     Turnout,
     Vote,
 )
-from ingestor.parsers import file02, file03, file05, file09, file10
-from ingestor.parsers.file02 import ProcessIdentification
 
 logger = logging.getLogger(__name__)
 

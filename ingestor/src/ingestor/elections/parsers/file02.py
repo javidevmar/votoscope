@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-from ingestor.parsers.common import integer, read_records, text
+from ingestor.elections.parsers.common import integer, read_records, text
 
 
 @dataclass(frozen=True)

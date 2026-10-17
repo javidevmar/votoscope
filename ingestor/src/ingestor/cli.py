@@ -7,9 +7,9 @@ import logging
 from pathlib import Path
 
 from ingestor.db import SessionLocal
+from ingestor.elections.loaders.election import ingest_path
+from ingestor.elections.loaders.geography import load_geography
 from ingestor.errors import IngestError
-from ingestor.loaders.election import ingest_path
-from ingestor.loaders.geography import load_geography
 from ingestor.logging import configure_logging
 from ingestor.settings import settings
 

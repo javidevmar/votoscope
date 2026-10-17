@@ -24,7 +24,7 @@ uv run ingestor load-geography
 Ingiere una elección, o varias, desde ficheros locales.
 
 - `<ruta>` puede ser una carpeta de elección (con los `.DAT` dentro) o una raíz con varias carpetas de elección; se recorren todas en orden alfabético.
-- El adaptador se elige por el código de proceso del fichero `02*.DAT` (Congreso = `02`; el registro está en `adapters/`).
+- El adaptador se elige por el código de proceso del fichero `02*.DAT` (Congreso = `02`; el registro está en `elections/adapters/`).
 - Ficheros requeridos: `02`, `03`, `09` y `10`; el `05` es opcional (solo se usa para nombrar municipios extintos).
 - Los ficheros deben estar bajo `RAW_DIR` (por defecto `data/raw/`), porque `bronze.ingestion.file_path` es relativo a esa carpeta. La copia de trabajo es `data/raw/congreso/{código}/`.
 - Si todos los ficheros de una elección ya están `processed` en bronce (mismo sha256), la elección **se salta**; con `--force` se recarga igualmente.

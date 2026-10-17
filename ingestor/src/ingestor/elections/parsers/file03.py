@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from ingestor.parsers.common import integer, read_records, text
+from ingestor.elections.parsers.common import integer, read_records, text
 
 
 @dataclass(frozen=True)
