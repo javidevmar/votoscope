@@ -18,6 +18,6 @@ La cola de trabajo vive en [`feature_list.json`](../feature_list.json) (una feat
 
 1. **Sondeos desde Wikipedia (generales 2026)** — features 5–11: modelo (`pollster`, `poll`, `poll_result`), `fetch-polls`, lexer de wikitexto, adaptador, `ingest-polls`, job de sincronización 2×/día y ejecución real; contexto de diseño en [`plans/polls-wikipedia.md`](plans/polls-wikipedia.md).
 2. **Entrega** — features 12–13: vistas `gold` + contrato gold ↔ front + topología de entornos, y scaffold de `web/`.
-3. **Cierre** — feature 14: README y atribución.
+3. **Cierre** — feature 17: README y atribución.
 
 Transversal: logging por niveles (`LOG_LEVEL`) hecho en el ingestador; pendiente en la web ([conventions.md](conventions.md)).

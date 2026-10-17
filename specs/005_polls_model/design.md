@@ -101,7 +101,7 @@ Imports nuevos: `BigInteger` y `Numeric` (de `sqlalchemy`), `Decimal` (de `decim
 ## Alternativas descartadas
 
 1. **Todo en la página ERD «Silver»** — mezcla dominios (elecciones vs sondeos) y agranda una página ya densa; el plan fija páginas por dominio.
-2. **Resultados por partido en JSONB dentro de `poll`** — pierde la FK a `party`, el UK (`poll_id`, `party_id`) y los CHECK de rango; complica el gold de la feature 12.
+2. **Resultados por partido en JSONB dentro de `poll`** — pierde la FK a `party`, el UK (`poll_id`, `party_id`) y los CHECK de rango; complica el gold de la feature 15.
 3. **`election_id` NOT NULL con una elección ficticia de 2026** — inventa un dato que no existe (decisión 4 del plan); nullable + `election_type` es la representación honesta.
 4. **Histórico de revisiones en silver** (una fila por `revision_id`) — silver refleja el último snapshot (decisión 3 del plan); el histórico ya está en bronce.
 5. **Migración escrita a mano o DDL directo** — prohibido por la regla de oro: `models.py` → autogenerate → migración.

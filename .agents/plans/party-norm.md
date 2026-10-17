@@ -2,6 +2,7 @@
 
 Estado: abierto · Creado: 2026-10-12 · Abierto: 2026-10-12 · Actualizado: 2026-10-17
 Objetivo: unificar la identidad de partido entre las generales del Congreso y los sondeos de Wikipedia —catálogo compartido + resolución por nombre normalizado— y recalcular `silver`.
+Rama: feature/party-norm
 
 ## Diagnóstico (local, 2026-10-12)
 

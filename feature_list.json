@@ -111,13 +111,13 @@
       "description": "Reglas de la fuente: secciones y tablas por año, cabecera a dos filas, filas → sondeo, fechas y números.",
       "acceptance": [
         "polls/adapters/wikipedia_polls.py produce sondeos con firma, fechas (rangos, cruce de año, fecha de publicación como aproximación), muestra, participación y resultados por partido",
-        "columnas de partido descubiertas por cabecera (nunca por posición); columna desconocida → warning y se ignora; la columna Lead se ignora",
+        "columnas de partido descubiertas por cabecera (nunca por posición); columna desconocida → warning y se conserva con el rótulo crudo; la columna Lead se ignora",
         "mapeo a slugs de silver.party; SALF y Aliança.cat se crean; reestimaciones del CIS (Target Point, Ateneo del Dato…) se cargan como filas con source literal",
         "filas separadoras y la fila del resultado de 2023 se saltan",
         "fixtures recortadas reales + sintéticas en tests/fixtures/wikipedia_polls/"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "in_progress"
     },
     {
       "id": 9,
@@ -166,6 +166,50 @@
     },
     {
       "id": 12,
+      "name": "party_catalog",
+      "initiative": "party-norm",
+      "title": "Catálogo de partidos y resolución compartida (parties.py)",
+      "description": "src/ingestor/data/party_catalog.toml (fichas de marca con aliases) y src/ingestor/parties.py (normalización → catálogo → nombre existente → alta con warning).",
+      "acceptance": [
+        "src/ingestor/data/party_catalog.toml con las fichas redactadas desde silver (extracción del plan): las 15 etiquetas de sondeos, las marcas del 2023 y las familias del diagnóstico",
+        "src/ingestor/parties.py con la precedencia catálogo → nombre existente → alta (slugify) + warning; sin fuzzy-matching",
+        "tests: normalización (NFKD), precedencia, desempates y altas con warning; integridad del catálogo (slugs y alias únicos; las 15 etiquetas cubiertas)",
+        "sin dependencias nuevas (tomllib de la stdlib)"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 13,
+      "name": "party_reload",
+      "initiative": "party-norm",
+      "title": "Loader de elecciones por catálogo + recarga de silver",
+      "description": "_resolve_parties pasa por parties.py; recarga --force de los 13 procesos, verificación y limpieza de huérfanos.",
+      "acceptance": [
+        "el loader de elecciones resuelve por parties.py (misma marca → una fila; test con siglas punteadas → un solo party)",
+        "ingest --force de los 13 procesos locales; comprobaciones del plan en verde (0 grupos por puntuación; BNG/UPL/FIA/Cs/PP/PSOE/IU en una fila)",
+        "huérfanos borrados; hechos intactos salvo el party_id de las candidaturas fusionadas",
+        "docs al día: .agents/data-model.md, docs/ingestor/ingesta.md, ingestor/AGENTS.md"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 14,
+      "name": "party_polls",
+      "initiative": "party-norm",
+      "title": "Sondeos por catálogo (adaptador y loader)",
+      "description": "El adaptador y el loader de sondeos resuelven sus rótulos contra parties.py y sustituyen la tabla ad-hoc de columnas.",
+      "acceptance": [
+        "el adaptador de sondeos resuelve los rótulos de columna contra el catálogo compartido (los 15 actuales + altas nuevas con warning); PARTY_COLUMNS se sustituye",
+        "test de coincidencia sondeos↔resultados por marca (misma fila de party para poll_result y party_election)",
+        "plan polls-wikipedia.md actualizado (sustitución documentada)"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 15,
       "name": "delivery_gold",
       "title": "Vistas gold y contrato gold ↔ front",
       "description": "Vistas del esquema gold (una por consulta del frontend) y el contrato que consumirá web/.",
@@ -179,7 +223,7 @@
       "status": "pending"
     },
     {
-      "id": 13,
+      "id": 16,
       "name": "web_scaffold",
       "title": "Scaffold de la web (Next.js)",
       "description": "Aplicación Next.js en web/ que lee las vistas gold desde el servidor, con rol de Postgres de solo lectura.",
@@ -193,7 +237,7 @@
       "status": "pending"
     },
     {
-      "id": 14,
+      "id": 17,
       "name": "close_minor",
       "title": "Cierre: README y atribución",
       "description": "README del repositorio y atribución de fuentes (infoelectoral y Wikipedia CC BY-SA).",
