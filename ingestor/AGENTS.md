@@ -8,6 +8,8 @@ Proceso: toda feature con `sdd: true` en [`../feature_list.json`](../feature_lis
 
 Pipeline de datos (Python) que convierte los ficheros electorales descargados en local en tablas normalizadas de PostgreSQL y, más adelante, en las vistas `gold` que consume el frontend. Patrón medallón: bronce (ficheros + registro) → plata (`silver`) → oro (`gold`).
 
+Los datos electorales se siguen descargando a mano; los sondeos de Wikipedia se descargan por CLI (`fetch-polls`) porque la revisión fija es parte del contrato del snapshot.
+
 ## Documentación
 
 - Cómo funciona el ingestador (comandos, comportamiento y carga en `silver`): [`../docs/ingestor/ingesta.md`](../docs/ingestor/ingesta.md).
@@ -20,10 +22,12 @@ Pipeline de datos (Python) que convierte los ficheros electorales descargados en
 - **`src/ingestor/settings.py`** — configuración: `DATABASE_URL` (por defecto, el Postgres de docker-compose en `localhost:5434`), `RAW_DIR` (por defecto, `../data/raw`) e `INE_DIR` (por defecto, `../refs/ine`).
 - **`src/ingestor/db.py`** — engine y factoría de sesiones de SQLAlchemy.
 - **`src/ingestor/models.py`** — definición del esquema, modelo v2 (inglés; esquemas `bronze` y `silver`; PK natural INE en `autonomous_community`/`province`).
-- **`src/ingestor/parsers/`** — longitud fija, agnóstica al proceso: un módulo por fichero (`file02`, `file03`, `file05`, `file09`, `file10`) y helpers en `common.py`.
-- **`src/ingestor/adapters/`** — reglas por proceso electoral; registro por código (`congreso.py` para el 02; Senado/autonómicas/municipales añadirán módulo propio).
-- **`src/ingestor/loaders/`** — persistencia: `geography.py` (`load-geography`), `election.py` (bronce + plata de una elección).
-- **`src/ingestor/cli.py`** / **`logging.py`** — entrypoints (`ingestor load-geography`, `ingestor ingest <ruta>`) y `configure_logging()`.
+- **`src/ingestor/elections/`** — dominio de elecciones (ficheros del ministerio):
+  - `parsers/` — longitud fija, agnóstica al proceso: un módulo por fichero (`file02`, `file03`, `file05`, `file09`, `file10`) y helpers en `common.py`.
+  - `adapters/` — reglas por proceso electoral; registro por código (`congreso.py` para el 02; Senado/autonómicas/municipales añadirán módulo propio).
+  - `loaders/` — persistencia: `geography.py` (`load-geography`), `election.py` (bronce + plata de una elección).
+- **`src/ingestor/polls/`** — dominio de sondeos: `fetch.py` (descarga del snapshot: resuelve la revisión actual vía API y baja su wikitexto a `data/raw/polls/`; solo `urllib` de la stdlib).
+- **`src/ingestor/cli.py`** / **`logging.py`** — entrypoints (`ingestor load-geography`, `ingestor ingest <ruta>`, `ingestor fetch-polls`) y `configure_logging()`.
 - **`alembic/`** — migraciones; `2a1c9e836128` (inicial, regenerada con la PK natural INE) y `06a250c36252` (`municipality.name` nullable), aplicadas en local. `env.py` toma la URL de `settings.py` (la de `alembic.ini` se deja vacía a propósito).
 - **`alembic.ini`** — configuración de Alembic.
 - **`tests/`** — pytest; `tests/fixtures/` con recortes reales mínimos (sin red ni `refs/`).
@@ -51,7 +55,7 @@ Pipeline de datos (Python) que convierte los ficheros electorales descargados en
 - **Recarga**: si algún fichero es nuevo, se borran los hechos (`vote`, `turnout`) y candidaturas (`party_election`) de esa elección y se recargan todos sus ficheros en una transacción.
 - **Validaciones**: candidaturas de 10 ⊆ 03; mesas de 10 ⊆ 09; suma de votos de 10 == campo «votos a candidaturas» de 09 por mesa. Esta última se degrada a warning en los procesos donde los propios ficheros del ministerio no cuadran (años en `RELAXED_STATION_TOTALS` del adaptador; detalle en [`../.agents/data-sources.md`](../.agents/data-sources.md)).
 - **Geografía**: `load-geography` es idempotente y actualiza nombres desde `refs/ine/`; la ingesta crea los pseudo-municipios CERA (`<provincia>999`) y los municipios que ya no existen (nombre del 05 de su elección, o null con warning).
-- **Adaptadores**: un módulo por proceso en `adapters/`; el registro despacha por el código de proceso del fichero 02 (Congreso = `02`).
+- **Adaptadores**: un módulo por proceso en `elections/adapters/`; el registro despacha por el código de proceso del fichero 02 (Congreso = `02`).
 
 1. Editar `src/ingestor/models.py`.
 2. `uv run alembic revision --autogenerate -m "descripción corta"`.
@@ -70,6 +74,7 @@ Nunca: DDL a mano, SQL de inicialización, editar una migración ya aplicada (sa
 - `uv run alembic check` — verificar que no hay drift.
 - `uv run ingestor load-geography` — cargar el gazetteer INE (`refs/ine/`) en `silver`.
 - `uv run ingestor ingest <ruta>` — ingerir una carpeta de elección o una raíz con varias (las ya procesadas se saltan por sha256; `--force` recarga).
+- `uv run ingestor fetch-polls [--page <título>]` — descargar el snapshot de revisión fija de la página de sondeos a `data/raw/polls/wikipedia-en/` (sin novedades = una sola llamada a la API).
 - `uv run pytest` / `uv run ruff check .` — tests y lint.
 
 La base de datos se levanta desde la raíz del repo: `docker compose up -d --wait`.

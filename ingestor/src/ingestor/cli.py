@@ -1,4 +1,5 @@
-"""Command line entrypoints: ``ingestor load-geography`` and ``ingestor ingest``."""
+"""Command line entrypoints: ``ingestor load-geography``, ``ingestor ingest``
+and ``ingestor fetch-polls``."""
 
 from __future__ import annotations
 
@@ -11,6 +12,7 @@ from ingestor.elections.loaders.election import ingest_path
 from ingestor.elections.loaders.geography import load_geography
 from ingestor.errors import IngestError
 from ingestor.logging import configure_logging
+from ingestor.polls.fetch import DEFAULT_PAGE, fetch_snapshot
 from ingestor.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -39,10 +41,23 @@ def main(argv: list[str] | None = None) -> int:
         help="re-ingest even if all files were already processed",
     )
 
+    fetch = subparsers.add_parser(
+        "fetch-polls",
+        help="download the fixed-revision wikitext snapshot of the polls page",
+    )
+    fetch.add_argument(
+        "--page",
+        default=DEFAULT_PAGE,
+        help="Wikipedia page title (default: 2026 general election)",
+    )
+
     args = parser.parse_args(argv)
     try:
         if args.command == "load-geography":
             load_geography(SessionLocal, settings.ine_dir)
+            return 0
+        if args.command == "fetch-polls":
+            fetch_snapshot(args.page, raw_dir=settings.raw_dir)
             return 0
         outcomes = ingest_path(
             SessionLocal, args.path, settings.raw_dir, force=args.force
