@@ -1,6 +1,6 @@
 """Silver loader: one election directory -> bronze registry + silver facts.
 
-Contract (see .agents/plans/ingest-spec.md):
+Contract (see docs/ingestor/ingesta.md, «Comportamiento de ingest»):
 
 - Bronze: every file read is registered in ``bronze.ingestion`` with its
   sha256; a file already registered is not re-registered.

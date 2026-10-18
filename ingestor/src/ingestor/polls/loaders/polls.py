@@ -1,6 +1,6 @@
 """Silver loader for the Wikipedia polls snapshots: bronze registry + facts.
 
-Contract (see .agents/plans/polls-wikipedia.md, «Carga (bronce → plata)»):
+Contract (see docs/ingestor/ingesta.md, «Comportamiento de ingest-polls»):
 
 - Bronze: the snapshot is registered in ``bronze.ingestion`` with its sha256
   (source ``wikipedia-en``); a snapshot already ``processed`` is skipped.
