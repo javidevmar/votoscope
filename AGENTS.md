@@ -63,7 +63,7 @@ Detalle del proceso (EARS, los tres archivos, trazabilidad): [`.agents/specs.md`
 2. Si la feature acabó: marca `status: "done"` en `feature_list.json` (con la aprobación del `reviewer` y el OK del usuario).
 3. Mueve el resumen de `progress/current.md` al final de `progress/history.md`.
 4. Vacía `progress/current.md` dejando solo la plantilla.
-5. Commitea los cambios en atómicos — **solo si el usuario ha dado su OK** (regla de arriba); si no, pídelo y no cierres la sesión.
+5. Commitea los cambios en atómicos — **solo si el usuario ha dado su OK** (regla de arriba); si no, pídelo y no cierres la sesión. Si el commit falla, restaura el estado anterior de `feature_list.json` y no cierres la sesión.
 6. No dejes archivos temporales, ni `print()` de debug, ni TODOs sin contexto.
 
 ## 6. Si te bloqueas
