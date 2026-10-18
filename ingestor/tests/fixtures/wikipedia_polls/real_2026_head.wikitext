@@ -1,0 +1,332 @@
+====Voting intention estimates====
+
+=====2026 (before FA)=====
+{{Sticky header}}
+{| class="wikitable collapsible sticky-header" style="text-align:center; font-size:95%; line-height:16px;"
+|- style="height:42px;"
+! style="width:250px;" rowspan="2"| Polling firm/Commissioner
+! style="width:100px;" rowspan="2"| Fieldwork date
+! style="width:50px;" rowspan="2"| Sample size
+! style="width:45px;" rowspan="2"| Turnout
+! style="width:43px;"| [[File:Logo del PP (2022).svg|27px|link=People's Party (Spain)|PP]]
+! style="width:43px;"| [[File:Logotipo del PSOE.svg|25px|link=Spanish Socialist Workers' Party|PSOE]]
+! style="width:35px;"| [[File:VOX logo.svg|30px|link=Vox (political party)|Vox]]
+! style="width:35px;"| [[File:Sumar icon.svg|15px|link=Sumar (electoral platform)|Sumar]]
+! style="width:35px;"| [[File:ERC icono 2025.svg|30px|link=Republican Left of Catalonia|ERC]]
+! style="width:35px;"| [[File:Junts per Catalunya (2020).svg|30px|link=Together for Catalonia (2020)|Junts]]
+! style="width:35px;"| [[File:Icono de EH Bildu (2023).svg|28px|link=EH Bildu|EH Bildu]]
+! style="width:35px;"| [[File:Icono EAJ-PNV 2025.svg|25px|link=Basque Nationalist Party|PNV]]
+! style="width:35px;"| [[File:BNG logo.svg|30px|link=Galician Nationalist Bloc|BNG]]
+! style="width:35px;"| [[File:Coalicion Canaria 2017.png|30px|link=Canarian Coalition|CCa]]
+! style="width:35px;"| [[File:Logo vertical UPN 2017.png|20px|link=Navarrese People's Union|UPN]]
+! style="width:35px;"| [[File:Adelante Andalucía Isotipo, 2021.svg|30px|link=Adelante Andalucía (2021)]]
+! style="width:35px;"| [[File:Logo de Podemos (2022).svg|35px|link=Podemos (Spanish political party)|Podemos]]
+! style="width:35px;"| [[Se Acabó La Fiesta|SALF]]
+! style="width:35px;"| [[File:Isotipo de Aliança Catalana.svg|28px|link=Catalan Alliance|Aliança.cat]]
+! style="width:30px;" rowspan="2"| Lead
+|-
+! style="color:inherit;background:{{party color|People's Party (Spain)}};"|
+! style="color:inherit;background:{{party color|Spanish Socialist Workers' Party}};"|
+! style="color:inherit;background:{{party color|Vox (political party)}};"|
+! style="color:inherit;background:{{party color|Sumar (electoral platform)}};"|
+! style="color:inherit;background:{{party color|Republican Left of Catalonia}};"|
+! style="color:inherit;background:{{party color|Together for Catalonia (2020)}};"|
+! style="color:inherit;background:{{party color|EH Bildu (2023)}};"|
+! style="color:inherit;background:{{party color|Basque Nationalist Party}};"|
+! style="color:inherit;background:{{party color|Galician Nationalist Bloc}};"|
+! style="color:inherit;background:{{party color|Canarian Coalition}};"|
+! style="color:inherit;background:{{party color|Navarrese People's Union}};"|
+! style="color:inherit;background:{{party color|Adelante Andalucía (2021)}};"|
+! style="color:inherit;background:{{party color|Podemos (Spanish political party, 2022)}};"|
+! style="color:inherit;background:{{party color|Se Acabó La Fiesta}};"|
+! style="color:inherit;background:{{party color|Catalan Alliance}};"|
+|-
+| SocioMétrica/El Español<ref>{{cite web |title=A Sánchez no le funciona ni apropiarse de Maricarmen ni la huelga contra la oposición: cae a 104 escaños; PP y Vox en 205 |url=https://www.elespanol.com/espana/politica/20261011/sanchez-no-funciona-apropiarse-maricarmen-huelga-oposicion-cae-sondeo-noche/1003744416762_0.html |language=es |work=El Español |date=11 October 2026}}</ref>
+| 10–11 Oct
+| 1,000
+|?
+| {{Party shading/PP}}| '''32.6'''<br/>{{font|size=75%|font=Verdana|text=141}}
+| 26.2<br/>{{font|size=75%|font=Verdana|text=104}}
+| 18.8<br/>{{font|size=75%|font=Verdana|text=64}}
+| 5.8{{efn|Includes separate figures for [[Coalició Compromís|Compromís]], with 0.9% and 3 seats.}}<br/>{{font|size=75%|font=Verdana|text=8}}
+| 2.0<br/>{{font|size=75%|font=Verdana|text=8}}
+| 1.5<br/>{{font|size=75%|font=Verdana|text=6}}
+| 1.3<br/>{{font|size=75%|font=Verdana|text=7}}
+| 0.8<br/>{{font|size=75%|font=Verdana|text=4}}
+| 0.9<br/>{{font|size=75%|font=Verdana|text=2}}
+| 0.5<br/>{{font|size=75%|font=Verdana|text=1}}
+| 0.2<br/>{{font|size=75%|font=Verdana|text=1}}
+| 0.9<br/>{{font|size=75%|font=Verdana|text=1}}
+| 2.8<br/>{{font|size=75%|font=Verdana|text=2}}
+| 2.1<br/>{{font|size=75%|font=Verdana|text=0}}
+| –
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 6.4
+|-
+| Target Point/El Debate<ref name="TPOct26">{{cite web |title=La izquierda apenas reacciona al adelanto frente a una derecha que le saca casi 15 puntos |url=https://www.eldebate.com/espana/20261011/izquierda-apenas-reacciona-adelanto-frente-derecha-le-saca-casi-15-puntos_468080.html |language=es |work=El Debate |date=11 October 2026}}</ref>
+| 6–9 Oct
+| 1,002
+| 67.6
+| {{Party shading/PP}}| '''32.0'''<br/>{{font|size=75%|font=Verdana|text=135/137}}
+| 25.9<br/>{{font|size=75%|font=Verdana|text=103/105}}
+| 18.7<br/>{{font|size=75%|font=Verdana|text=64/66}}
+| 6.9<br/>{{font|size=75%|font=Verdana|text=10}}
+|?<br/>{{font|size=75%|font=Verdana|text=8/10}}
+|?<br/>{{font|size=75%|font=Verdana|text=5/6}}
+|?<br/>{{font|size=75%|font=Verdana|text=7}}
+|?<br/>{{font|size=75%|font=Verdana|text=5/6}}
+|?<br/>{{font|size=75%|font=Verdana|text=2/3}}
+| –
+| –
+|?<br/>{{font|size=75%|font=Verdana|text=2}}
+| 3.4<br/>{{font|size=75%|font=Verdana|text=2}}
+| 1.3<br/>{{font|size=75%|font=Verdana|text=0}}
+| –
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 6.1
+|-
+| EM-Analytics/Electomanía<ref>{{cite web |title=ElectoPanel (11 oct): hundimiento de Sumar a la espera del “Frente Amplio” |url=https://electomania.es/electopanel-11-oct-sumar-se-descalabra-a-la-espera-del-frente-amplio/ |language=es |work=Electomanía |date=11 October 2026}}</ref>
+| 5–9 Oct
+| 4,125
+|?
+| {{Party shading/PP}}| '''31.5'''<br/>{{font|size=75%|font=Verdana|text=131}}
+| 26.9<br/>{{font|size=75%|font=Verdana|text=107}}
+| 19.1<br/>{{font|size=75%|font=Verdana|text=67}}
+| 6.0{{efn|name="Comp1,1+3"|Includes separate figures for [[Coalició Compromís|Compromís]], with 1.1% and 3 seats.}}<br/>{{font|size=75%|font=Verdana|text=11}}
+| 2.0<br/>{{font|size=75%|font=Verdana|text=8}}
+| 1.1<br/>{{font|size=75%|font=Verdana|text=4}}
+| 1.4<br/>{{font|size=75%|font=Verdana|text=7}}
+| 1.1<br/>{{font|size=75%|font=Verdana|text=6}}
+| 1.0<br/>{{font|size=75%|font=Verdana|text=3}}
+| 0.3<br/>{{font|size=75%|font=Verdana|text=0}}
+| 0.2<br/>{{font|size=75%|font=Verdana|text=1}}
+| 1.1<br/>{{font|size=75%|font=Verdana|text=3}}
+| 3.4<br/>{{font|size=75%|font=Verdana|text=2}}
+| 1.7<br/>{{font|size=75%|font=Verdana|text=0}}
+| –
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 4.6
+|-
+| 40dB/Prisa<ref name="40dBOct26-2a">{{cite web |title=El PP y Vox mantienen la mayoría absoluta tras el adelanto electoral |url=https://elpais.com/espana/2026-10-09/el-pp-y-vox-mantienen-la-mayoria-absoluta-tras-el-adelanto-electoral.html |language=es |work=El País |date=9 October 2026}}</ref><ref name="40dBOct26-2b">{{cite web |title=Encuesta flash. Octubre 2026 |url=https://ep00.epimg.net/infografias/encuestas40db/2026/10-08-barometro-flash/2026_10_informe_voto_barometro_flash.pdf |work=40dB |date=9 October 2026}}</ref>
+| 7–8 Oct
+| 800
+|?
+| {{Party shading/PP}}| '''31.9'''<br/>{{font|size=75%|font=Verdana|text=123/140}}
+| 28.1<br/>{{font|size=75%|font=Verdana|text=105/117}}
+| 18.9<br/>{{font|size=75%|font=Verdana|text=63/74}}
+| 5.3<br/>{{font|size=75%|font=Verdana|text=5/7}}
+|?<br/>{{font|size=75%|font=Verdana|text=8}}
+|?<br/>{{font|size=75%|font=Verdana|text=7}}
+|?<br/>{{font|size=75%|font=Verdana|text=7}}
+|?<br/>{{font|size=75%|font=Verdana|text=6}}
+|?<br/>{{font|size=75%|font=Verdana|text=2}}
+|?<br/>{{font|size=75%|font=Verdana|text=1}}
+|?<br/>{{font|size=75%|font=Verdana|text=1}}
+|?<br/>{{font|size=75%|font=Verdana|text=1}}
+| 2.3<br/>{{font|size=75%|font=Verdana|text=2}}
+| 1.8<br/>{{font|size=75%|font=Verdana|text=0}}
+| –
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 3.8
+|-
+| GESOP/Prensa Ibérica<ref name="GESOPOct26">{{cite web |title=Encuesta elecciones generales España: La izquierda no remonta tras el adelanto electoral y se mantiene el equilibrio entre bloques |url=https://www.elperiodico.com/es/politica/20261012/encuesta-elecciones-generales-espana-2026-29n-135212729 |work=El Periódico |date=12 October 2026}}</ref>
+| 6–8 Oct
+| 1,000
+|?
+| {{Party shading/PP}}| '''28.7'''<br/>{{font|size=75%|font=Verdana|text=121/125}}
+| 26.1<br/>{{font|size=75%|font=Verdana|text=108/112}}
+| 18.9<br/>{{font|size=75%|font=Verdana|text=68/72}}
+| 8.0<br/>{{font|size=75%|font=Verdana|text=14/17}}
+| 2.5<br/>{{font|size=75%|font=Verdana|text=9/11}}
+| 1.9<br/>{{font|size=75%|font=Verdana|text=4/6}}
+| –
+| –
+| –
+| –
+| –
+| –
+| 2.6<br/>{{font|size=75%|font=Verdana|text=2}}
+| 2.0<br/>{{font|size=75%|font=Verdana|text=0/1}}
+| –
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 2.6
+|-
+| GAD3/Vocento<ref>{{cite web |title=La derecha mantiene su mayoría absoluta pese a la agitación callejera de la izquierda |url=https://www.abc.es/espana/derecha-mantiene-mayoria-absoluta-pese-agitacion-callejera-20261012015025-nt.html |language=es |work=ABC |date=12 October 2026}}</ref>
+| 6–8 Oct
+| 1,077
+|?
+| {{Party shading/PP}}| '''31.4'''<br/>{{font|size=75%|font=Verdana|text=133}}
+| 26.4<br/>{{font|size=75%|font=Verdana|text=107}}
+| 18.2<br/>{{font|size=75%|font=Verdana|text=65}}
+| 7.4<br/>{{font|size=75%|font=Verdana|text=10}}
+| 2.6<br/>{{font|size=75%|font=Verdana|text=10}}
+| 1.5<br/>{{font|size=75%|font=Verdana|text=5}}
+| 1.5<br/>{{font|size=75%|font=Verdana|text=8}}
+| 1.0<br/>{{font|size=75%|font=Verdana|text=6}}
+| 0.9<br/>{{font|size=75%|font=Verdana|text=2}}
+| 0.4<br/>{{font|size=75%|font=Verdana|text=1}}
+| 0.1<br/>{{font|size=75%|font=Verdana|text=0}}
+| 1.0<br/>{{font|size=75%|font=Verdana|text=1}}
+| 2.3<br/>{{font|size=75%|font=Verdana|text=2}}
+| 1.8<br/>{{font|size=75%|font=Verdana|text=0}}
+| –
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 5.0
+|-
+| Hamalgama Métrica/Vozpópuli<ref>{{cite web |title=Debacle de la izquierda: PP y Vox suman ya 212 escaños y el 53% de los votos |url=https://www.vozpopuli.com/espana/politica/debacle-de-la-izquierda-pp-y-vox-suman-ya-212-escanos-y-el-53-de-los-votos.html |language=es |work=Vozpópuli |date=11 October 2026}}</ref>
+| 5–8 Oct
+| 1,000
+| 64.0
+| {{Party shading/PP}}| '''33.4'''<br/>{{font|size=75%|font=Verdana|text=144}}
+| 25.3<br/>{{font|size=75%|font=Verdana|text=103}}
+| 19.6<br/>{{font|size=75%|font=Verdana|text=68}}
+| 5.4<br/>{{font|size=75%|font=Verdana|text=5}}
+| 1.9<br/>{{font|size=75%|font=Verdana|text=7}}
+| 1.7<br/>{{font|size=75%|font=Verdana|text=7}}
+| 1.3<br/>{{font|size=75%|font=Verdana|text=6}}
+| 0.9<br/>{{font|size=75%|font=Verdana|text=4}}
+| 0.8<br/>{{font|size=75%|font=Verdana|text=2}}
+| 0.5<br/>{{font|size=75%|font=Verdana|text=1}}
+| 0.2<br/>{{font|size=75%|font=Verdana|text=1}}
+| –
+| 3.3<br/>{{font|size=75%|font=Verdana|text=2}}
+| 1.8<br/>{{font|size=75%|font=Verdana|text=0}}
+| –
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 8.1
+|-
+| InvyMark/laSexta<ref>{{cite web |title=Barómetro laSexta. PP y Vox sumarían el 51,6% de los votos ante una izquierda hundida a pesar del clamor por la vivienda |url=https://www.lasexta.com/elecciones/generales/barometro-lasexta-protestas-vivienda-impactan-encuestas-que-hunden-bloque-izquierda-disparan-vox_202610096ac8ae9bb79b18452fc08907.html |work=laSexta |date=9 October 2026}}</ref>
+| 5–8 Oct
+|?
+|?
+| {{Party shading/PP}}| '''32.8'''
+| 28.0
+| 18.8
+| 6.3
+| 1.9
+| 1.2
+| 1.5
+| 1.1
+| –
+| –
+| –
+| –
+| 3.2
+| 1.8
+| –
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 4.8
+|-
+| Sigma Dos/El Mundo<ref>{{cite web |title=La izquierda sigue KO tras el adelanto: PSOE y Sumar repiten en mínimos mientras Vox logra un récord a costa del PP |url=https://www.elmundo.es/espana/encuestas/2026/10/11/6acba028e85ece77088b4580.html |language=es |work=El Mundo |date=11 October 2026}}</ref>
+| 1–8 Oct
+| 2,017
+|?
+| {{Party shading/PP}}| '''31.9'''<br/>{{font|size=75%|font=Verdana|text=135}}
+| 25.3<br/>{{font|size=75%|font=Verdana|text=103}}
+| 19.1<br/>{{font|size=75%|font=Verdana|text=68}}
+| 7.6<br/>{{font|size=75%|font=Verdana|text=9}}
+| 2.6<br/>{{font|size=75%|font=Verdana|text=9}}
+| 1.2<br/>{{font|size=75%|font=Verdana|text=7}}
+| 1.1<br/>{{font|size=75%|font=Verdana|text=6}}
+| 0.9<br/>{{font|size=75%|font=Verdana|text=6}}
+| 0.9<br/>{{font|size=75%|font=Verdana|text=2}}
+| 0.5<br/>{{font|size=75%|font=Verdana|text=1}}
+| 0.2<br/>{{font|size=75%|font=Verdana|text=1}}
+| 0.8<br/>{{font|size=75%|font=Verdana|text=2}}
+| 3.1<br/>{{font|size=75%|font=Verdana|text=2}}
+| –
+| –
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 6.6
+|-
+| IMOP/El Confidencial<ref>{{cite web |title=La derecha suma 201 escaños: el PP gana, pero cae 7; Vox se dispara y Sánchez baja 11 y se come a Sumar |url=https://www.elconfidencial.com/espana/2026-10-09/derecha-pp-gana-vox-dispara-sanchez-baja-sumar_4441291/ |language=es |work=El Confidencial |date=9 October 2026}}</ref><ref>{{cite web |title=ESPAÑA. Elecciones generales. Encuesta IMOP Insights 09/10/2026 |url=https://www.electografica.com/2026/10/encuesta-imop-insights-261009.html |language=es |work=Electográfica |date=9 October 2026}}</ref>
+| 5–7 Oct
+| 900
+|?
+| {{Party shading/PP}}| '''30.4'''<br/>{{font|size=75%|font=Verdana|text=130}}
+| 26.5<br/>{{font|size=75%|font=Verdana|text=110}}
+| 19.0<br/>{{font|size=75%|font=Verdana|text=70}}
+| 7.6<br/>{{font|size=75%|font=Verdana|text=11}}
+| 2.2<br/>{{font|size=75%|font=Verdana|text=8}}
+| 1.1<br/>{{font|size=75%|font=Verdana|text=4}}
+| 1.3<br/>{{font|size=75%|font=Verdana|text=6}}
+| 0.9<br/>{{font|size=75%|font=Verdana|text=4}}
+| 1.1<br/>{{font|size=75%|font=Verdana|text=3}}
+| 0.6<br/>{{font|size=75%|font=Verdana|text=1}}
+| 0.2<br/>{{font|size=75%|font=Verdana|text=1}}
+| 1.0<br/>{{font|size=75%|font=Verdana|text=1}}
+| 2.3<br/>{{font|size=75%|font=Verdana|text=1}}
+| 1.9<br/>{{font|size=75%|font=Verdana|text=0}}
+| –
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 3.9
+|-
+| DYM/Henneo<ref>{{cite web |title=El PSOE absorbe la intención de votos de Sumar y Podemos mientras PP y Vox consolidan su mayoría |url=https://www.20minutos.es/nacional/psoe-absorbe-intencion-votos-sumar-podemos-mientras-pp-vox-consolidan-su-mayoria_7046598_0.html |language=es |work=20 minutos |date=9 October 2026}}</ref>
+| 5–7 Oct
+| 1,011
+|?
+| {{Party shading/PP}}| '''34.0'''<br/>{{font|size=75%|font=Verdana|text=139/143}}
+| 28.2<br/>{{font|size=75%|font=Verdana|text=107/111}}
+| 18.2<br/>{{font|size=75%|font=Verdana|text=61/65}}
+| 3.6<br/>{{font|size=75%|font=Verdana|text=3/5}}
+| –
+| –
+| –
+| –
+| –
+| –
+| –
+| –
+| 3.6<br/>{{font|size=75%|font=Verdana|text=1/2}}
+| 0.5<br/>{{font|size=75%|font=Verdana|text=0}}
+| –
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 5.8
+|-
+| CIS {{smaller|(Opina 360)}}{{efn|name="AltCIS"|Alternative projection based on raw CIS data.}}<ref>{{cite web |title=Barómetro de Matemática Política. 15 de octubre de 2026. Situación España |url=https://opina360.com/wp-content/uploads/2026/10/BMP-CIS-octubre.pdf |language=es |work=Opina 360 |date=15 October 2026}}</ref>
+| rowspan="3"| 1–6 Oct
+| rowspan="3"| 5,025
+|?
+| {{Party shading/PP}}| '''28.0'''<br/>{{font|size=75%|font=Verdana|text=119}}
+| {{Party shading/PSOE}}| '''28.0'''<br/>{{font|size=75%|font=Verdana|text=118}}
+| 17.8<br/>{{font|size=75%|font=Verdana|text=67}}
+| 7.3<br/>{{font|size=75%|font=Verdana|text=13}}
+| –
+| –
+| –
+| –
+| –
+| –
+| –
+| –
+| 3.5<br/>{{font|size=75%|font=Verdana|text=1}}
+| 1.6<br/>{{font|size=75%|font=Verdana|text=0}}
+| –
+| style="background:white; color:black;"| Tie
+|-
+| CIS {{smaller|(Ateneo del Dato)}}{{efn|name="AltCIS"}}<ref>{{cite web |title=El 'Contra-CIS' de Ateneo: Empate técnico PP y PSOE |url=https://x.com/Ateneodeldato/status/2110338816569401583 |language=es |work=Ateneo del Dato |date=14 October 2026}}</ref><ref>{{cite web |title=Un cálculo alternativo de los resultados del CIS augura un empate técnico entre PP y PSOE con 119 y 116 diputados |url=https://www.eldiario.es/politica/calculo-alternativo-resultados-cis-augura-empate-tecnico-pp-psoe_1_13585700.html |language=es |work=elDiario.es |date=14 October 2026}}</ref>
+|?
+| 28.3<br/>{{font|size=75%|font=Verdana|text=119}}
+| {{Party shading/PSOE}}| '''28.6'''<br/>{{font|size=75%|font=Verdana|text=116}}
+| 17.5<br/>{{font|size=75%|font=Verdana|text=66}}
+| 7.9<br/>{{font|size=75%|font=Verdana|text=15}}
+| –
+| –
+| –
+| –
+| –
+| –
+| –
+| –
+| 3.0<br/>{{font|size=75%|font=Verdana|text=2}}
+| 2.4<br/>{{font|size=75%|font=Verdana|text=0}}
+| –
+| style="background:{{party color|Spanish Socialist Workers' Party}}; color:white;"| 0.3
+|-
+| CIS<ref name="CISOct26">{{cite web |title=Barómetro de octubre 2026 (Estudio nº 3582. Octubre 2026) |url=https://www.cis.es/documents/d/cis/es3582mar_a-pdf |language=es |work=CIS |date=14 October 2026}}</ref><ref>{{cite web |title=Estimación de voto (Estudio nº 3582. Barómetro de octubre 2026) |url=https://www.cis.es/documents/d/cis/3582_estimacion-pdf |language=es |work=CIS |date=14 October 2026}}</ref>
+|?
+| 22.2
+| {{Party shading/PSOE}}| '''34.0'''
+| 17.1
+| 6.1
+| 3.0
+| 1.1
+| 1.6
+| 0.6
+| 0.9
+| 0.2
+| 0.1
+| –
+| 3.1
+| 1.8
+| –
+| style="background:{{party color|Spanish Socialist Workers' Party}}; color:white;"| 11.8

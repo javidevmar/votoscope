@@ -1,0 +1,76 @@
+====Voting intention estimates====
+
+=====2023=====
+{| class="wikitable collapsible collapsed sticky-header" style="text-align:center; font-size:95%; line-height:16px;"
+|- style="height:42px;"
+! style="width:250px;" rowspan="2"| Polling firm/Commissioner
+! style="width:100px;" rowspan="2"| Fieldwork date
+! style="width:50px;" rowspan="2"| Sample size
+! style="width:45px;" rowspan="2"| Turnout
+! style="width:43px;"| [[File:Logo del PP (2022).svg|27px|link=People's Party (Spain)|PP]]
+! style="width:43px;"| [[File:Logotipo del PSOE.svg|25px|link=Spanish Socialist Workers' Party|PSOE]]
+! style="width:35px;"| [[File:VOX logo.svg|30px|link=Vox (political party)|Vox]]
+! style="width:35px;"| [[File:Sumar icon.svg|15px|link=Sumar (electoral platform)|Sumar]]
+! style="width:35px;"| [[File:ERC icono 2017.svg|25px|link=Republican Left of Catalonia|ERC]]
+! style="width:35px;"| [[File:Junts per Catalunya (2020).svg|30px|link=Together for Catalonia (2020)|Junts]]
+! style="width:35px;"| [[File:Icono de EH Bildu (2023).svg|28px|link=EH Bildu|EH Bildu]]
+! style="width:35px;"| [[File:Isotipo EAJ-PNV (2012).png|25px|link=Basque Nationalist Party|PNV]]
+! style="width:35px;"| [[File:BNG logo.svg|30px|link=Galician Nationalist Bloc|BNG]]
+! style="width:35px;"| [[File:Coalicion Canaria 2017.png|30px|link=Canarian Coalition|CCa]]
+! style="width:35px;"| [[File:Logo vertical UPN 2017.png|20px|link=Navarrese People's Union|UPN]]
+! style="width:35px;"| [[File:Logo de Podemos (2022).svg|35px|link=Podemos (Spanish political party)|Podemos]]
+! style="width:30px;" rowspan="2"| Lead
+|-
+! style="color:inherit;background:{{party color|People's Party (Spain)}};"|
+! style="color:inherit;background:{{party color|Spanish Socialist Workers' Party}};"|
+! style="color:inherit;background:{{party color|Vox (political party)}};"|
+! style="color:inherit;background:{{party color|Sumar (electoral platform)}};"|
+! style="color:inherit;background:{{party color|Republican Left of Catalonia}};"|
+! style="color:inherit;background:{{party color|Together for Catalonia (2020)}};"|
+! style="color:inherit;background:{{party color|EH Bildu (2023)}};"|
+! style="color:inherit;background:{{party color|Basque Nationalist Party}};"|
+! style="color:inherit;background:{{party color|Galician Nationalist Bloc}};"|
+! style="color:inherit;background:{{party color|Canarian Coalition}};"|
+! style="color:inherit;background:{{party color|Navarrese People's Union}};"|
+! style="color:inherit;background:{{party color|Podemos (Spanish political party, 2022)}};"|
+|-
+| EM-Analytics/Electomanía<ref>{{cite web |title=ElectoPanel Express (26JL): la izquierda se refuerza y no necesitaría de Junts |url=https://electomania.es/electopanel-express-26jl-adelanto-la-izquierda-se-refuerza-tras-el-23j/ |language=es |work=Electomanía |date=25 July 2023}}</ref>
+| 24–25 Jul
+| 1,517
+|?
+| 31.8<br/>{{font|size=75%|font=Verdana|text=129}}
+| {{Party shading/PSOE}}| '''33.0'''<br/>{{font|size=75%|font=Verdana|text=127}}
+| 12.7<br/>{{font|size=75%|font=Verdana|text=32}}
+| 13.1<br/>{{font|size=75%|font=Verdana|text=34}}
+| 1.6<br/>{{font|size=75%|font=Verdana|text=6}}
+| 1.8<br/>{{font|size=75%|font=Verdana|text=8}}
+| 1.4<br/>{{font|size=75%|font=Verdana|text=6}}
+| 1.2<br/>{{font|size=75%|font=Verdana|text=5}}
+| 0.6<br/>{{font|size=75%|font=Verdana|text=1}}
+| 0.5<br/>{{font|size=75%|font=Verdana|text=1}}
+| 0.2<br/>{{font|size=75%|font=Verdana|text=1}}
+| {{efn|name="Sumar"}}
+| style="background:{{party color|Spanish Socialist Workers' Party}}; color:white;"| 1.2
+|-
+| colspan="17" style="background:#A0A0A0"|
+|- style="background:#EFEFEF;"
+| '''[[2023 Spanish general election|2023 general election]]'''
+| 23 Jul
+| {{N/A}}
+| 66.6
+| {{Party shading/PP}}| '''33.1'''<br/>{{font|size=75%|font=Verdana|text=137}}
+| 31.7<br/>{{font|size=75%|font=Verdana|text=121}}
+| 12.4<br />{{font|size=75%|font=Verdana|text=33}}
+| 12.3<br/>{{font|size=75%|font=Verdana|text=31}}
+| 1.9<br/>{{font|size=75%|font=Verdana|text=7}}
+| 1.7<br/>{{font|size=75%|font=Verdana|text=7}}
+| 1.4<br/>{{font|size=75%|font=Verdana|text=6}}
+| 1.1<br/>{{font|size=75%|font=Verdana|text=5}}
+| 0.6<br/>{{font|size=75%|font=Verdana|text=1}}
+| 0.5<br/>{{font|size=75%|font=Verdana|text=1}}
+| 0.2<br/>{{font|size=75%|font=Verdana|text=1}}
+| {{efn|name="Sumar"}}
+| style="background:{{party color|People's Party (Spain)}}; color:white;"| 1.4
+|-
+| colspan="17" style="background:#A0A0A0"|
+|}
