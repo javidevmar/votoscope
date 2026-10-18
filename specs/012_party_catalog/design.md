@@ -42,8 +42,8 @@ aliases = ["SALF"]
 
 - La clave es el slug canónico (bare key de TOML: `a-z0-9-`); una tabla repetida es error de sintaxis del propio TOML (R8).
 - `name` es obligatorio (R9); `aliases` es opcional y por defecto vacío (R2).
-- La **clave de etiqueta** de una ficha es `normalize(name)` más `normalize(alias)` de cada alias; `lookup(label)` busca por `normalize(label)` (R3, R4).
-- Integridad en carga (R5–R7): una clave no puede reclamarse desde dos fichas distintas; un alias no puede coincidir con el nombre de su propia ficha (sería redundante); ninguna clave puede quedar vacía.
+- La **clave de etiqueta** de una ficha es `normalize(name)`, `normalize(<slug>)` y `normalize(alias)` de cada alias; `lookup(label)` busca por `normalize(label)` (R3, R4). Así toda ficha es resoluble por su propio slug, invariante del que depende la feature 14 al emitir slugs desde el adaptador.
+- Integridad en carga (R5–R7): una clave (nombre, alias o slug) no puede reclamarse desde dos fichas distintas; un alias no puede coincidir con el nombre de su propia ficha (sería redundante); ninguna clave puede quedar vacía.
 - Los ejemplos de valores son ilustrativos: los literales definitivos salen de la extracción (§Curación).
 
 ## Curación
@@ -90,7 +90,8 @@ WHERE upper(regexp_replace(p.name, '[^a-zA-Z0-9]', '', 'g'))
 GROUP BY p.id ORDER BY p.slug;
 
 DELETE FROM silver.party p
-WHERE NOT EXISTS (SELECT 1 FROM silver.party_election pe WHERE pe.party_id = p.id);
+WHERE NOT EXISTS (SELECT 1 FROM silver.party_election pe WHERE pe.party_id = p.id)
+  AND NOT EXISTS (SELECT 1 FROM silver.poll_result pr WHERE pr.party_id = p.id);
 ```
 
 **Riesgos anotados**: los límites de la curación (coaliciones, verdes, falange) son juicio revisable en el diff; los slugs de las filas fusionadas cambian (hoy nadie los consume: ni `gold` ni la web); el 2026 exigirá fichas nuevas (SALF, Aliança.cat y las marcas de la nueva general) antes de ingerir su `03` — aun así, el resolver avisa de cualquier alta.
@@ -147,6 +148,7 @@ class PartyResolver:
 Detalles que fijan el contrato:
 
 - `slugify` se mueve a `parties.py` (era privada del loader de elecciones y el de sondeos la importaba de allí): el resolver la necesita y `parties.py` no puede depender de un loader (ciclo al integrar la feature 13). `election.py` la importa y `test_rules.py` la sigue viendo. Mismo comportamiento (`"C's"`→`c-s`, `"U.P.N."`→`u-p-n`, `"  "`→`""`).
+- `Catalog` indexa como claves `normalize(name)`, `normalize(slug)` y `normalize(alias)`; `lookup` devuelve la ficha por cualquiera de ellas y el test de la invariante recorre todas las fichas (R3, R28).
 - `load_catalog` valida al cargar (R5–R9) y falla con `IngestError` (config rota = ingestión imposible): mensajes con la ruta del fichero y, según el caso, la clave en conflicto o el slug de la ficha.
 - `PartyResolver` es puro: no abre sesiones ni toca la BD; recibe las filas existentes (el llamador las lee con `select(Party)`). Las filas creadas NO se añaden a ninguna sesión: el llamador hace `session.add(party)` — inofensivo si la fila ya era persistente — y `flush`.
 - El resolver indexa las filas que crea, de modo que resolver dos veces la misma etiqueta (o dos etiquetas que llevan a la misma ficha) devuelve una única fila (R25).
@@ -178,7 +180,7 @@ def resolve(self, label, *, code=None):
 
 - `by_slug`: slug → fila; `by_name`: `normalize(party.name)` → filas (varias: el mismo nombre normalizado puede tener hoy dos filas).
 - `_prefer`: la fila con `slug == slugify(key)` si existe; si no, la de `id` menor (R20, R21). El desempate asume filas persistidas (`id` no nulo), que es el caso real.
-- `_free_slug(base, code)`: `base` si está libre; si no, `f"{base}-{code}"` cuando hay código; si no, el primer sufijo numérico libre (`-2`, `-3`, …) (R23). El slug final se recorta a 60 caracteres (límite de `party.slug`; la alta de hoy también recorta) (R22).
+- `_free_slug(base, code)`: `base` si está libre; si no, `f"{base}-{code}"` cuando hay código; si no, el primer sufijo numérico libre (`-2`, `-3`, …) (R23). La base se recorta para reservar espacio al sufijo y el slug final (con sufijo) nunca supera los 60 caracteres de `party.slug` (R22, R23); la comprobación de disponibilidad se hace siempre sobre el slug final ya recortado.
 - Sin fuzzy: solo claves normalizadas y alias explícitos (R16); `PPX` no toca `pp`.
 
 | Caso | Resultado | R |
@@ -188,7 +190,7 @@ def resolve(self, label, *, code=None):
 | Sin ficha; nombre normalizado coincide con 1 fila | esa fila | R19 |
 | Sin ficha; coinciden varias; una con `slug == slugify(clave)` | esa | R20 |
 | Sin ficha; coinciden varias; ninguna con ese slug | la de `id` menor | R21 |
-| Sin ficha ni coincidencia | `Party(name=label, slug=slugify(label)[:60])` + warning | R22, R24 |
+| Sin ficha ni coincidencia | `Party(name=label, slug=slugify(label))` (≤60, con sufijo si colisiona) + warning | R22, R24 |
 | Slug ocupado por otra marca | sufijo `-code` o `-n` | R23 |
 
 ## Warnings (subcadenas estables para `caplog`)

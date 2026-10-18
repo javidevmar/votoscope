@@ -16,7 +16,7 @@ El sistema DEBE implementar `load_catalog(path: Path = <ruta del paquete>) -> Ca
 
 ## R3
 
-El `Catalog` DEBE resolver `lookup(label)` contra las claves normalizadas del `name` y de los `aliases` de sus fichas (la clave de `label` es `normalize(label)`).
+El `Catalog` DEBE resolver `lookup(label)` contra las claves normalizadas del `name`, de los `aliases` y del `slug` de sus fichas (la clave de `label` es `normalize(label)`). Para toda ficha, `lookup(<slug>)` DEBE devolver esa misma ficha.
 
 ## R4
 
@@ -24,7 +24,7 @@ SI ninguna clave normalizada del catálogo coincide con la etiqueta ENTONCES `lo
 
 ## R5
 
-SI dos fichas distintas reclaman la misma clave normalizada (nombre o alias) ENTONCES `load_catalog` DEBE lanzar `IngestError` indicando la clave en conflicto.
+SI dos fichas distintas reclaman la misma clave normalizada (nombre, alias o slug) ENTONCES `load_catalog` DEBE lanzar `IngestError` indicando la clave en conflicto.
 
 ## R6
 
@@ -96,7 +96,7 @@ CUANDO no hay ficha ni coincidencia por nombre, el sistema DEBE crear `Party(nam
 
 ## R23
 
-SI el slug calculado ya está en uso ENTONCES el sistema DEBE resolver la colisión con el sufijo `-<code>` (cuando el llamador pase un código) o con el primer sufijo numérico libre (`-2`, `-3`, …) cuando no lo pase.
+SI el slug calculado ya está en uso ENTONCES el sistema DEBE resolver la colisión con el sufijo `-<code>` (cuando el llamador pase un código) o con el primer sufijo numérico libre (`-2`, `-3`, …) cuando no lo pase. El slug final, incluido el sufijo, DEBE caber en 60 caracteres: la base se recorta para reservar espacio al sufijo.
 
 ## R24
 
@@ -116,7 +116,7 @@ El módulo `parties.py` DEBE implementarse solo con la biblioteca estándar (inc
 
 ## R28
 
-El sistema DEBE cubrir el catálogo y el resolver con tests en `ingestor/tests/test_parties.py`, sin red ni base de datos, incluida la fixture `ingestor/tests/fixtures/party_catalog/brands_2023.txt`.
+El sistema DEBE cubrir el catálogo y el resolver con tests en `ingestor/tests/test_parties.py`, sin red ni base de datos, incluida la fixture `ingestor/tests/fixtures/party_catalog/brands_2023.txt`; los tests DEBEN comprobar que `lookup(<slug>)` devuelve su ficha para todas las fichas del catálogo.
 
 ## Correspondencia acceptance ↔ requirements
 
