@@ -33,7 +33,7 @@ No hay documentos de iniciativa aparte: el contexto durable vive en los **docs t
 
 El flujo automático se detiene **dos veces**:
 
-1. **Antes de implementar:** cuando el `spec-author` termina sus tres archivos, marca la feature como `spec_ready` y para. El humano lee `specs/<feature>/` y dice «aprobado» (o pide cambios). Solo entonces el `leader` transiciona `spec_ready → in_progress` y lanza el `implementer`.
+1. **Antes de implementar:** cuando el `spec-author` termina sus tres archivos, marca la feature como `spec_ready` y para. El humano lee `specs/<NNN>_<name>/` y dice «aprobado» (o pide cambios). Solo entonces el `leader` transiciona `spec_ready → in_progress` y lanza el `implementer`.
 2. **Antes de commitear:** cuando el `reviewer` aprueba, los cambios se quedan **en el working tree, sin commitear**; el humano los revisa y da su OK. El commiteo atómico es el siguiente paso tras implementar y revisar, pero **nunca se commitea sin ese OK**.
 
 ```
