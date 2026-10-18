@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ingestor.adapters.congreso import CongresoAdapter
+from ingestor.elections.adapters.congreso import CongresoAdapter
+from ingestor.elections.parsers.common import read_records
 from ingestor.errors import IngestError
-from ingestor.parsers.common import read_records
 
 _ADAPTERS: dict[str, CongresoAdapter] = {
     CongresoAdapter.process_code: CongresoAdapter(),

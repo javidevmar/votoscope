@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from ingestor.parsers.common import StationRef
+from ingestor.elections.parsers.common import StationRef
 
 logger = logging.getLogger(__name__)
 

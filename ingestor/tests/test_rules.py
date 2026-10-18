@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from ingestor.adapters.congreso import CongresoAdapter
+from ingestor.elections.adapters.congreso import CongresoAdapter
+from ingestor.elections.loaders.election import slugify
+from ingestor.elections.loaders.geography import read_geography
+from ingestor.elections.parsers.common import parse_station_ref
 from ingestor.errors import IngestError
-from ingestor.loaders.election import slugify
-from ingestor.loaders.geography import read_geography
-from ingestor.parsers.common import parse_station_ref
 
 adapter = CongresoAdapter()
 

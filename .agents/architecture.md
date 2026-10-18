@@ -23,9 +23,9 @@ Votoscope es un agregador de resultados electorales de España.
 data/raw/  →  bronze.ingestion (registro)  →  silver (normalizado)  →  gold (vistas)  →  web/
 ```
 
-El ingestador no descarga nada: trabaja sobre los ficheros que haya en `data/raw/`.
+El ingestador no descarga nada: trabaja sobre los ficheros que haya en `data/raw/`. Excepción acotada: los sondeos de Wikipedia se descargan por CLI (`uv run ingestor fetch-polls`), porque la revisión fija forma parte del contrato del snapshot.
 
-Bronce por proceso: `data/raw/congreso/{código}/` con los 10 `.DAT` (los ZIP originales se quedan en `refs/congreso/`, ver [data-sources.md](data-sources.md)).
+Bronce por proceso: `data/raw/congreso/{código}/` con los 10 `.DAT` (los ZIP originales se quedan en `refs/congreso/`, ver [data-sources.md](data-sources.md)). Bronce de sondeos: `data/raw/polls/wikipedia-en/2026-general/{revid}.wikitext` (wikitexto de una revisión fija; lo baja `uv run ingestor fetch-polls`).
 
 ## Mapa del repositorio
 

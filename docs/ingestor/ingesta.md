@@ -24,7 +24,7 @@ uv run ingestor load-geography
 Ingiere una elección, o varias, desde ficheros locales.
 
 - `<ruta>` puede ser una carpeta de elección (con los `.DAT` dentro) o una raíz con varias carpetas de elección; se recorren todas en orden alfabético.
-- El adaptador se elige por el código de proceso del fichero `02*.DAT` (Congreso = `02`; el registro está en `adapters/`).
+- El adaptador se elige por el código de proceso del fichero `02*.DAT` (Congreso = `02`; el registro está en `elections/adapters/`).
 - Ficheros requeridos: `02`, `03`, `09` y `10`; el `05` es opcional (solo se usa para nombrar municipios extintos).
 - Los ficheros deben estar bajo `RAW_DIR` (por defecto `data/raw/`), porque `bronze.ingestion.file_path` es relativo a esa carpeta. La copia de trabajo es `data/raw/congreso/{código}/`.
 - Si todos los ficheros de una elección ya están `processed` en bronce (mismo sha256), la elección **se salta**; con `--force` se recarga igualmente.
@@ -34,6 +34,21 @@ Ingiere una elección, o varias, desde ficheros locales.
 uv run ingestor ingest ../data/raw/congreso/02202307        # una elección
 uv run ingestor ingest ../data/raw/congreso                 # todas las que haya
 uv run ingestor ingest ../data/raw/congreso/02202307 --force
+```
+
+### `ingestor fetch-polls [--page <título>]`
+
+Descarga a bronce el wikitexto de una revisión **fija** de la página de sondeos de Wikipedia (por defecto, «Opinion polling for the 2026 Spanish general election»).
+
+- Resuelve la revisión actual con la API (`action=query&prop=revisions&rvprop=ids|timestamp&redirects=1`) y descarga el wikitexto de esa revisión con `index.php?oldid={revid}&action=raw` (la revisión queda fijada por `oldid`).
+- Escribe en `RAW_DIR/polls/wikipedia-en/2026-general/{revid}.wikitext`; `--page` apunta a otra página y su carpeta pasa a ser un slug del título (p. ej. `opinion-polling-for-the-2027-spanish-general-election/`).
+- Si esa revisión ya está en disco, no la repite: el ciclo **sin novedades es una sola llamada a la API** y termina con exit 0.
+- Peticiones con `urllib` de la biblioteca estándar, User-Agent identificativo, timeout de 30 s y un reintento; si la petición falla tras el reintento, sale con exit 1 y log de error.
+- No toca la base de datos: el registro en `bronze.ingestion` lo hará `ingest-polls` al cargar el snapshot.
+
+```sh
+uv run ingestor fetch-polls
+uv run ingestor fetch-polls --page "Opinion polling for the 2027 Spanish general election"
 ```
 
 ## Configuración (entorno)

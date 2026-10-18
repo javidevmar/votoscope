@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from ingestor.parsers import file02, file03, file05, file09, file10
+from ingestor.elections.parsers import file02, file03, file05, file09, file10
 
 FIXTURES = Path(__file__).parent / "fixtures" / "02202307"
 
