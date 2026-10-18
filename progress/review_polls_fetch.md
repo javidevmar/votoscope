@@ -4,7 +4,7 @@
 
 Rama `feature/polls-fetch`, working tree sin commits (el commiteo es el paso final, tras esta aprobación y el OK del usuario). `./init.sh` re-ejecutado por el reviewer: verde — arnés + specs, `ruff check`/`ruff format --check` limpios, 50 tests (22 nuevos) y `alembic check` sin drift contra el Postgres de `:5434`.
 
-Diff revisado: `ingestor/src/ingestor/fetch.py` (nuevo), `ingestor/src/ingestor/cli.py`, `ingestor/tests/test_polls_fetch.py` + `ingestor/tests/fixtures/wikipedia_polls/` (nuevos), `.agents/architecture.md`, `ingestor/AGENTS.md`, `docs/ingestor/ingesta.md`.
+Diff revisado: `ingestor/src/ingestor/polls/fetch.py` (nuevo), `ingestor/src/ingestor/cli.py`, `ingestor/tests/test_polls_fetch.py` + `ingestor/tests/fixtures/wikipedia_polls/` (nuevos), `.agents/architecture.md`, `ingestor/AGENTS.md`, `docs/ingestor/ingesta.md`.
 
 Verificación en vivo adicional del reviewer (red disponible, ningún test la usa): `api_revision.json` y `api_missing.json` son byte a byte idénticas a las respuestas actuales de la API, y el recorte `WIKITEXT` del test es prefijo exacto del `oldid=1380713440` (`index.php?oldid=…&action=raw`).
 

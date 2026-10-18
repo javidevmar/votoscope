@@ -26,7 +26,7 @@ Tests: `ingestor/tests/test_polls_model.py` (16) — todos en verde.
 
 ## Tasks completas
 
-- T1–T8: [x] — todas marcadas en `specs/polls_model/tasks.md`; correspondencia verificada contra los commits `eb00056f`, `151c1472`, `f8b46de4`, `d2f10fb2`, `7201e145`, `ec7abb27`, `75cf67c3`, `9a409a5d` (uno por task, atómicos).
+- T1–T8: [x] — todas marcadas en `specs/005_polls_model/tasks.md`; correspondencia verificada contra los commits `eb00056f`, `151c1472`, `f8b46de4`, `d2f10fb2`, `7201e145`, `ec7abb27`, `75cf67c3`, `9a409a5d` (uno por task, atómicos).
 
 ## Desviación T6/R14 — juicio
 
