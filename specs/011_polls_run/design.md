@@ -43,7 +43,7 @@ Estructura fija (los tests de documentos comprueban las subcadenas marcadas):
 ````markdown
 # Ejecución real y cotejo de los sondeos
 
-- Feature 11 (`polls_run`), rama `feature/polls-load`, fecha {fecha}.
+- Feature 11 (`polls_run`), rama `feature/polls-run`, fecha {fecha}.
 - Página: «Opinion polling for the 2026 Spanish general election» — revisión
   [{revid}](https://en.wikipedia.org/w/index.php?title=Opinion_polling_for_the_2026_Spanish_general_election&oldid={revid}).
 - Snapshot: `data/raw/polls/wikipedia-en/2026-general/{revid}.wikitext` (sha256 …).
