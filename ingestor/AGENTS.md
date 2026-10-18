@@ -26,7 +26,7 @@ Los datos electorales se siguen descargando a mano; los sondeos de Wikipedia se 
   - `parsers/` — longitud fija, agnóstica al proceso: un módulo por fichero (`file02`, `file03`, `file05`, `file09`, `file10`) y helpers en `common.py`.
   - `adapters/` — reglas por proceso electoral; registro por código (`congreso.py` para el 02; Senado/autonómicas/municipales añadirán módulo propio).
   - `loaders/` — persistencia: `geography.py` (`load-geography`), `election.py` (bronce + plata de una elección).
-- **`src/ingestor/polls/`** — dominio de sondeos: `fetch.py` (descarga del snapshot: resuelve la revisión actual vía API y baja su wikitexto a `data/raw/polls/`; solo `urllib` de la stdlib).
+- **`src/ingestor/polls/`** — dominio de sondeos: `fetch.py` (descarga del snapshot: resuelve la revisión actual vía API y baja su wikitexto a `data/raw/polls/`; solo `urllib` de la stdlib); `parsers/wikitext.py`, lexer genérico de tablas de wikitexto (sondeos de Wikipedia).
 - **`src/ingestor/cli.py`** / **`logging.py`** — entrypoints (`ingestor load-geography`, `ingestor ingest <ruta>`, `ingestor fetch-polls`) y `configure_logging()`.
 - **`alembic/`** — migraciones; `2a1c9e836128` (inicial, regenerada con la PK natural INE) y `06a250c36252` (`municipality.name` nullable), aplicadas en local. `env.py` toma la URL de `settings.py` (la de `alembic.ini` se deja vacía a propósito).
 - **`alembic.ini`** — configuración de Alembic.
