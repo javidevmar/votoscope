@@ -6,7 +6,7 @@ Votoscope es un agregador de resultados electorales de España (MVP: últimas ge
 
 **Regla de oro**: el modelo de datos vive siempre sincronizado en tres sitios — ERD (`docs/db/schema.drawio`), modelos (`ingestor/src/ingestor/models.py`) y migraciones Alembic. Detalles en [`.agents/data-model.md`](.agents/data-model.md).
 
-Al finalizar una tarea, se dividen los cambios y se commitean en la rama actual (si es main, pregunta al usuario SIEMPRE). NO pushees nunca por tu cuenta salvo si te lo dice el usuario.
+Tras implementar y revisar, los cambios se quedan en el working tree y se dividen en commits atómicos en la rama actual: el commiteo es el paso final y **nunca se commitea sin el OK explícito del usuario** (él revisa antes los cambios). Las features de una misma iniciativa (plan abierto) se agrupan en un **stack de PRs** (una rama y un PR por feature; convención en [`.agents/style.md`](.agents/style.md)). NO pushees nunca por tu cuenta salvo si te lo dice el usuario.
 
 ## 1. El arnés
 
@@ -35,6 +35,7 @@ Al finalizar una tarea, se dividen los cambios y se commitean en la rama actual 
 - **No declares una feature `done` sin pruebas verdes.** `./init.sh` tiene que terminar en verde.
 - **No saltes la fase de spec.** Toda feature con `"sdd": true` necesita `specs/<name>/` aprobado antes de tocar código.
 - **No saltes la puerta de aprobación humana.** El leader se detiene en `spec_ready` y espera el «aprobado».
+- **No commitees sin el OK del usuario.** El commiteo atómico es el paso final: tras implementar y revisar, los cambios se quedan en el working tree hasta que el usuario los revise y dé su OK.
 - **Documenta lo que haces** en `progress/current.md` mientras trabajas.
 - **Deja el repositorio limpio** al cerrar (protocolo en §5).
 - **Si no sabes algo, busca en los docs** (§6) antes de inventarlo.
@@ -42,7 +43,7 @@ Al finalizar una tarea, se dividen los cambios y se commitean en la rama actual 
 ## 4. Flujo de trabajo (SDD)
 
 ```
-pending → [spec-author] → spec_ready → ⏸ HUMANO → in_progress → [implementer → reviewer] → done
+pending → [spec-author] → spec_ready → ⏸ HUMANO → in_progress → [implementer → reviewer] → ⏸ USUARIO revisa → OK → commits atómicos → done
 ```
 
 1. El `leader` detecta la primera feature `pending` con `"sdd": true`.
@@ -51,17 +52,18 @@ pending → [spec-author] → spec_ready → ⏸ HUMANO → in_progress → [imp
 4. Aprobado: el `leader` pasa la feature a `in_progress` y lanza al `implementer`.
 5. El `implementer` ejecuta `tasks.md` una a una, marcándolas `[x]`, con su test por task.
 6. El `reviewer` verifica la trazabilidad `R<n>` ↔ test y que no queden tasks `[ ]`; aprueba o rechaza.
-7. Aprobado: la feature pasa a `done` y el resumen se mueve a `progress/history.md`.
+7. **Pausa.** El usuario revisa los cambios **sin commitear** (el working tree) y da su OK.
+8. Con el OK: commits atómicos (el commiteo es el paso final del flujo) → la feature pasa a `done` y el resumen se mueve a `progress/history.md`.
 
 Detalle del proceso (EARS, los tres archivos, trazabilidad): [`.agents/specs.md`](.agents/specs.md).
 
 ## 5. Cierre de sesión (protocolo)
 
 1. Ejecuta `./init.sh` — todo verde.
-2. Si la feature acabó: marca `status: "done"` en `feature_list.json` (solo con aprobación del `reviewer`).
+2. Si la feature acabó: marca `status: "done"` en `feature_list.json` (con la aprobación del `reviewer` y el OK del usuario).
 3. Mueve el resumen de `progress/current.md` al final de `progress/history.md`.
 4. Vacía `progress/current.md` dejando solo la plantilla.
-5. Commitea los cambios (regla de arriba: en main, pregunta siempre).
+5. Commitea los cambios en atómicos — **solo si el usuario ha dado su OK** (regla de arriba); si no, pídelo y no cierres la sesión.
 6. No dejes archivos temporales, ni `print()` de debug, ni TODOs sin contexto.
 
 ## 6. Si te bloqueas

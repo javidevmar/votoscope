@@ -69,8 +69,23 @@ try:
         for e in spec_errors:
             print(f"[FAIL]  {e}")
         sys.exit(1)
+    initiative_features = [f for f in data["features"] if f.get("initiative")]
+    plan_errors = []
+    for f in initiative_features:
+        plan = os.path.join(".agents", "plans", f["initiative"] + ".md")
+        if not os.path.isfile(plan):
+            plan_errors.append(
+                f"feature {f['id']} ({f['name']}) con initiative "
+                f"'{f['initiative']}' sin plan {plan}"
+            )
+    if plan_errors:
+        for e in plan_errors:
+            print(f"[FAIL]  {e}")
+        sys.exit(1)
     print(f"[OK]    feature_list.json válido ({len(data['features'])} features)")
     print("[OK]    Specs presentes para features sdd con estado no-pending")
+    if initiative_features:
+        print(f"[OK]    Planes presentes para las {len(initiative_features)} features con iniciativa")
 except SystemExit:
     raise
 except Exception as e:

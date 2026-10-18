@@ -22,17 +22,18 @@ El `<feature-name>` coincide con el campo `name` de `feature_list.json`.
 | `pending` | Sin spec. El `spec-author` es el primero en actuar. |
 | `spec_ready` | Spec redactado. Esperando aprobación humana. NO se toca código. |
 | `in_progress` | Spec aprobado. `implementer` trabajando. |
-| `done` | Código verde, `reviewer` aprobó, sesión cerrada. |
+| `done` | Código verde, `reviewer` aprobó, el usuario revisó los cambios y dio su OK, commits hechos y sesión cerrada. |
 | `blocked` | Atascado. Razón en `progress/current.md`. |
 
-## La puerta de aprobación humana
+## Las puertas de aprobación humana
 
-El flujo automático se detiene **una vez**: cuando el `spec-author` termina sus tres archivos, marca la feature como `spec_ready` y para. El humano lee `specs/<feature>/` y dice «aprobado» (o pide cambios).
+El flujo automático se detiene **dos veces**:
 
-Solo entonces el `leader` transiciona `spec_ready → in_progress` y lanza el `implementer`.
+1. **Antes de implementar:** cuando el `spec-author` termina sus tres archivos, marca la feature como `spec_ready` y para. El humano lee `specs/<feature>/` y dice «aprobado» (o pide cambios). Solo entonces el `leader` transiciona `spec_ready → in_progress` y lanza el `implementer`.
+2. **Antes de commitear:** cuando el `reviewer` aprueba, los cambios se quedan **en el working tree, sin commitear**; el humano los revisa y da su OK. El commiteo atómico es el siguiente paso tras implementar y revisar, pero **nunca se commitea sin ese OK**.
 
 ```
-pending → [spec-author] → spec_ready → ⏸ HUMANO → in_progress → [implementer → reviewer] → done
+pending → [spec-author] → spec_ready → ⏸ HUMANO → in_progress → [implementer → reviewer] → ⏸ USUARIO revisa → OK → commits atómicos → done
 ```
 
 ## requirements.md — EARS estricto

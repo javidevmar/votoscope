@@ -61,6 +61,7 @@
     {
       "id": 5,
       "name": "polls_model",
+      "initiative": "polls-wikipedia",
       "title": "Modelo silver de sondeos: pollster, poll, poll_result",
       "description": "Tres tablas nuevas para los sondeos de Wikipedia, con la regla de sincronización ERD ↔ modelos ↔ migración.",
       "acceptance": [
@@ -70,11 +71,12 @@
         ".agents/data-model.md actualizado: «una página por esquema y dominio»"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 6,
       "name": "polls_fetch",
+      "initiative": "polls-wikipedia",
       "title": "fetch-polls: snapshot de revisión fija",
       "description": "Comando que resuelve la revisión actual de la página de sondeos y descarga su wikitexto al bronce.",
       "acceptance": [
@@ -90,6 +92,7 @@
     {
       "id": 7,
       "name": "polls_lexer",
+      "initiative": "polls-wikipedia",
       "title": "Lexer de wikitexto (parsers/wikitext.py)",
       "description": "Lexer genérico de tablas de wikitexto: bloques, filas, celdas, rowspan y limpieza de plantillas y referencias.",
       "acceptance": [
@@ -103,6 +106,7 @@
     {
       "id": 8,
       "name": "polls_adapter",
+      "initiative": "polls-wikipedia",
       "title": "Adaptador de Wikipedia (adapters/wikipedia_polls.py)",
       "description": "Reglas de la fuente: secciones y tablas por año, cabecera a dos filas, filas → sondeo, fechas y números.",
       "acceptance": [
@@ -118,11 +122,13 @@
     {
       "id": 9,
       "name": "polls_load",
+      "initiative": "polls-wikipedia",
       "title": "ingest-polls: carga bronce → plata de los sondeos",
       "description": "Loader y comando que registra el snapshot en bronce, lo parsea y carga silver con guard de revisión.",
       "acceptance": [
         "uv run ingestor ingest-polls [ruta] registra el fichero en bronze.ingestion (source wikipedia-en, sha256) y carga pollster/poll/poll_result en una transacción",
         "guard de revisión: un snapshot anterior al ya cargado se ignora con warning; --force lo reprocesa",
+        "resolución de elección: cada sondeo con election_id nulo se enlaza a la primera elección nacional al Congreso posterior a su trabajo de campo (mismo election_type); sin ella queda nulo, y el pase corre en cada ejecución aunque no haya snapshot nuevo",
         "validaciones mínimas: cada fila con firma y ≥2 partidos, rangos de pct/seats, suma de porcentajes ≤ 100.5 como warning",
         "fallo → rollback y estado failed en bronze.ingestion",
         "docs/ingestor/ingesta.md actualizado con los comandos nuevos"
@@ -133,6 +139,7 @@
     {
       "id": 10,
       "name": "polls_schedule",
+      "initiative": "polls-wikipedia",
       "title": "Sincronización 2×/día de los sondeos",
       "description": "Job periódico que consulta la revisión actual y solo descarga e ingiere si cambió.",
       "acceptance": [
@@ -146,6 +153,7 @@
     {
       "id": 11,
       "name": "polls_run",
+      "initiative": "polls-wikipedia",
       "title": "Ejecución real y cotejo de los sondeos",
       "description": "fetch-polls + ingest-polls sobre la página real y verificación manual de una muestra.",
       "acceptance": [
