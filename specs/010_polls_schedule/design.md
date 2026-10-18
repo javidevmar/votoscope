@@ -21,10 +21,11 @@ No se toca `ingestor/src/` (el ciclo son los comandos existentes), ni `docs/inge
 Cadena (mecanismo actual, Postgres local):
 
 ```crontab
-0 6,18 * * * cd /Users/javier/Developer/1poller/ingestor && /opt/homebrew/bin/uv run ingestor fetch-polls && /opt/homebrew/bin/uv run ingestor ingest-polls >> /Users/javier/Developer/1poller/data/polls-sync.log 2>&1
+0 6,18 * * * cd /Users/javier/Developer/1poller/ingestor && { /opt/homebrew/bin/uv run ingestor fetch-polls && /opt/homebrew/bin/uv run ingestor ingest-polls; } >> /Users/javier/Developer/1poller/data/polls-sync.log 2>&1
 ```
 
 - `&&` encadena los dos comandos y propaga el fallo: si `fetch-polls` sale ≠ 0 (página ausente, red caída), `ingest-polls` no corre y el exit code del job es ≠ 0; el mensaje queda en `data/polls-sync.log` (cron solo avisa por el exit code).
+- Las llaves `{ …; }` agrupan la cadena para que el `>>` y el `2>&1` cubran también la salida de `fetch-polls`: sin ellas la redirección solo aplicaría al último comando.
 - `cd ingestor` es necesario: `uv run` resuelve el proyecto desde el directorio actual y `settings` lee `ingestor/.env`; `RAW_DIR`/`INE_DIR` no dependen del cwd (se calculan desde `settings.py`).
 - Rutas absolutas de `uv` (`/opt/homebrew/bin/uv`, el `command -v uv` de este Mac): cron no hereda el `PATH` del shell.
 - El log va a `data/polls-sync.log`: el directorio `data/` ya existe y `*.log` está en `.gitignore` (nada que añadir al repo).
@@ -43,11 +44,12 @@ Mientras el destino sea el Postgres local (docker-compose), el job que sincroniz
 
 ```crontab
 # Sondeos (Wikipedia): cada 12 h (06:00 y 18:00 locales); `crontab -e` para instalarla.
-0 6,18 * * * cd /Users/javier/Developer/1poller/ingestor && /opt/homebrew/bin/uv run ingestor fetch-polls && /opt/homebrew/bin/uv run ingestor ingest-polls >> /Users/javier/Developer/1poller/data/polls-sync.log 2>&1
+0 6,18 * * * cd /Users/javier/Developer/1poller/ingestor && { /opt/homebrew/bin/uv run ingestor fetch-polls && /opt/homebrew/bin/uv run ingestor ingest-polls; } >> /Users/javier/Developer/1poller/data/polls-sync.log 2>&1
 ```
 
 - Sin novedades el ciclo es una única llamada ligera a la API y termina con exit 0 sin escribir nada (salvo el pase de resolución de elección, que corre igual).
-- Exit code: `0` = sincronizado o sin novedades; distinto de `0` = error (página ausente o renombrada, red caída, Postgres parado) y el mensaje queda en `data/polls-sync.log`. El `&&` evita que `ingest-polls` corra si el fetch falló.
+- Exit code: `0` = sincronizado o sin novedades; distinto de 0 = error (página ausente o renombrada, red caída, Postgres parado) y el mensaje queda en `data/polls-sync.log`. El `&&` evita que `ingest-polls` corra si el fetch falló.
+- Las llaves `{ …; }` agrupan la cadena para que `>>` y `2>&1` cubran también la salida de `fetch-polls`: sin ellas la redirección solo aplicaría al último comando.
 - Rutas absolutas a propósito: cron no hereda el `PATH` del shell (`/opt/homebrew/bin/uv` es el `command -v uv` de este Mac) y `uv run` necesita el directorio del proyecto (`cd ingestor`), que es donde `settings` lee `ingestor/.env`.
 - Alternativa **launchd** (macOS): un agente con `StartCalendarInterval` y el mismo comando, si el Mac duerme a las horas del cron.
 - El job es provisional: cuando exista entorno de despliegue pasa al workflow programado [`../.github/workflows/polls-sync.yml`](../.github/workflows/polls-sync.yml) (esqueleto ya en el repo).
@@ -77,7 +79,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v7
-      - name: Polls sync (placeholder: no deployment environment yet)
+      - name: "Polls sync (placeholder: no deployment environment yet)"
         run: |
           echo "polls sync: no deployment environment yet; the current mechanism is cron/launchd local (.agents/environment.md)"
           echo "when it exists, this job runs: uv run ingestor fetch-polls && uv run ingestor ingest-polls"
@@ -108,8 +110,8 @@ def _state(db) -> tuple: ...                  # ingestion + ids/counts de poll/p
 | `test_no_news_fetch_makes_one_api_call` | R6, R7 | snapshot `{REVID}.wikitext` en disco (revid de `api_revision.json`) + fake opener → `main(["fetch-polls"]) == 0`, exactamente una petición (la de resolución: `action=query`, sin `oldid`) y bytes del snapshot intactos |
 | `test_no_news_cycle_writes_nothing` | R8, R9, R10 | `db`: primera carga por CLI (marca `processed`), siembra de elección y sondeo pendiente; ciclo sin novedades (`fetch-polls` + `ingest-polls`) → ambos exit 0, una sola petición, `_state` intacto (bronce, `poll`, `poll_result`, `pollster`, `party`) y el sondeo pendiente enlazado (el pase de resolución corrió) |
 | `test_missing_page_fails_cycle` | R11 | fake opener con `api_missing.json` → `main(["fetch-polls"]) == 1` y ERROR en el log |
-| `test_docs_environment_schedule` | R1, R2, R3 | `.agents/environment.md` contiene `0 6,18 * * *`, `crontab`, `launchd`, `fetch-polls`, `ingest-polls`, `data/polls-sync.log`, `polls-sync.yml` |
-| `test_workflow_skeleton` | R4, R5 | `.github/workflows/polls-sync.yml` contiene `schedule:`, `0 6,18 * * *`, `workflow_dispatch`, `placeholder`, `fetch-polls`, `ingest-polls`; y **no** contiene `secrets.` (sin credenciales hasta que exista entorno) |
+| `test_docs_environment_schedule` | R1, R2, R3 | `.agents/environment.md` contiene `0 6,18 * * *`, `crontab`, `launchd`, `fetch-polls`, `ingest-polls`, `data/polls-sync.log`, `polls-sync.yml`, `Exit code`, `distinto de 0`, `cd /Users/javier/Developer/1poller/ingestor`, `/opt/homebrew/bin/uv`, `docker-compose`, `provisional`, `despliegue` y `} >>` (el redirect cubre la cadena) |
+| `test_workflow_skeleton` | R4, R5 | `.github/workflows/polls-sync.yml` contiene `schedule:`, `0 6,18 * * *`, `workflow_dispatch`, `placeholder`, `fetch-polls`, `ingest-polls` y `cron/launchd`; y **no** contiene `secrets.`, `DATABASE_URL` ni `psql` (sin credenciales ni acceso a base hasta que exista entorno) |
 
 Detalles que fijan el contrato de los tests:
 
