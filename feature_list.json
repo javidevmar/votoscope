@@ -172,7 +172,7 @@
       "title": "Catálogo de partidos y resolución compartida (parties.py)",
       "description": "src/ingestor/data/party_catalog.toml (fichas de marca con aliases) y src/ingestor/parties.py (normalización → catálogo → nombre existente → alta con warning).",
       "acceptance": [
-        "src/ingestor/data/party_catalog.toml con las fichas redactadas desde silver (extracción del plan): las 15 etiquetas de sondeos, las marcas del 2023 y las familias del diagnóstico",
+        "src/ingestor/data/party_catalog.toml con las fichas redactadas desde silver (nombres y siglas literales de lo ingerido): las 15 etiquetas de sondeos, las marcas del 2023 y las familias del diagnóstico",
         "src/ingestor/parties.py con la precedencia catálogo → nombre existente → alta (slugify) + warning; sin fuzzy-matching",
         "tests: normalización (NFKD), precedencia, desempates y altas con warning; integridad del catálogo (slugs y alias únicos; las 15 etiquetas cubiertas)",
         "sin dependencias nuevas (tomllib de la stdlib)"
@@ -188,7 +188,7 @@
       "description": "_resolve_parties pasa por parties.py; recarga --force de los 13 procesos, verificación y limpieza de huérfanos.",
       "acceptance": [
         "el loader de elecciones resuelve por parties.py (misma marca → una fila; test con siglas punteadas → un solo party)",
-        "ingest --force de los 13 procesos locales; comprobaciones del plan en verde (0 grupos por puntuación; BNG/UPL/FIA/Cs/PP/PSOE/IU en una fila)",
+        "ingest --force de los 13 procesos locales; comprobaciones de curación en verde (0 grupos por puntuación; BNG/UPL/FIA/Cs/PP/PSOE/IU en una fila)",
         "huérfanos borrados; hechos intactos salvo el party_id de las candidaturas fusionadas",
         "docs al día: .agents/data-model.md, docs/ingestor/ingesta.md, ingestor/AGENTS.md"
       ],
@@ -204,7 +204,7 @@
       "acceptance": [
         "el adaptador de sondeos resuelve los rótulos de columna contra el catálogo compartido (los 15 actuales + altas nuevas con warning); PARTY_COLUMNS se sustituye",
         "test de coincidencia sondeos↔resultados por marca (misma fila de party para poll_result y party_election)",
-        "plan polls-wikipedia.md actualizado (sustitución documentada)"
+        "docs/ingestor/ingesta.md actualizado (sustitución de la tabla de mapeo por el catálogo, documentada)"
       ],
       "sdd": true,
       "status": "spec_ready"
@@ -213,7 +213,7 @@
       "id": 15,
       "name": "delivery_gold",
       "title": "Vistas gold y contrato gold ↔ front",
-      "description": "Vistas del esquema gold (una por consulta del frontend) y el contrato que consumirá web/.",
+      "description": "Vistas del esquema gold (una por consulta del frontend) y el contrato que consumirá web/. Para los sondeos: vista plana (encuestadora, partido, %, escaños, fechas, source/revision_id) y vista ordenada por trabajo de campo para la tendencia.",
       "acceptance": [
         "vistas gold para resultados y sondeos (agregados y porcentajes solo aquí)",
         "contrato gold ↔ front documentado (qué vista alimenta qué pantalla)",
@@ -260,7 +260,7 @@
         "las reglas de extracción distinguen encuestadora, medio y reestimador cuando el literal lo contiene (p. ej. `CIS (Target Point)` → CIS + reestimador Target Point; `SocioMétrica/El Español` → SocioMétrica + medio El Español), sin inventar datos cuando no aplica",
         "la distinción queda representada en silver (esquema o derivación documentada como decisión) y la recarga del snapshot la aplica de forma idempotente",
         "tests con los literales reales de la página (CIS y sus reestimaciones, medios y encuestadoras solas)",
-        "plan polls-wikipedia.md y docs del ingestador actualizados"
+        ".agents/data-sources.md y docs del ingestador actualizados"
       ],
       "sdd": true,
       "status": "pending"

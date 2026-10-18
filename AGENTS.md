@@ -6,7 +6,7 @@ Votoscope es un agregador de resultados electorales de España (MVP: últimas ge
 
 **Regla de oro**: el modelo de datos vive siempre sincronizado en tres sitios — ERD (`docs/db/schema.drawio`), modelos (`ingestor/src/ingestor/models.py`) y migraciones Alembic. Detalles en [`.agents/data-model.md`](.agents/data-model.md).
 
-Tras implementar y revisar, los cambios se quedan en el working tree y se dividen en commits atómicos en la rama actual: el commiteo es el paso final y **nunca se commitea sin el OK explícito del usuario** (él revisa antes los cambios). Las features de una misma iniciativa (plan abierto) se agrupan en un **stack de PRs** (una rama y un PR por feature; convención en [`.agents/style.md`](.agents/style.md)). NO pushees nunca por tu cuenta salvo si te lo dice el usuario.
+Tras implementar y revisar, los cambios se quedan en el working tree y se dividen en commits atómicos en la rama actual: el commiteo es el paso final y **nunca se commitea sin el OK explícito del usuario** (él revisa antes los cambios). Las features de una misma iniciativa se agrupan en un **stack de PRs** (una rama y un PR por feature; convención en [`.agents/style.md`](.agents/style.md)). NO pushees nunca por tu cuenta salvo si te lo dice el usuario.
 
 ## 1. El arnés
 
@@ -84,7 +84,6 @@ Lee los siguientes ficheros según la tabla siguiente:
 | Estilo | [`.agents/style.md`](.agents/style.md) | Antes de escribir código o commits |
 | Entorno | [`.agents/environment.md`](.agents/environment.md) | Al levantar el entorno o configurar conexiones |
 | Estado y hoja de ruta | [`.agents/status.md`](.agents/status.md) | Al empezar una sesión de trabajo |
-| Planes de iniciativa | [`.agents/plans/README.md`](.agents/plans/README.md) | Si tu feature pertenece a una iniciativa con plan abierto |
 | Ingestador (Python) | [`ingestor/AGENTS.md`](ingestor/AGENTS.md) | Antes de tocar `ingestor/` |
 | Frontend (Next.js) | [`web/AGENTS.md`](web/AGENTS.md) | Antes de tocar `web/` |
 

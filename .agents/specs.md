@@ -15,6 +15,10 @@ specs/<NNN>_<name>/
 
 El nombre de la carpeta es `<NNN>_<name>`: el `id` de la feature en `feature_list.json` con 3 cifras (relleno con ceros) y su campo `name` (p. ej. `specs/006_polls_fetch/`).
 
+## Contexto de diseño
+
+No hay documentos de iniciativa aparte: el contexto durable vive en los **docs tema** (`.agents/*.md`, enrutados desde [`../AGENTS.md`](../AGENTS.md) §7) y en la `acceptance` de [`../feature_list.json`](../feature_list.json). El `spec-author` los lee y absorbe en el spec lo que la feature necesite; un spec referencia solo docs tema, specs hermanos y código.
+
 ## Estados de una feature
 
 | Estado | Significado |

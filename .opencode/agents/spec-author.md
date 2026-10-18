@@ -26,7 +26,7 @@ El nombre de la spec debe estar precedido siempre por el número de 3 cifras (re
 ## Protocolo
 
 1. Lee `AGENTS.md`, `.agents/specs.md`, `.agents/architecture.md`, `.agents/conventions.md`, `.agents/style.md` y, si la feature toca el modelo, `.agents/data-model.md`.
-2. Toma la feature `pending` de menor `id` en `feature_list.json` que tenga `"sdd": true`. Crea la carpeta `specs/<NNN>_<name>/` si no existe. Si la feature pertenece a una iniciativa con plan abierto (`.agents/plans/`), léelo: es contexto de diseño de partida.
+2. Toma la feature `pending` de menor `id` en `feature_list.json` que tenga `"sdd": true`. Crea la carpeta `specs/<NNN>_<name>/` si no existe. El contexto de diseño vive en los docs tema (`.agents/*.md`) y en la `acceptance` de la feature (ver `.agents/specs.md` §«Contexto de diseño»): léelos antes de redactar.
 3. Redacta `requirements.md` en **EARS estricto** (ver `.agents/specs.md`). Cada criterio del `acceptance` original DEBE estar cubierto por al menos un `R<n>`. Numera de forma estable y cierra con la tabla `acceptance ↔ R<n>`.
 4. Redacta `design.md`: archivos a tocar, firmas nuevas, excepciones, alternativa descartada con justificación. Si toca el modelo de datos, detalla los tres sitios (ERD ↔ `models.py` ↔ migración).
 5. Redacta `tasks.md`: pasos discretos en orden, cada uno con `[ ]` y la lista de `R<n>` que cubre. Una task por cambio verificable; los tests van como tasks propias (TDD).

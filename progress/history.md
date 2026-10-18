@@ -1,6 +1,6 @@
 # Bitácora histórica (append-only)
 
-Las sesiones anteriores al arnés SDD están registradas en `.agents/plans/` y en el historial de git.
+Las sesiones anteriores al arnés SDD están registradas en el historial de git.
 
 ---
 
