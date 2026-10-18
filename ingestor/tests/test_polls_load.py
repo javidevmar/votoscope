@@ -488,7 +488,7 @@ def test_fewer_than_two_parties_fails(db, tmp_path, caplog):  # R18, R22
     _assert_silver_intact(db)
 
 
-def test_pct_and_seats_out_of_range_fail(db, tmp_path, caplog):  # R19, R22
+def test_pct_turnout_and_seats_out_of_range_fail(db, tmp_path, caplog):  # R19, R22
     _ingest(db, tmp_path, 200)
     _assert_failed(
         db,
@@ -529,6 +529,14 @@ def test_pct_and_seats_out_of_range_fail(db, tmp_path, caplog):  # R19, R22
                 "28.0",
             )
         ),
+        caplog,
+        "out of range",
+    )
+    _assert_failed(
+        db,
+        tmp_path,
+        303,
+        _table(("Alpha/Medio", "1 Oct", "1,000", "101", "30.0", "28.0")),
         caplog,
         "out of range",
     )

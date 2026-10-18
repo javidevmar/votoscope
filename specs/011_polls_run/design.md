@@ -1,6 +1,6 @@
 # Diseño — `polls_run`
 
-Feature 11. Plan: [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md) §«Tareas» (tarea 7: ejecución real, conteo de completitud, cotejo y sección en `data-sources.md`), §«La fuente» (estructura, rarezas y recuentos por tabla) y §«Flecos y riesgos» (licencia CC BY-SA y enlace a la revisión; renombrados). Interfaz de entrada: [`specs/009_polls_load/design.md`](../009_polls_load/design.md) §«Interfaz para las features 10–11» — el ciclo es `fetch-polls` + `ingest-polls` y el cotejo manual usa `poll.source`/`revision_id` — y [`specs/010_polls_schedule/design.md`](../010_polls_schedule/design.md) §«Interfaz para la feature 11».
+Feature 11. Ejecución real y cotejo: corre el ciclo contra la página, cuenta la completitud y documenta la fuente (`.agents/data-sources.md`: formato, rarezas y licencia CC BY-SA con enlace a la revisión). Interfaz de entrada: [`specs/009_polls_load/design.md`](../009_polls_load/design.md) §«Interfaz para las features 10–11» — el ciclo es `fetch-polls` + `ingest-polls` y el cotejo manual usa `poll.source`/`revision_id` — y [`specs/010_polls_schedule/design.md`](../010_polls_schedule/design.md) §«Interfaz para la feature 11».
 
 Esta feature **no añade código de producción**: ejecuta los comandos existentes (features 6 y 9) y produce documentos (informe de ejecución y sección de la fuente) más los tests que fijan el estado cargado y los documentos. **No toca el modelo de datos** (sin cambios en `docs/db/schema.drawio`, `models.py` ni Alembic; la regla de oro no aplica). Sin dependencias nuevas. Sin excepciones nuevas. No se toca `ingestor/src/` ni `docs/ingestor/ingesta.md` ni `ingestor/AGENTS.md` (no hay cambios de CLI ni de comportamiento que documentar).
 
@@ -33,7 +33,7 @@ Contexto para el implementer, **no congelado** (la página y el bronce cambian):
 - Snapshots en disco: `1380713440.wikitext` (22:06) y `1380777984.wikitext` (23:20); ambos `processed` en `bronze.ingestion` (fuente `wikipedia-en`).
 - `silver` refleja el más reciente (`1380777984`): 575 `poll`, 6.125 `poll_result`, 28 `pollster`; sin `election_id` (no hay elección posterior a 2026 en `silver.election`).
 - Tablas por año del snapshot: `2026 (after FA)` (2 filas, solo cabeceras), `2026 (before FA)` (160), `2025` (180), `2024` (171), `2023` (76).
-- Completitud observada: declaradas 589 = cargadas 575 + saltadas 14 (10 cabeceras —2 por tabla—, 2 separadoras y 2 resultados: generales 2023 y europeas 2024); frente a la referencia ≈584 del plan, +5 (la página partió 2026 en dos tablas y añadió filas).
+- Completitud observada: declaradas 589 = cargadas 575 + saltadas 14 (10 cabeceras —2 por tabla—, 2 separadoras y 2 resultados: generales 2023 y europeas 2024); frente a la referencia de ≈584 filas declaradas, +5 (la página partió 2026 en dos tablas y añadió filas).
 - Avisos del adaptador (los dos únicos): `unknown party column: FA` y `unparseable turnout: 66–67` (→ `turnout` nulo).
 
 ## El informe — `docs/ingestor/polls-run.md` (R7–R11)
@@ -43,7 +43,7 @@ Estructura fija (los tests de documentos comprueban las subcadenas marcadas):
 ````markdown
 # Ejecución real y cotejo de los sondeos
 
-- Feature 11 (`polls_run`), rama `feature/polls-load`, fecha {fecha}.
+- Feature 11 (`polls_run`), rama `feature/polls-run`, fecha {fecha}.
 - Página: «Opinion polling for the 2026 Spanish general election» — revisión
   [{revid}](https://en.wikipedia.org/w/index.php?title=Opinion_polling_for_the_2026_Spanish_general_election&oldid={revid}).
 - Snapshot: `data/raw/polls/wikipedia-en/2026-general/{revid}.wikitext` (sha256 …).
@@ -67,8 +67,8 @@ cabecera); cargadas = `silver.poll` con `revision_id = {revid}`.
 | … | … | … | … |
 | **Total** | {declaradas} | {cargadas} | {saltadas} |
 
-Aritmética: declaradas = cargadas + saltadas. Frente a la referencia ≈584 del
-plan: {diferencia y explicación}.
+Aritmética: declaradas = cargadas + saltadas. Frente a la referencia de
+≈584 filas declaradas: {diferencia y explicación}.
 
 ## Método (reproducible)
 
@@ -188,5 +188,5 @@ Detalles que fijan el contrato:
 
 ## Notas
 
-- `.agents/data-sources.md` enlaza el informe; el cierre de la iniciativa (tarea 8 del plan) decidirá si algo más se pliega.
+- `.agents/data-sources.md` enlaza el informe; el cierre de la iniciativa decidirá si algo más se pliega.
 - El cotejo debe incluir la nota del review de la feature 8: la celda `66–67` de participación degrada a nula (warning) y la columna `FA` solo aparece en la cabecera de `2026 (after FA)` (sin filas de datos en el alcance).

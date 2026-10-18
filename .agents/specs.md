@@ -15,6 +15,10 @@ specs/<NNN>_<name>/
 
 El nombre de la carpeta es `<NNN>_<name>`: el `id` de la feature en `feature_list.json` con 3 cifras (relleno con ceros) y su campo `name` (p. ej. `specs/006_polls_fetch/`).
 
+## Contexto de diseño
+
+No hay documentos de iniciativa aparte: el contexto durable vive en los **docs tema** (`.agents/*.md`, enrutados desde [`../AGENTS.md`](../AGENTS.md) §7) y en la `acceptance` de [`../feature_list.json`](../feature_list.json). El `spec-author` los lee y absorbe en el spec lo que la feature necesite; un spec referencia solo docs tema, specs hermanos y código.
+
 ## Estados de una feature
 
 | Estado | Significado |
@@ -29,7 +33,7 @@ El nombre de la carpeta es `<NNN>_<name>`: el `id` de la feature en `feature_lis
 
 El flujo automático se detiene **dos veces**:
 
-1. **Antes de implementar:** cuando el `spec-author` termina sus tres archivos, marca la feature como `spec_ready` y para. El humano lee `specs/<feature>/` y dice «aprobado» (o pide cambios). Solo entonces el `leader` transiciona `spec_ready → in_progress` y lanza el `implementer`.
+1. **Antes de implementar:** cuando el `spec-author` termina sus tres archivos, marca la feature como `spec_ready` y para. El humano lee `specs/<NNN>_<name>/` y dice «aprobado» (o pide cambios). Solo entonces el `leader` transiciona `spec_ready → in_progress` y lanza el `implementer`.
 2. **Antes de commitear:** cuando el `reviewer` aprueba, los cambios se quedan **en el working tree, sin commitear**; el humano los revisa y da su OK. El commiteo atómico es el siguiente paso tras implementar y revisar, pero **nunca se commitea sin ese OK**.
 
 ```

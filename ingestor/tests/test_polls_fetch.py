@@ -4,10 +4,12 @@ The API responses and the wikitext snippet are real captures from 2026-10-17
 (see specs/polls_fetch/design.md).
 """
 
+import ast
 import io
 import json
 import logging
 import sys
+from http.client import IncompleteRead
 from pathlib import Path
 from urllib.error import URLError
 from urllib.parse import parse_qs, urlparse
@@ -123,6 +125,14 @@ def test_retry_once_then_success(caplog):  # R10
     assert "retrying once" in caplog.text
 
 
+def test_retry_once_on_incomplete_read(caplog):  # R10
+    opener = FakeOpener(IncompleteRead(b"partial"), REVISION_RESPONSE.read_bytes())
+    with caplog.at_level(logging.WARNING):
+        assert resolve_revision(DEFAULT_PAGE, opener) == (REVID, TIMESTAMP)
+    assert len(opener.calls) == 2
+    assert "retrying once" in caplog.text
+
+
 def test_retry_gives_up():  # R11
     opener = FakeOpener(URLError("network down"))
     with pytest.raises(IngestError, match="2 attempts"):
@@ -154,6 +164,21 @@ def test_download_failure_leaves_no_snapshot(tmp_path):  # R11
     with pytest.raises(IngestError, match="2 attempts"):
         fetch_snapshot(raw_dir=tmp_path, opener=opener)
     assert not list(tmp_path.rglob("*.wikitext"))
+
+
+def test_snapshot_write_is_atomic(tmp_path, monkeypatch):  # R11
+    def fail_replace(source, destination):
+        raise OSError("replace failed")
+
+    monkeypatch.setattr("ingestor.polls.fetch.os.replace", fail_replace)
+    opener = FakeOpener(REVISION_RESPONSE.read_bytes(), WIKITEXT)
+    with pytest.raises(OSError, match="replace failed"):
+        fetch_snapshot(raw_dir=tmp_path, opener=opener)
+    expected = (
+        tmp_path / "polls" / "wikipedia-en" / "2026-general" / f"{REVID}.wikitext"
+    )
+    assert not expected.exists()
+    assert not list(tmp_path.rglob("*.tmp"))
 
 
 def test_fetch_skips_existing_revision(tmp_path):  # R4
@@ -247,8 +272,14 @@ def test_no_real_urlopen_used(tmp_path, monkeypatch):  # R16
 def test_stdlib_only():  # R7
     import ingestor.polls.fetch
 
-    assert "requests" not in sys.modules
-    assert "httpx" not in sys.modules
+    source = Path(ingestor.polls.fetch.__file__).read_text(encoding="utf-8")
+    imported: set[str] = set()
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Import):
+            imported.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            imported.add(node.module.split(".")[0])
+    assert imported <= sys.stdlib_module_names | {"ingestor"}
     assert ingestor.polls.fetch.urlopen.__module__ == "urllib.request"
 
 

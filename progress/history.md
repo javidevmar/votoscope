@@ -1,6 +1,6 @@
 # Bitácora histórica (append-only)
 
-Las sesiones anteriores al arnés SDD están registradas en `.agents/plans/` y en el historial de git.
+Las sesiones anteriores al arnés SDD están registradas en el historial de git.
 
 ---
 
@@ -65,6 +65,14 @@ Las sesiones anteriores al arnés SDD están registradas en `.agents/plans/` y e
 - **Carga real (petición original):** `fetch-polls` (revisión nueva de la tarde: `1380777984`) + `ingest-polls` sobre el Postgres local → **575 sondeos, 6.125 resultados, 28 encuestadoras** (trabajo de campo 24-jul-2023 → 11-oct-2026); partidos nuevos `salf`, `alianca-cat` y `fa` (rótulo crudo de la columna desconocida — opción A funcionando en vivo). `election_id` nulo (la de 2026 aún no existe; el pase la enlazará solo).
 - **Verificación:** `./init.sh` verde (125 tests, sin skips — Postgres real); reviewer **APPROVED** (incluida prueba en seco sobre la página real: 575 filas/6.125 resultados sin errores de validación).
 - **Cierre:** feature 9 `done`. Siguiente: 10 `polls_schedule` (spec esperando aprobado) y 11 `polls_run` (spec en redacción).
+
+---
+
+## 2026-10-18 — Migración del arnés: plans → specs (features 12–14)
+
+- **Agente:** leader + spec-author (rama `feature/plans-to-specs`, cima del stack).
+- **Cambios:** specs `012_party_catalog`, `013_party_reload` y `014_party_polls` redactados desde el plan `party-norm` (quedan `spec_ready`); `.agents/plans/` eliminado y lo durable plegado a `.agents/data-model.md` (identidad de partidos) y `status.md`; referencias limpias en specs 005–011, `feature_list.json`, `AGENTS.md`, `style.md`, `specs.md`, `spec-author.md`, `init.sh` y docstrings de los loaders.
+- **Cierre:** rama/PR del stack (`feature/plans-to-specs`). Siguiente: aprobado de los specs 10–14.
 
 ---
 

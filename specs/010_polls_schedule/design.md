@@ -1,6 +1,6 @@
 # Diseño — `polls_schedule`
 
-Feature 10. Plan: [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md) §«Ejecución periódica (2×/día)» (job cada 12 h que consulta la revisión actual y solo baja e ingiere si cambió; sin novedades = una llamada ligera y exit 0 sin escribir nada; página ausente/renombrada → exit ≠ 0 y log; cron/launchd local ahora, `schedule:` de GitHub Actions cuando exista entorno). Interfaz de entrada: [`specs/009_polls_load/design.md`](../009_polls_load/design.md) §«Interfaz para las features 10–11» — el ciclo es `fetch-polls` (una llamada a la API) + `ingest-polls` (todo `processed` → sin escrituras, exit 0, con el pase de resolución corriendo igual).
+Feature 10. El job cada 12 h consulta la revisión actual y solo baja e ingiere si cambió; sin novedades = una llamada ligera y exit 0 sin escribir nada; página ausente/renombrada → exit ≠ 0 y log; cron/launchd local ahora, `schedule:` de GitHub Actions cuando exista entorno. Interfaz de entrada: [`specs/009_polls_load/design.md`](../009_polls_load/design.md) §«Interfaz para las features 10–11» — el ciclo es `fetch-polls` (una llamada a la API) + `ingest-polls` (todo `processed` → sin escrituras, exit 0, con el pase de resolución corriendo igual).
 
 Esta feature no añade código de producción: el job es el encadenado de los dos comandos existentes (features 6 y 9). Lo que se crea son los artefactos del job —sección en `.agents/environment.md`, esqueleto `.github/workflows/polls-sync.yml`— y los tests que fijan el ciclo.
 
@@ -121,7 +121,7 @@ Detalles que fijan el contrato de los tests:
 
 ## Decisiones
 
-- **El job es el encadenado de los dos comandos; no hay comando nuevo** (`sync-polls`) ni orquestador en Python: el plan fija el ciclo como `fetch-polls` + `ingest-polls` y la feature 9 lo dejó como interfaz explícita. Un comando nuevo duplicaría orquestación, añadiría superficie de CLI y obligaría a tocar `ingesta.md`.
+- **El job es el encadenado de los dos comandos; no hay comando nuevo** (`sync-polls`) ni orquestador en Python: el ciclo es `fetch-polls` + `ingest-polls`, la interfaz explícita que dejó la feature 9. Un comando nuevo duplicaría orquestación, añadiría superficie de CLI y obligaría a tocar `ingesta.md`.
 - **`&&` en la cadena**: si el fetch falla, no se ingiere; el fallo es la señal (exit ≠ 0 + log) y el pase de resolución espera a la siguiente ejecución (12 h).
 - **Cron como mecanismo canónico** (con launchd documentado como alternativa): la entrada es una línea auditable y el acceptance pide documentarla, no instalarla; un plist versionado sería configuración atada a una máquina.
 - **Workflow placeholder en verde**: la topología de entornos se decidirá con la entrega; un job programado fallando en rojo cada 12 h en `main` sería ruido, y cablear ahora un secreto `DATABASE_URL` sería inventar configuración.
@@ -131,14 +131,14 @@ Detalles que fijan el contrato de los tests:
 
 ## Alternativas descartadas
 
-1. **Comando `sync-polls` que orqueste fetch + ingest**: más código, más CLI y una salida más que documentar para lo que un `&&` resuelve; el plan y la feature 9 fijan el ciclo como dos comandos.
+1. **Comando `sync-polls` que orqueste fetch + ingest**: más código, más CLI y una salida más que documentar para lo que un `&&` resuelve; la feature 9 fija el ciclo como dos comandos.
 2. **Script `scripts/polls-sync.sh` llamado por cron**: un fichero más para encapsular una línea; el `&&` documentado es autosuficiente y no añade rutas al repo.
 3. **Workflow con el job real y `DATABASE_URL` por secreto**: la topología de entornos no existe todavía (la fija la entrega); el workflow fallaría cada 12 h en `main`.
 4. **`schedule:` comentado hasta que exista entorno**: el acceptance pide el disparador en el fichero; el placeholder verde lo cumple sin ruido.
 5. **Cron con `;` en vez de `&&`**: `ingest-polls` correría tras un fetch fallido y el exit code dejaría de reflejar el fallo del fetch (habría que capturarlo a mano).
 6. **Test del ciclo con `subprocess` sobre el binario**: no añade cobertura frente a `cli.main()` con los dobles ya usados en 6 y 9, y complica el aislamiento de la base (habría que exportar `DATABASE_URL` de test y crear esquemas).
 7. **launchd como mecanismo principal con plist versionado**: fichero de configuración atado a una máquina; el cron es una línea y el acceptance pide documentar la entrada.
-8. **Cron horario o cada minuto**: el plan fija 2×/día; subir la frecuencia es cambiar la línea documentada.
+8. **Cron horario o cada minuto**: la cadencia pedida es 2×/día; subir la frecuencia es cambiar la línea documentada.
 
 ## Interfaz para la feature 11
 

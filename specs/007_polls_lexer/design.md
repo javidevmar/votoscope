@@ -1,6 +1,6 @@
 # Diseño — `polls_lexer`
 
-Feature 7. Plan de iniciativa: [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md), §§ «Parser (wikitexto)» (estructura `polls/parsers/wikitext.py` genérico + adaptador por fuente, tres formas de prefijo de celda) y «La fuente» (rarezas verificadas). El lexer **no conoce la fuente**: secciones, cabecera a dos filas, fechas y partidos son de la feature 8.
+Feature 7. El lexer es **genérico** (`polls/parsers/wikitext.py`: bloques `{|…|}`, filas `|-`, celdas —tres formas de prefijo—, expansión de `rowspan` y limpieza) y **no conoce la fuente**: secciones, cabecera a dos filas, fechas y partidos son de la feature 8.
 
 **No toca el modelo de datos**: sin cambios en `docs/db/schema.drawio`, `models.py` ni Alembic (la regla de oro no aplica). Sin dependencias nuevas (`re`, `logging` y `dataclasses` son stdlib). Sin excepciones nuevas: módulo puro; el único log es el warning de bloque sin cierre (R18). Sin CLI.
 
@@ -53,7 +53,7 @@ Detalles que fijan el contrato:
 
 1. Para cada fila, se emiten las celdas en orden de columna: si la columna está ocupada por un `rowspan` vivo, se emite esa celda (y se descuenta); si no, la siguiente celda de la fila.
 2. Al emitir una celda con `rowspan="N"` (N ≥ 2) se registra en su columna con N−1 filas restantes.
-3. Cuando se agotan las celdas de la fila, se emiten las columnas pendientes en orden ascendente — cubre el caso real de la cabecera (`Lead` con `rowspan="2"` **después** de las columnas de partido).
+3. Cuando se agotan las celdas de la fila, se emiten las columnas pendientes en orden ascendente; los huecos saltados se rellenan con celdas vacías para que cada `rowspan` conserve su índice de columna — cubre el caso real de la cabecera (`Lead` con `rowspan="2"` **después** de las columnas de partido, con la columna «Others» vacía en la segunda fila).
 
 Cubre los tres casos reales verificados: datos (fecha/muestra del bloque del CIS arrastradas a las reestimaciones), cabecera (`rowspan="2"` en las columnas fijas y en `Lead`) y `rowspan` ≤ 1 sin efecto. La celda arrastrada es la misma `Cell` (frozen): conserva sus `attrs` con el `rowspan`; el adaptador los ignora.
 
@@ -91,7 +91,7 @@ Por qué `\n` para `<br>` y no espacio ni nada: la celda de partido real `'''31.
 
 1. **Expandir `rowspan` en el adaptador (feature 8)**: la expansión es del formato, no de la fuente; y la cabecera a dos filas (columnas fijas y `Lead` con `rowspan="2"`) necesita la expansión para alinear **todas** las columnas antes de leer los partidos.
 2. **`<br>` → espacio o eliminado**: fusiona el porcentaje con los escaños (`31.9 139` / `31.9139`); el `\n` conserva la separación real de líneas de la celda.
-3. **Renderizar a HTML y parsear con una librería** (`BeautifulSoup`, `pandas.read_html`): dependencia nueva (prohibida sin consentimiento) y el plan fija el wikitexto como formato canónico, más pequeño y sin ruido de render.
+3. **Renderizar a HTML y parsear con una librería** (`BeautifulSoup`, `pandas.read_html`): dependencia nueva (prohibida sin consentimiento) y el wikitexto es el formato canónico, más pequeño y sin ruido de render.
 4. **Regex monolítico por tabla**: no maneja llaves anidadas (`{{party color|…}}` dentro de `style=`, `{{cite web|…}}` dentro de `<ref>`) ni el split atributos/valor; ilegible y frágil.
 5. **Devolver el texto crudo de la celda (con atributos y plantillas)**: el adaptador tendría que re-parsear prefijos, y la expansión de `rowspan` no sabría qué celdas arrastrar.
 6. **Exponer offsets de tabla o partir por secciones en el lexer**: YAGNI; el adaptador (feature 8) trocea por sección y pasa el texto al lexer.
@@ -105,11 +105,11 @@ Cadenas sintéticas inline (constantes al principio del fichero); sin fixtures, 
 | --- | --- |
 | `test_parse_tables_one_per_block` (dos bloques + texto alrededor; orden) | R1, R19 |
 | `test_table_attrs_from_opening_line` (`class` y `style`) | R2 |
-| `test_closing_line_not_in_rows` (nada tras `|}` en la tabla) | R3 |
-| `test_rows_split_on_row_marker` (celdas antes del primer `|-` = primera fila; `|- style=` con atributos) | R4, R7 |
-| `test_cell_markers` (`!` → `header=True`; `|` → `header=False`) | R5 |
+| `test_closing_line_not_in_rows` (nada tras `\|}` en la tabla) | R3 |
+| `test_rows_split_on_row_marker` (celdas antes del primer `\|-` = primera fila; `\|- style=` con atributos) | R4, R7 |
+| `test_cell_markers` (`!` → `header=True`; `\|` → `header=False`) | R5 |
 | `test_cell_attr_value_split` (`rowspan="3"\| 1–4 Sep`, `style="…"\| 8.5`, `{{Party shading/PP}}\| 31.9`, link con pipes → sin split, `\|?`) | R6 |
-| `test_row_attrs_dict` (`|- style="height:42px;"`) | R7 |
+| `test_row_attrs_dict` (`\|- style="height:42px;"`) | R7 |
 | `test_rowspan_data_rows` (celda arrastrada a la fila siguiente en su columna) | R8 |
 | `test_rowspan_header_rows` (`rowspan="2"` al inicio y al final — caso `Lead`) | R8 |
 | `test_rowspan_three_rows` (`rowspan="3"` en un bloque tipo CIS) | R8 |

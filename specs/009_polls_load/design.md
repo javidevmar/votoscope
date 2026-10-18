@@ -1,6 +1,6 @@
 # Diseño — `polls_load`
 
-Feature 9. Plan de iniciativa: [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md), §§ «Obtención (bronce)» (`ingest-polls [ruta]`), «Carga (bronce → plata)» y decisión 4 (pase de resolución). Consume el adaptador de la feature 8 (`parse_polls`, `PollRow`, `ELECTION_TYPE`, `PARTY_COLUMNS`) sobre los snapshots que deja la feature 6 en `data/raw/polls/`, y los carga en `silver`. No descarga (6), no parsea wikitexto (7–8) y no programa el job (10).
+Feature 9. Loader y comando `ingest-polls`: registro del snapshot en bronce, transacción de plata, guard de revisión y pase de resolución de elección. Consume el adaptador de la feature 8 (`parse_polls`, `PollRow`, `ELECTION_TYPE`, `PARTY_COLUMNS`) sobre los snapshots que deja la feature 6 en `data/raw/polls/`, y los carga en `silver`. No descarga (6), no parsea wikitexto (7–8) y no programa el job (10).
 
 **No toca el modelo de datos**: `pollster`, `poll` y `poll_result` existen desde la feature 5; sin cambios en `docs/db/schema.drawio`, `models.py` ni Alembic (la regla de oro no aplica). Sin dependencias nuevas (`sqlalchemy` ya está). Sin excepciones nuevas: se reutiliza `IngestError`. Se reutilizan `sha256` y `slugify` de `elections/loaders/election.py`, `SOURCE` de `polls/fetch.py` y `ELECTION_TYPE`/`PARTY_COLUMNS`/`parse_polls` de `polls/adapters/wikipedia_polls.py`.
 
@@ -59,7 +59,7 @@ Detalles que fijan el contrato:
 
 ## Flujo de `ingest_polls_path`
 
-1. `resolve_poll_elections(session_factory)` — **siempre, al inicio**: el pase no queda detrás del guard «sin novedades» (decisión 4 del plan). Si `path` no existe se ha lanzado `IngestError` antes de llegar aquí (ver paso 2).
+1. `resolve_poll_elections(session_factory)` — **siempre, al inicio**: el pase no queda detrás del guard «sin novedades». Si `path` no existe se ha lanzado `IngestError` antes de llegar aquí (ver paso 2).
 2. `_snapshot_files(path)`:
    - ruta inexistente → `IngestError` (R26);
    - fichero → `[path]`; directorio → `sorted(path.rglob("*.wikitext"))` (sin error si queda vacío: no hay pendientes, R24);
@@ -87,7 +87,7 @@ El registro en bronce y los cambios de estado van en transacciones aparte, como 
 2. `_resolve_pollsters`: slugs `slugify(row.pollster_name)`; `select(Pollster).where(slug.in_(...))` + creación de los que falten; `flush` (R3).
 3. `_resolve_parties`: claves de `row.results`; para los slugs del mapeo, nombres `{col.slug: col.name for col in PARTY_COLUMNS.values()}`; para rótulos crudos (R31): slug = `slugify(clave)`, nombre = clave y `logger.warning` de alta; los que falten se crean (`names.get(slug, slug)` defensivo); `flush` (R4, R31).
 4. Borrado total: `session.execute(delete(PollResult))` y `session.execute(delete(Poll))` — `pollster` y `party` no se tocan (R7).
-5. Inserción en bloque: `insert(Poll).returning(Poll.id)` con una fila por `PollRow` (`election_type=ELECTION_TYPE`, `election_id=None`, `revision_id=revid`; R5) y `insert(PollResult)` con una fila por resultado, casando `poll_id` por orden de retorno (R6).
+5. Inserción en bloque: `insert(Poll).returning(Poll.id, sort_by_parameter_order=True)` con una fila por `PollRow` (`election_type=ELECTION_TYPE`, `election_id=None`, `revision_id=revid`; R5) y `insert(PollResult)` con una fila por resultado, casando `poll_id` por orden de retorno garantizado (R6).
 6. Warnings de suma de porcentajes, por sondeo (R20).
 
 Con las fixtures (3 filas) cualquier estrategia vale; con la página real son ~584 sondeos y ~8,7k resultados, así que la inserción va en bloque (`insert()` con `returning`), no con objetos ORM.
@@ -98,13 +98,13 @@ Con las fixtures (3 filas) cualquier estrategia vale; con la página real son ~5
 | --- | --- | --- | --- |
 | `not row.source.strip() or not row.pollster_name.strip()` | `IngestError` (rollback) | `no signature` | R17 |
 | `len(row.results) < 2` | `IngestError` (rollback) | `fewer than two parties` | R18 |
-| `pct` fuera de 0–100; `seats_min`/`seats_max` fuera de 0–350; `seats_min > seats_max` | `IngestError` (rollback) | `out of range` | R19 |
+| `pct` o `turnout` fuera de 0–100; `seats_min`/`seats_max` fuera de 0–350; `seats_min > seats_max` | `IngestError` (rollback) | `out of range` | R19 |
 | `sum(pct) > 100.5` (constante `PCT_SUM_LIMIT`) | warning y seguir | `percentages add up to` | R20 |
 | `not rows` | `IngestError` (rollback) | `no polls` | R21 |
 
 - `MAX_SEATS = 350` (tamaño del Congreso): la proyección de escaños de un sondeo al Congreso no puede superarlo.
 - El rango de `pct` y `turnout` también existe como CHECK en la base (`poll_result_pct_range`, `poll_turnout_range`); la validación del loader da el mensaje antes del commit, el CHECK es la red de seguridad.
-- La suma es warning por decisión del plan: la página no publica «otros»/indecisos, así que los % no suman 100.
+- La suma es warning: la página no publica «otros»/indecisos, así que los % no suman 100.
 
 ## Pase de resolución — `resolve_poll_elections`
 
@@ -183,7 +183,7 @@ Helper `_snapshot(tmp_path, revid, fixture)`: copia la fixture a `tmp_path/polls
 | `test_resolution_is_idempotent` (segunda pasada: 0 enlaces, sin cambios) | R16 |
 | `test_missing_signature_fails` (celda de firma vacía → `IngestError`/`failed`, silver intacto) | R17, R22 |
 | `test_fewer_than_two_parties_fails` (solo un partido con valor) | R18, R22 |
-| `test_pct_and_seats_out_of_range_fail` (`150` de pct; `400` de escaños) | R19, R22 |
+| `test_pct_turnout_and_seats_out_of_range_fail` (`150` de pct; `101` de turnout; `400` de escaños) | R19, R22 |
 | `test_pct_sum_warns_and_loads` (60 + 45: warning «add up to», carga en verde) | R20 |
 | `test_empty_snapshot_fails_and_keeps_silver` (snapshot sin sondeos tras una carga buena: `failed` y datos anteriores intactos) | R21, R22 |
 | `test_missing_path_raises` | R26 |
@@ -201,12 +201,12 @@ Helper `_snapshot(tmp_path, revid, fixture)`: copia la fixture a `tmp_path/polls
 
 ## Decisiones
 
-- **El pase de resolución corre al inicio de cada ejecución** (antes de seleccionar pendientes): es la lectura de la decisión 4 del plan («corre en cada ejecución, también sin snapshot nuevo») y de la instrucción de la cadena («antes del guard "sin novedades"»). Consecuencia documentada: un snapshot cargado en esa misma ejecución queda enlazado en la siguiente (≤12 h con el job de la feature 10); la alternativa de correrlo también tras la carga se descarta por YAGNI.
+- **El pase de resolución corre al inicio de cada ejecución** (antes de seleccionar pendientes): es la lectura de la regla («corre en cada ejecución, también sin snapshot nuevo») y de la instrucción de la cadena («antes del guard "sin novedades"»). Consecuencia documentada: un snapshot cargado en esa misma ejecución queda enlazado en la siguiente (≤12 h con el job de la feature 10); la alternativa de correrlo también tras la carga se descarta por YAGNI.
 - **Guard sin registrar**: un snapshot ignorado por el guard no se añade a `bronze.ingestion` (bronce = ficheros ingeridos; registrar `processed` mentiría). Se re-avisa con warning en cada ejecución; `--force` lo reprocesa.
-- **Reemplazo total, no por revisión**: decisión 3 del plan; `silver` refleja el último snapshot y el histórico vive en bronce. Consecuencia: los ids de `poll` cambian en cada recarga (inocuo, ya previsto en el plan).
+- **Reemplazo total, no por revisión**: `silver` refleja el último snapshot y el histórico vive en bronce. Consecuencia: los ids de `poll` cambian en cada recarga (inocuo, ya previsto).
 - **Validar antes de borrar**: las validaciones estructurales van al principio de `load_polls`; un fallo no llega a tocar `silver` (el rollback es trivial) y el mensaje del `IngestError` nombra la revisión y la fila.
 - **Snapshot vacío = error** (R21, extra sobre el acceptance): un parseo vacío por deriva del formato haría un borrado total sin inserción; abortar deja `silver` como estaba y el fichero `failed`.
-- **Inserción en bloque con `returning`**: ~9k filas por ejecución; los objetos ORM se descartan. El orden de ids devuelto por `insert().returning()` con `insertmanyvalues` sigue al de entrada (Postgres).
+- **Inserción en bloque con `returning`**: ~9k filas por ejecución; los objetos ORM se descartan. El orden de ids se fija con `sort_by_parameter_order=True`: `insertmanyvalues` no garantiza que el `RETURNING` siga al orden de entrada, y PostgreSQL tampoco garantiza el orden de un `INSERT ... RETURNING` multi-row; sin ese flag, `zip` podría casar cada `poll_id` con otro sondeo.
 - **Tests con Postgres en esquemas aislados** (`schema_translate_map`): fidelidad total (CHECK, FK, `NUMERIC`) sin tocar los esquemas reales ni crear bases nuevas; `skip` si no hay Postgres para no romper `init.sh` sin Docker (la CI lo levanta como servicio).
 - **`SOURCE` se importa de `polls/fetch.py`**: una sola definición del nombre de la fuente para descarga y registro.
 - **Sin logs INFO por celda**: los parsers/adaptadores del repo solo avisan; el loader sí registra el resultado por fichero (procesado/saltado) y los enlaces del pase.
@@ -215,9 +215,9 @@ Helper `_snapshot(tmp_path, revid, fixture)`: copia la fixture a `tmp_path/polls
 
 1. **SQLite en memoria para los tests**: `silver.election` no se puede crear (CHECK `num_nonnulls` es de Postgres; verificado con `create_all`), y un loader de hechos merece CHECK/FK/`NUMERIC` reales; además el coste es una fixture de `conftest.py`, no código de producción.
 2. **Tests contra los esquemas reales de la BD local**: el reemplazo total borra `poll`/`poll_result` de verdad (destruiría los datos de la feature 11); los esquemas traducidos aíslan sin `CREATE DATABASE`.
-3. **Resolver la elección dentro de `load_polls`** (solo al cargar): no correría «también sin snapshot nuevo» (decisión 4 del plan).
-4. **Registrar como `processed` los snapshots ignorados por el guard**: mentiría en bronce y silenciaría el aviso; el plan dice «se ignora con warning».
-5. **Validar la suma de porcentajes como error**: el plan la fija como warning (la página no publica «otros»).
+3. **Resolver la elección dentro de `load_polls`** (solo al cargar): no correría «también sin snapshot nuevo».
+4. **Registrar como `processed` los snapshots ignorados por el guard**: mentiría en bronce y silenciaría el aviso; el contrato dice «se ignora con warning».
+5. **Validar la suma de porcentajes como error**: el contrato la fija como warning (la página no publica «otros»).
 6. **Una consulta de elecciones por sondeo**: N+1 (~584 sondeos); se cachean por tipo.
 7. **Resolver por fecha de fichero (`mtime`) u orden de directorio**: el contrato es el `revision_id` del nombre (feature 6); el nombre manda.
 8. **`--page`/`--source` en `ingest-polls`**: el comando lee ficheros, no páginas; `--page` es de `fetch-polls` (feature 6).

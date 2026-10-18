@@ -1,6 +1,6 @@
 # Requisitos — `polls_run`
 
-Feature `id 11` de [`feature_list.json`](../../feature_list.json); tarea 7 del plan [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md) (§«Tareas»: ejecución real con conteo de completitud, cotejo de una muestra y sección «Sondeos (Wikipedia)» en `data-sources.md`). Alcance: ejecutar el ciclo `uv run ingestor fetch-polls` + `uv run ingestor ingest-polls` sobre el Postgres local contra la página real, verificar la carga (completitud y cotejo) y documentar la fuente (formato, rarezas y licencia) en `.agents/data-sources.md`. Los comandos son los de las features 6 y 9 —interfaz fijada en [`specs/009_polls_load/design.md`](../009_polls_load/design.md) §«Interfaz para las features 10–11»—; esta feature **no añade código de aplicación**: sus artefactos son el informe de ejecución, la sección de la fuente y los tests que fijan el estado cargado y los documentos.
+Feature `id 11` de [`feature_list.json`](../../feature_list.json). Alcance: ejecutar el ciclo `uv run ingestor fetch-polls` + `uv run ingestor ingest-polls` sobre el Postgres local contra la página real, verificar la carga (completitud y cotejo) y documentar la fuente (formato, rarezas y licencia) en `.agents/data-sources.md`. Los comandos son los de las features 6 y 9 —interfaz fijada en [`specs/009_polls_load/design.md`](../009_polls_load/design.md) §«Interfaz para las features 10–11»—; esta feature **no añade código de aplicación**: sus artefactos son el informe de ejecución, la sección de la fuente y los tests que fijan el estado cargado y los documentos.
 
 Sin cambios de modelo (ERD ↔ `models.py` ↔ migración no aplican). Sin dependencias nuevas. Sin excepciones nuevas.
 
@@ -32,7 +32,7 @@ El sondeo más antiguo de la carga DEBE tener su trabajo de campo no anterior al
 
 ## R7
 
-El informe `docs/ingestor/polls-run.md` DEBE documentar el conteo de completitud del snapshot usado —filas declaradas por tabla de año y total, sondeos cargados en `silver` y filas saltadas por diseño (cabeceras, separadoras y resultados)— comparado con la referencia ≈584 del plan y con la diferencia explicada.
+El informe `docs/ingestor/polls-run.md` DEBE documentar el conteo de completitud del snapshot usado —filas declaradas por tabla de año y total, sondeos cargados en `silver` y filas saltadas por diseño (cabeceras, separadoras y resultados)— comparado con la referencia de ≈584 filas declaradas y con la diferencia explicada.
 
 ## R8
 

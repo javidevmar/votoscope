@@ -12,6 +12,7 @@
 ## Bitácora
 
 - Sesión cerrada: features 10 `polls_schedule` y 11 `polls_run` `done` (detalle en `history.md`).
+- Revisión de los 20 hallazgos de CodeRabbit (PRs 4–12): 3 ya resueltos por cambios posteriores y 17 corregidos en la punta `feature/plans-to-specs` (cambios sin commitear; detalle en `impl_review_fixes.md`).
 
 ## Próximo paso
 

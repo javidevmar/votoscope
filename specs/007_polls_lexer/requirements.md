@@ -1,6 +1,6 @@
 # Requisitos — `polls_lexer`
 
-Feature `id 7` de [`feature_list.json`](../../feature_list.json); tarea 3 del plan [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md), §§ «Parser (wikitexto)» y «La fuente». Alcance: **lexer genérico** de tablas de wikitexto en `polls/parsers/wikitext.py` + tests con casos sintéticos. El lexer no conoce la fuente: las reglas de Wikipedia (secciones y tablas por año, cabecera a dos filas, fechas, partidos) son de la feature 8, y la carga en `silver`, de la 9.
+Feature `id 7` de [`feature_list.json`](../../feature_list.json). Alcance: **lexer genérico** de tablas de wikitexto en `polls/parsers/wikitext.py` + tests con casos sintéticos. El lexer no conoce la fuente: las reglas de Wikipedia (secciones y tablas por año, cabecera a dos filas, fechas, partidos) son de la feature 8, y la carga en `silver`, de la 9.
 
 Formas verificadas en el wikitexto real (revisión `1379921971`, 646 KB) que fijan los requisitos: una celda por línea; sin `||`, `!!`, `|+` ni tablas anidadas; 1185 atributos, todos con comillas (`rowspan="2..4"`, `colspan="N"`, `style="…"`); `<br/>` (5252) y `<br />` (2); `<ref>…</ref>` (642 cierres) y `<ref …/>` (143); `{{efn|…}}`, `{{efn|name="X"|…}}` y `{{efn|name="X"}}`; `{{smaller|X}}`; `{{font|…|text=X}}`.
 
@@ -88,11 +88,11 @@ El sistema DEBE actualizar `ingestor/AGENTS.md` (sección «Ficheros») para doc
 
 | Criterio de `acceptance` (feature_list.json) | Requirements |
 | --- | --- |
-| «`polls/parsers/wikitext.py` tokeniza bloques `{|…|}`, filas `|-` y celdas `|`/`!` y expande `rowspan` a las filas siguientes» | R1, R2, R3, R4, R5, R6, R7, R8, R19 |
-| «limpieza: `{{efn|…}}`, `<ref>…</ref>`, `'''`, `{{smaller|X}}`→X, `{{font|…|text=X}}`→X y `<br>`» | R9, R10, R11, R12, R13, R14, R15 |
+| «`polls/parsers/wikitext.py` tokeniza bloques `{\|…\|}`, filas `\|-` y celdas `\|`/`!` y expande `rowspan` a las filas siguientes» | R1, R2, R3, R4, R5, R6, R7, R8, R19 |
+| «limpieza: `{{efn\|…}}`, `<ref>…</ref>`, `'''`, `{{smaller\|X}}`→X, `{{font\|…\|text=X}}`→X y `<br>`» | R9, R10, R11, R12, R13, R14, R15 |
 | «tests con casos sintéticos de cada construcción (sin red)» | R16, R17 |
 | Extra: regla de documentación de `ingestor/AGENTS.md` (módulo nuevo de `parsers/` documentado en el mismo commit) | R20 |
-| Extra: robustez ante deriva del formato wiki (plan §Flecos: warning y a seguir) | R18 |
+| Extra: robustez ante deriva del formato wiki (warning y a seguir) | R18 |
 
 ## Nota de verificación
 

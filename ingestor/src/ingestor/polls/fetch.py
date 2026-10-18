@@ -9,8 +9,11 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
+import tempfile
 from collections.abc import Callable
+from http.client import IncompleteRead
 from pathlib import Path
 from typing import IO, NamedTuple
 from urllib.parse import urlencode
@@ -88,12 +91,12 @@ def _request(url: str, opener: Opener | None) -> bytes:
     """GET ``url`` with the project User-Agent, a timeout and one retry."""
     opener = opener or urlopen
     request = Request(url, headers={"User-Agent": USER_AGENT})
-    last_error: OSError | None = None
+    last_error: OSError | IncompleteRead | None = None
     for attempt in range(ATTEMPTS):
         try:
             with opener(request, timeout=TIMEOUT_SECONDS) as response:
                 return response.read()
-        except OSError as error:
+        except (OSError, IncompleteRead) as error:
             last_error = error
             if attempt + 1 < ATTEMPTS:
                 logger.warning("request failed (%s); retrying once", url)
@@ -114,6 +117,27 @@ def download_wikitext(revid: int, opener: Opener | None = None) -> bytes:
     return _request(_raw_url(revid), opener)
 
 
+def _write_snapshot(path: Path, data: bytes) -> None:
+    """Write ``data`` to ``path`` atomically: temp file beside it, then replace.
+
+    A failure never leaves a partial ``{revid}.wikitext`` nor a ``.tmp`` file.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(
+        dir=path.parent, prefix=f".{path.name}.", suffix=".tmp"
+    )
+    tmp = Path(tmp_name)
+    try:
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(data)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(tmp, path)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
+
+
 def fetch_snapshot(
     page: str = DEFAULT_PAGE, *, raw_dir: Path, opener: Opener | None = None
 ) -> FetchOutcome:
@@ -124,7 +148,6 @@ def fetch_snapshot(
         logger.info("snapshot up to date: %s", path)
         return FetchOutcome(revid, timestamp, path, downloaded=False)
     data = download_wikitext(revid, opener)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(data)
+    _write_snapshot(path, data)
     logger.info("downloaded snapshot %s", path)
     return FetchOutcome(revid, timestamp, path, downloaded=True)
