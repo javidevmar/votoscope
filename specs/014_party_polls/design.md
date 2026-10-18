@@ -95,7 +95,7 @@ def _resolve_parties(session: Session, rows: list[PollRow]) -> dict[str, int]:
 
 - `load_polls` usa `party_ids[key]` directamente en `result_rows` (desaparece `_party_slug`); `_resolve_pollsters` no cambia (su `slugify` ya viene de `ingestor.parties` desde la 13).
 - Un `PartyResolver` por carga: una lectura completa de `Party` por snapshot. El resolver indexa las filas que crea, así que dos claves que llevan a la misma ficha devuelven el mismo objeto (R25 de la 12) y `party_ids` queda consistente.
-- El warning de alta lo emite el resolver con el formato fijado por la 12 (`unknown party label: %s -> %s`); el `logger.warning` del loader desaparece. Un rótulo crudo como `FA` sigue su camino actual: columna avisada por el adaptador, alta avisada por el resolver.
+- El warning de alta lo emite el resolver con el formato fijado por la 12 (`unknown party label: %s -> %s`); el `logger.warning` del loader desaparece. Un rótulo crudo como `FA` sigue su camino actual: columna avisada por el adaptador, alta avisada por el resolver. En una segunda carga, `lookup("FA")` sigue sin ficha pero el nombre normalizado coincide con la fila ya creada, así que el resolver la reutiliza (sin alta ni warning), como exige R12.
 
 ### Contrato de claves (por qué `resolve(slug)` encuentra la ficha)
 

@@ -46,7 +46,7 @@ El loader NO DEBE mantener tablas locales de mapeo o de nombres de partido (`_PA
 
 ## R10
 
-SI la clave de resultado no tiene ficha en el catálogo ENTONCES el loader DEBE crear la fila con `name` igual a la clave literal y registrar el warning `unknown party label: <clave> -> <slug>`.
+SI la clave de resultado no tiene ficha en el catálogo NI coincide por normalización con el `name` de una fila de `party` existente ENTONCES el loader DEBE crear la fila con `name` igual a la clave literal y registrar el warning `unknown party label: <clave> -> <slug>`.
 
 ## R11
 
