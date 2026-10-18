@@ -178,7 +178,7 @@
         "sin dependencias nuevas (tomllib de la stdlib)"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 13,
@@ -193,7 +193,7 @@
         "docs al día: .agents/data-model.md, docs/ingestor/ingesta.md, ingestor/AGENTS.md"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 14,
@@ -207,7 +207,7 @@
         "plan polls-wikipedia.md actualizado (sustitución documentada)"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 15,
