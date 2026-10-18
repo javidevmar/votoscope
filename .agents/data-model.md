@@ -31,7 +31,7 @@ Nunca se escribe DDL a mano ni ficheros SQL de inicialización. Nunca se edita u
 - `silver.turnout`: censo, blancos y nulos por mesa y elección; los votantes se derivan: `sum(vote.votes) + blank_votes + null_votes`.
 - `silver.vote`: votos por candidatura y mesa; UK (mesa, candidatura).
 - `silver.pollster`: firma encuestadora (nombre, `slug` único).
-- `silver.poll`: sondeo del snapshot de Wikipedia; `election_type` y `election_id` nullable (la fuente publica sondeos de 2026 sin elección todavía); fechas de campo, muestra, participación y `revision_id` (BIGINT); `source` guarda la cabecera literal.
+- `silver.poll`: sondeo del snapshot de Wikipedia; `election_type` obligatorio y `election_id` nullable (la fuente publica sondeos de 2026 sin elección todavía); fechas de campo, muestra, participación y `revision_id` (BIGINT); `source` guarda la cabecera literal.
 - `silver.poll_result`: porcentaje y proyección de escaños (`seats_min`–`seats_max`) de un partido en un sondeo; UK (`poll_id`, `party_id`).
 
 ## Fuera del MVP
