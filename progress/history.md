@@ -68,6 +68,14 @@ Las sesiones anteriores al arnés SDD están registradas en el historial de git.
 
 ---
 
+## 2026-10-18 — Migración del arnés: plans → specs (features 12–14)
+
+- **Agente:** leader + spec-author (rama `feature/plans-to-specs`, cima del stack).
+- **Cambios:** specs `012_party_catalog`, `013_party_reload` y `014_party_polls` redactados desde el plan `party-norm` (quedan `spec_ready`); `.agents/plans/` eliminado y lo durable plegado a `.agents/data-model.md` (identidad de partidos) y `status.md`; referencias limpias en specs 005–011, `feature_list.json`, `AGENTS.md`, `style.md`, `specs.md`, `spec-author.md`, `init.sh` y docstrings de los loaders.
+- **Cierre:** rama/PR del stack (`feature/plans-to-specs`). Siguiente: aprobado de los specs 10–14.
+
+---
+
 ## 2026-10-18 — Features 10 `polls_schedule` y 11 `polls_run` (en serie)
 
 - **Agente:** leader + implementer + reviewer (ramas `feature/polls-schedule` y `feature/polls-run`, stack sobre `feature/polls-load`).
