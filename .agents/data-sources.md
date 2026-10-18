@@ -109,6 +109,48 @@ Fuentes (todas en `https://www.ine.es/daco/daco42/codmun/`, enlaces de la págin
 
 Avisos del gazetteer: la CCAA 08 se llama `Castilla - La Mancha` (literal de `cod_ccaa.htm`; otras tablas del INE la escriben sin espacios); 184 municipios usan códigos de municipio 9xx (asignación real del INE para altas posteriores a la numeración alfabética, p. ej. `28903` Tres Cantos); el INE no publica en esta operación las entidades CERA (se crean al ingerir).
 
+## Sondeos (Wikipedia)
+
+`https://en.wikipedia.org/wiki/Opinion_polling_for_the_2026_Spanish_general_election`
+— página «Opinion polling for the 2026 Spanish general election»: encuestas de
+intención de voto al Congreso desde las generales del 23-jul-2023. Alcance: la
+sección *Voting intention estimates* (tablas por año, ámbito nacional).
+
+- **Snapshot (bronce)**: wikitexto de una revisión fija
+  (`data/raw/polls/wikipedia-en/2026-general/{revid}.wikitext`), descargado por
+  `uv run ingestor fetch-polls` (API, `oldid`) y cargado por
+  `uv run ingestor ingest-polls` en `pollster`/`poll`/`poll_result`
+  (`bronze.ingestion`, fuente `wikipedia-en`).
+- **Formato**: tablas de wikitexto; `cabecera` a dos filas; cuatro columnas
+  fijas (firma, fechas, muestra, `participación`) + columnas de partido +
+  `Lead`; las celdas de partido llevan `%` y proyección de escaños.
+- **Rarezas estructurales**:
+  - `rowspan` en celdas de datos: los bloques del `CIS` y sus reestimaciones
+    (`CIS {{smaller|(Target Point)}}`, `(Ateneo del Dato)`, `(Sondaxe)`,
+    `(Demócrata)`, `(Logoslab)`) comparten fecha y muestra y se cargan como
+    filas propias con el literal completo en `poll.source`. El valor de la
+    celda se arrastra a las filas siguientes que cubre el `rowspan`.
+  - Las tablas por año pueden partirse en varias tablas del mismo año: hoy
+    `2026 (after FA)` (solo cabeceras) y `2026 (before FA)`.
+  - Filas `separador` (una celda con `colspan`) y filas de `resultado` de una
+    elección (`style="background:#EFEFEF"`, p. ej. generales 2023 y europeas
+    2024): se saltan; los resultados ya viven en `vote`. La columna `Lead` se
+    ignora (es derivable); las notas al pie (`{{efn|…}}`) y referencias
+    (`<ref>…</ref>`) se descartan.
+- **Rarezas de los valores**:
+  - Fechas: un día (`5 Oct`), rango en el mismo mes (`10–11 Oct`) o entre
+    meses (`29 Sep–1 Oct`); el año sale de la sección y un rango con `cruce de año`
+    (`29 Dec–5 Jan`) resta uno al inicio. Cuando la página no conoce el trabajo
+    de campo usa la `fecha de publicación` como aproximación: se guarda igual.
+  - Porcentajes: `?` y `–` → nulo; `<2.0` (sin porcentaje) → nulo.
+  - `participación` no numérica (p. ej. `66–67`) → `turnout` nulo con warning.
+  - Celdas que son solo una nota (o un desglose) → sin valor en `poll_result`.
+- **Licencia**: el texto de Wikipedia es **CC BY-SA**; al reutilizarlo hay que
+  citar la fuente y enlazar la revisión usada
+  (`https://en.wikipedia.org/w/index.php?title=Opinion_polling_for_the_2026_Spanish_general_election&oldid=1380859635`).
+- **Verificación**: informe de ejecución, conteo de completitud y cotejo en
+  [`../docs/ingestor/polls-run.md`](../docs/ingestor/polls-run.md).
+
 ## Diferencias observadas entre procesos (¡ojo si sorprende algo!)
 
 Revisión proceso a proceso de las 13 generales (2026-10-12); lo que sigue es lo que el loader tiene en cuenta:
