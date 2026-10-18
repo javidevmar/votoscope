@@ -13,6 +13,7 @@ import os
 import re
 import tempfile
 from collections.abc import Callable
+from http.client import IncompleteRead
 from pathlib import Path
 from typing import IO, NamedTuple
 from urllib.parse import urlencode
@@ -90,12 +91,12 @@ def _request(url: str, opener: Opener | None) -> bytes:
     """GET ``url`` with the project User-Agent, a timeout and one retry."""
     opener = opener or urlopen
     request = Request(url, headers={"User-Agent": USER_AGENT})
-    last_error: OSError | None = None
+    last_error: OSError | IncompleteRead | None = None
     for attempt in range(ATTEMPTS):
         try:
             with opener(request, timeout=TIMEOUT_SECONDS) as response:
                 return response.read()
-        except OSError as error:
+        except (OSError, IncompleteRead) as error:
             last_error = error
             if attempt + 1 < ATTEMPTS:
                 logger.warning("request failed (%s); retrying once", url)

@@ -9,6 +9,7 @@ import io
 import json
 import logging
 import sys
+from http.client import IncompleteRead
 from pathlib import Path
 from urllib.error import URLError
 from urllib.parse import parse_qs, urlparse
@@ -118,6 +119,14 @@ def test_timeout_applied():  # R9
 
 def test_retry_once_then_success(caplog):  # R10
     opener = FakeOpener(URLError("network down"), REVISION_RESPONSE.read_bytes())
+    with caplog.at_level(logging.WARNING):
+        assert resolve_revision(DEFAULT_PAGE, opener) == (REVID, TIMESTAMP)
+    assert len(opener.calls) == 2
+    assert "retrying once" in caplog.text
+
+
+def test_retry_once_on_incomplete_read(caplog):  # R10
+    opener = FakeOpener(IncompleteRead(b"partial"), REVISION_RESPONSE.read_bytes())
     with caplog.at_level(logging.WARNING):
         assert resolve_revision(DEFAULT_PAGE, opener) == (REVID, TIMESTAMP)
     assert len(opener.calls) == 2

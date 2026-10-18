@@ -62,7 +62,7 @@ Detalles de implementación que fijan el contrato:
 3. Si `path` existe → log INFO «up to date» y `FetchOutcome(..., downloaded=False)` sin más peticiones ni escritura.
 4. Si no existe → petición a `_raw_url(revid)`, `path.parent.mkdir(parents=True, exist_ok=True)` y escritura **atómica**: el contenido se vuelca en un fichero temporal del mismo directorio (`tempfile.mkstemp`) y se publica con `os.replace`; si algo falla, se borra el temporal. Un corte no deja un `{revid}.wikitext` parcial que la siguiente ejecución tomaría por bueno (los ~650 KB caben en memoria); log INFO «downloaded» y `FetchOutcome(..., downloaded=True)`.
 
-Errores: fallo de red persistente → `IngestError("request failed after 2 attempts: <url>")` (R11); respuesta sin revisión → `IngestError("API response without a revision (missing page?)")` (R13). Los errores de red se reintentan una vez con log WARNING entre intentos (`except OSError`, que cubre `URLError`, `HTTPError` y `TimeoutError`).
+Errores: fallo de red persistente → `IngestError("request failed after 2 attempts: <url>")` (R11); respuesta sin revisión → `IngestError("API response without a revision (missing page?)")` (R13). Los errores de red se reintentan una vez con log WARNING entre intentos (`except (OSError, IncompleteRead)`, que cubre `URLError`, `HTTPError`, `TimeoutError` y la respuesta truncada `IncompleteRead`).
 
 ## URLs
 
