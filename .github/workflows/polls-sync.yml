@@ -1,0 +1,25 @@
+name: polls-sync
+
+# Esqueleto del job programado de sondeos (2×/día). Mientras el destino sea el
+# Postgres local, la sincronización es la entrada de cron/launchd de
+# .agents/environment.md; cuando exista entorno de despliegue, sustituir el paso
+# placeholder por los dos comandos contra la base del entorno.
+
+on:
+  schedule:
+    - cron: "0 6,18 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ingestor
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v7
+      - name: "Polls sync (placeholder: no deployment environment yet)"
+        run: |
+          echo "polls sync: no deployment environment yet; the current mechanism is cron/launchd local (.agents/environment.md)"
+          echo "when it exists, this job runs: uv run ingestor fetch-polls && uv run ingestor ingest-polls"

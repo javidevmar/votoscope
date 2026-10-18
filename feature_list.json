@@ -148,7 +148,7 @@
         "test del camino «sin novedades»: no descarga, exit 0"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 11,
