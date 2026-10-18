@@ -60,7 +60,7 @@ Detalles de implementación que fijan el contrato:
 1. `resolve_revision(page)`: una petición a `_api_url(page)`; `parse_revision_response` devuelve `(revid, timestamp)`; log INFO de la revisión resuelta (**única** llamada a la API en el camino sin novedades).
 2. `path = snapshot_path(page, revid, raw_dir)`.
 3. Si `path` existe → log INFO «up to date» y `FetchOutcome(..., downloaded=False)` sin más peticiones ni escritura.
-4. Si no existe → petición a `_raw_url(revid)`, `path.parent.mkdir(parents=True, exist_ok=True)` y `path.write_bytes(data)` (los ~650 KB caben en memoria; no hay fichero parcial si la petición falla); log INFO «downloaded» y `FetchOutcome(..., downloaded=True)`.
+4. Si no existe → petición a `_raw_url(revid)`, `path.parent.mkdir(parents=True, exist_ok=True)` y escritura **atómica**: el contenido se vuelca en un fichero temporal del mismo directorio (`tempfile.mkstemp`) y se publica con `os.replace`; si algo falla, se borra el temporal. Un corte no deja un `{revid}.wikitext` parcial que la siguiente ejecución tomaría por bueno (los ~650 KB caben en memoria); log INFO «downloaded» y `FetchOutcome(..., downloaded=True)`.
 
 Errores: fallo de red persistente → `IngestError("request failed after 2 attempts: <url>")` (R11); respuesta sin revisión → `IngestError("API response without a revision (missing page?)")` (R13). Los errores de red se reintentan una vez con log WARNING entre intentos (`except OSError`, que cubre `URLError`, `HTTPError` y `TimeoutError`).
 
@@ -144,7 +144,8 @@ Fake opener local al fichero: registra `(request, timeout)` y devuelve `io.Bytes
 | `test_cli_failure_exit_1` (red caída → `main(...) == 1` y log ERROR) | R12 |
 | `test_logs_revision_and_outcome` (`caplog` INFO: `revid=` + `downloaded snapshot`/`up to date`) | R15 |
 | `test_no_real_urlopen_used` (`ingestor.polls.fetch.urlopen` parcheado a fallar + opener inyectado) | R16 |
-| `test_stdlib_only` (`requests`/`httpx` fuera de `sys.modules`; `ingestor.polls.fetch.urlopen.__module__ == "urllib.request"`) | R7 |
+| `test_snapshot_write_is_atomic` (fallo al publicar: sin `{revid}.wikitext` ni temporales) | R3, R11 |
+| `test_stdlib_only` (imports del módulo vía AST: solo stdlib e `ingestor`; `ingestor.polls.fetch.urlopen.__module__ == "urllib.request"`) | R7 |
 | `test_docs_architecture`, `test_docs_ingestor_agents`, `test_docs_ingesta` | R17, R18, R19 |
 
 La fixture `api_revision.json` es la respuesta real recortada de la tabla de arriba (capturada el 2026-10-17; revid `1380713440`); `api_missing.json`, la de página ausente. El wikitexto de prueba es un recorte pequeño real de la página (no los ~650 KB).
@@ -161,7 +162,7 @@ Los tests de docs comprueban subcadenas estables, no el texto completo: R17 → 
 
 - **`urllib` (stdlib)**: el acceptance lo fija; evita la puerta de dependencias nuevas y basta para dos GET.
 - **Sin registro en bronce desde `fetch-polls`**: el registro `bronze.ingestion` lo hace `ingest-polls` (feature 9); así `fetch-polls` no necesita Postgres y el snapshot queda inmutable en disco antes de registrarse.
-- **Escribir tras descargar completo, con `write_bytes`**: nada que limpiar si falla la red; no se escribe nunca sobre un `{revid}.wikitext` existente (bronce inmutable).
+- **Escritura atómica tras descargar completo**: el temporal + `os.replace` evita que un fallo de disco o un corte dejen un `{revid}.wikitext` parcial que el guard de «ya existe» confundiría con un snapshot válido; no se escribe nunca sobre un snapshot existente (bronce inmutable).
 - **`formatversion=2`**: listas en vez de diccionarios con `pageid` como clave; parseo trivial.
 - **`except OSError` para el reintento**: cubre `URLError`, `HTTPError` y `TimeoutError` sin enumerarlos; reintentar un 4xx es inocuo (una sola vez).
 - **Un solo `IngestError`**: sin jerarquía nueva; el CLI ya traduce `IngestError` a exit 1 + `logger.error`.
