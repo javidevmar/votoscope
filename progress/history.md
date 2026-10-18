@@ -55,3 +55,13 @@ Las sesiones anteriores al arnés SDD están registradas en `.agents/plans/` y e
 - **Caso real:** la página ya trae la columna `FA` (Broad Front); antes se perdía, ahora fluye y se dará de alta como `fa`/«FA».
 - **Verificación:** `./init.sh` verde (99 tests, ruff, `alembic check` sin drift); reviewer **APPROVED**, incluido el re-review del delta R8.
 - **Cierre:** feature 8 `done`. Siguiente: feature 9 `polls_load` (spec con R31 pendiente de aprobación).
+
+---
+
+## 2026-10-17 — Feature 9 `polls_load` (carga bronce→plata) + carga real de los sondeos
+
+- **Agente:** leader + implementer + reviewer (rama `feature/polls-load`, stack sobre `feature/polls-adapter`).
+- **Cambios:** `polls/loaders/polls.py` (registro bronce, transacción de plata, guard por revisión, pase de resolución, validaciones) + subcomando `ingest-polls [ruta] [--force]`; `tests/conftest.py` (esquemas Postgres aislados `polls_test_*`); 26 tests; docs.
+- **Carga real (petición original):** `fetch-polls` (revisión nueva de la tarde: `1380777984`) + `ingest-polls` sobre el Postgres local → **575 sondeos, 6.125 resultados, 28 encuestadoras** (trabajo de campo 24-jul-2023 → 11-oct-2026); partidos nuevos `salf`, `alianca-cat` y `fa` (rótulo crudo de la columna desconocida — opción A funcionando en vivo). `election_id` nulo (la de 2026 aún no existe; el pase la enlazará solo).
+- **Verificación:** `./init.sh` verde (125 tests, sin skips — Postgres real); reviewer **APPROVED** (incluida prueba en seco sobre la página real: 575 filas/6.125 resultados sin errores de validación).
+- **Cierre:** feature 9 `done`. Siguiente: 10 `polls_schedule` (spec esperando aprobado) y 11 `polls_run` (spec en redacción).

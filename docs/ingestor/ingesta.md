@@ -51,6 +51,22 @@ uv run ingestor fetch-polls
 uv run ingestor fetch-polls --page "Opinion polling for the 2027 Spanish general election"
 ```
 
+### `ingestor ingest-polls [ruta] [--force]`
+
+Carga en `silver` los sondeos de los snapshots de Wikipedia (ficheros `.wikitext`).
+
+- `<ruta>` puede ser un fichero de snapshot o un directorio; sin ruta se procesan los `.wikitext` bajo `RAW_DIR/polls/` (recursivo). El nombre debe ser `{revision_id}.wikitext` y el fichero debe estar bajo `RAW_DIR` (bronce guarda rutas relativas).
+- Registra cada snapshot en `bronze.ingestion` con su sha256, tamaño y `source = wikipedia-en`; si ya está `processed` (mismo sha256), se salta.
+- **Guard de revisión**: un snapshot con `revision_id` anterior al máximo ya cargado (`max(poll.revision_id)`) se ignora con warning y no se registra en bronce; `--force` reprocesa tanto los `processed` como los anteriores.
+- Antes de decidir qué snapshots están pendientes corre el **pase de resolución de elección** (ver «Comportamiento de `ingest-polls`»); también cuando no hay ningún snapshot nuevo.
+- Un error en un snapshot no aborta los demás: se registra y se sigue; sale con código 1 si alguno falla (0 si todo queda `processed`/`skipped`, también sin snapshots pendientes).
+
+```sh
+uv run ingestor ingest-polls                                   # todo RAW_DIR/polls/
+uv run ingestor ingest-polls ../data/raw/polls/wikipedia-en/2026-general/1380713440.wikitext
+uv run ingestor ingest-polls ../data/raw/polls --force
+```
+
 ## Configuración (entorno)
 
 Variables de entorno (pydantic-settings; un `.env` en `ingestor/` las sobrescribe):
@@ -78,6 +94,18 @@ Por cada carpeta de elección, todo el trabajo de plata va en **una transacción
 7. **Validación**: la suma de votos del `10` debe cuadrar con el campo «votos a candidaturas» del `09` de cada mesa. En los procesos donde los ficheros del ministerio no cuadran entre sí (1986, 1989, 1993, 1996, 2000, 2004 y 2015; ver [data-sources.md](../../.agents/data-sources.md)) se degrada a warning; en el resto, una diferencia aborta la elección.
 8. **Estados**: si todo va bien, el commit deja los hechos en `silver` y los ficheros pasan a `processed`; si algo falla, la transacción se deshace y los ficheros de esa ejecución quedan `failed` (la próxima ejecución la reintenta).
 
+## Comportamiento de `ingest-polls`
+
+Por cada snapshot, todo el trabajo de plata va en **una transacción**; el registro en bronce y los cambios de estado van en transacciones aparte (igual que en `ingest`):
+
+1. **Resolución de elección**: al inicio de cada ejecución, cada sondeo con `election_id` nulo se enlaza a la primera elección del mismo `election_type`, de ámbito nacional (sin CCAA ni municipio) y fecha estrictamente posterior a su `fieldwork_end`. Sin candidata o sin `fieldwork_end`, queda nulo. Es idempotente (solo mira los nulos), así que un sondeo cargado en una ejecución queda enlazado en la siguiente.
+2. **Bronce**: se calcula el sha256 del snapshot. Si no está en `bronze.ingestion`, se registra (`registered`, ruta relativa a `RAW_DIR`, tamaño, fuente `wikipedia-en`); si ya está `processed`, se salta (salvo `--force`).
+3. **Guard de revisión**: si el `revision_id` es anterior a `max(poll.revision_id)`, el snapshot se ignora con warning y sin registrar (salvo `--force`).
+4. **Parseo**: el wikitexto se convierte en filas de sondeo con el adaptador de la fuente (`polls/adapters/wikipedia_polls.py`).
+5. **Validaciones** (antes de tocar `silver`): cada fila necesita firma (literal y nombre de encuestadora) y al menos dos partidos con valor; porcentajes 0–100, escaños 0–350 y `seats_min ≤ seats_max`; un snapshot sin sondeos es error (protege el borrado total de `silver`). La suma de porcentajes de un sondeo por encima de 100.5 solo avisa (la página no publica «otros»).
+6. **Plata (una transacción)**: get-or-create de `pollster` (por el slug de la firma) y de `party` (slugs del mapeo; un rótulo desconocido de una columna nueva se da de alta con su slug y un warning), **borrado total** de `poll`/`poll_result` e inserción de las filas del snapshot. `silver` refleja el último snapshot ingerido; el histórico de revisiones vive en bronce.
+7. **Estados**: si todo va bien, los sondeos quedan en `silver` y el fichero pasa a `processed`; si algo falla, la transacción se deshace y el fichero queda `failed` (la próxima ejecución lo reintenta).
+
 ## Qué queda en `silver`
 
 | Tabla | Contenido |
@@ -89,7 +117,11 @@ Por cada carpeta de elección, todo el trabajo de plata va en **una transacción
 | `polling_station` | mesa (municipio, distrito, sección, código), compartida entre elecciones |
 | `turnout` | censo INE, blancos y nulos por mesa y elección |
 | `vote` | votos por candidatura y mesa (las filas con 0 votos no se guardan) |
+| `pollster` | encuestadora que firma el sondeo (slug único; se crea al vuelo desde la firma) |
+| `poll` | un sondeo por fila del snapshot: `source` (literal de cabecera), `election_type` (`congress`), `election_id` (nulo hasta que el pase de resolución encuentra elección), fechas de trabajo de campo, muestra, participación y `revision_id` de procedencia |
+| `poll_result` | porcentaje y proyección de escaños (`seats_min`/`seats_max`) por partido y sondeo |
 
 - Los votantes no se almacenan: se derivan como `sum(vote.votes) + blank_votes + null_votes`.
+- Los sondeos (`pollster`, `poll`, `poll_result`) los carga `ingest-polls` y se reemplazan enteros en cada carga: `silver` refleja el último snapshot ingerido, no un histórico.
 - No se cargan: el `04` (candidatos), los agregados `05`–`08` (el `05` solo se usa como fuente de nombres) ni las filas agregadas de CERA (CCAA y nacional: son sumas de las provinciales).
 - `bronze.ingestion` guarda una fila por fichero leído (ruta, sha256, tamaño, fuente y estado).

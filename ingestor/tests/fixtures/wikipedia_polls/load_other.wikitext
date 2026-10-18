@@ -1,0 +1,22 @@
+====Voting intention estimates====
+
+=====2026=====
+
+{| class="wikitable"
+|-
+! Polling firm/Commissioner
+! Fieldwork date
+! Sample size
+! Turnout
+! PSOE
+! PP
+! Lead
+|-
+| Beta/Medio
+| 5–6 Sep
+| 2,000
+| 70
+| 28.4<br/>{{font|size=75%|font=Verdana|text=104}}
+| {{Party shading/PP}}| '''33.1'''<br/>{{font|size=75%|font=Verdana|text=145}}
+| 4.7
+|}
