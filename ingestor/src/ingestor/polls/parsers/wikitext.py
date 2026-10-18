@@ -224,14 +224,19 @@ def _expand_rowspans(rows: list[Row]) -> list[Row]:
                     future[column] = (span - 1, cell)
             else:
                 # Row exhausted: emit the spans still ahead of this column,
-                # in ascending order (the header ``Lead`` case).
+                # padding the skipped columns so each keeps its index (the
+                # header ``Lead`` case).
                 for pending_column in sorted(c for c in pending if c > column):
+                    while column < pending_column:
+                        cells.append(Cell(text="", header=False, attrs={}))
+                        column += 1
                     left, cell = pending[pending_column]
                     cells.append(cell)
                     if left > 1:
                         pending[pending_column] = (left - 1, cell)
                     else:
                         del pending[pending_column]
+                    column += 1
                 break
             column += 1
         expanded.append(Row(cells=cells, attrs=row.attrs))

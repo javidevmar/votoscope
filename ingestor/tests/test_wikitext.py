@@ -216,8 +216,10 @@ def test_rowspan_header_rows():  # R8
         "Fieldwork date",
         "PP",
         "PSOE",
+        "",
         "Lead",
     ]
+    assert second.cells[5] is first.cells[5]
 
 
 def test_rowspan_three_rows():  # R8

@@ -53,7 +53,7 @@ Detalles que fijan el contrato:
 
 1. Para cada fila, se emiten las celdas en orden de columna: si la columna está ocupada por un `rowspan` vivo, se emite esa celda (y se descuenta); si no, la siguiente celda de la fila.
 2. Al emitir una celda con `rowspan="N"` (N ≥ 2) se registra en su columna con N−1 filas restantes.
-3. Cuando se agotan las celdas de la fila, se emiten las columnas pendientes en orden ascendente — cubre el caso real de la cabecera (`Lead` con `rowspan="2"` **después** de las columnas de partido).
+3. Cuando se agotan las celdas de la fila, se emiten las columnas pendientes en orden ascendente; los huecos saltados se rellenan con celdas vacías para que cada `rowspan` conserve su índice de columna — cubre el caso real de la cabecera (`Lead` con `rowspan="2"` **después** de las columnas de partido, con la columna «Others» vacía en la segunda fila).
 
 Cubre los tres casos reales verificados: datos (fecha/muestra del bloque del CIS arrastradas a las reestimaciones), cabecera (`rowspan="2"` en las columnas fijas y en `Lead`) y `rowspan` ≤ 1 sin efecto. La celda arrastrada es la misma `Cell` (frozen): conserva sus `attrs` con el `rowspan`; el adaptador los ignora.
 
@@ -105,11 +105,11 @@ Cadenas sintéticas inline (constantes al principio del fichero); sin fixtures, 
 | --- | --- |
 | `test_parse_tables_one_per_block` (dos bloques + texto alrededor; orden) | R1, R19 |
 | `test_table_attrs_from_opening_line` (`class` y `style`) | R2 |
-| `test_closing_line_not_in_rows` (nada tras `|}` en la tabla) | R3 |
-| `test_rows_split_on_row_marker` (celdas antes del primer `|-` = primera fila; `|- style=` con atributos) | R4, R7 |
-| `test_cell_markers` (`!` → `header=True`; `|` → `header=False`) | R5 |
+| `test_closing_line_not_in_rows` (nada tras `\|}` en la tabla) | R3 |
+| `test_rows_split_on_row_marker` (celdas antes del primer `\|-` = primera fila; `\|- style=` con atributos) | R4, R7 |
+| `test_cell_markers` (`!` → `header=True`; `\|` → `header=False`) | R5 |
 | `test_cell_attr_value_split` (`rowspan="3"\| 1–4 Sep`, `style="…"\| 8.5`, `{{Party shading/PP}}\| 31.9`, link con pipes → sin split, `\|?`) | R6 |
-| `test_row_attrs_dict` (`|- style="height:42px;"`) | R7 |
+| `test_row_attrs_dict` (`\|- style="height:42px;"`) | R7 |
 | `test_rowspan_data_rows` (celda arrastrada a la fila siguiente en su columna) | R8 |
 | `test_rowspan_header_rows` (`rowspan="2"` al inicio y al final — caso `Lead`) | R8 |
 | `test_rowspan_three_rows` (`rowspan="3"` en un bloque tipo CIS) | R8 |
