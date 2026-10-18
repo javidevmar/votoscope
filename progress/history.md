@@ -65,3 +65,14 @@ Las sesiones anteriores al arnés SDD están registradas en `.agents/plans/` y e
 - **Carga real (petición original):** `fetch-polls` (revisión nueva de la tarde: `1380777984`) + `ingest-polls` sobre el Postgres local → **575 sondeos, 6.125 resultados, 28 encuestadoras** (trabajo de campo 24-jul-2023 → 11-oct-2026); partidos nuevos `salf`, `alianca-cat` y `fa` (rótulo crudo de la columna desconocida — opción A funcionando en vivo). `election_id` nulo (la de 2026 aún no existe; el pase la enlazará solo).
 - **Verificación:** `./init.sh` verde (125 tests, sin skips — Postgres real); reviewer **APPROVED** (incluida prueba en seco sobre la página real: 575 filas/6.125 resultados sin errores de validación).
 - **Cierre:** feature 9 `done`. Siguiente: 10 `polls_schedule` (spec esperando aprobado) y 11 `polls_run` (spec en redacción).
+
+---
+
+## 2026-10-18 — Features 10 `polls_schedule` y 11 `polls_run` (en serie)
+
+- **Agente:** leader + implementer + reviewer (ramas `feature/polls-schedule` y `feature/polls-run`, stack sobre `feature/polls-load`).
+- **Feature 10 (`done`, rama `feature/polls-schedule`):** el job 2×/día es el encadenado `fetch-polls && ingest-polls`; documentado en `.agents/environment.md` (crontab `0 6,18 * * *` con el log de toda la cadena, exit codes, launchd, provisional → workflow) y esqueleto `.github/workflows/polls-sync.yml` (`schedule:` + `workflow_dispatch`, placeholder sin DB). 5 tests del ciclo «sin novedades» y de los artefactos. Reviewer con una ronda (YAML inválido, redirect fuera de la cadena, subcadenas); **APPROVED**.
+- **Feature 11 (`done`, rama `feature/polls-run`):** ejecución real `fetch-polls` + `ingest-polls` sobre el Postgres local (rev. `1380859635`): bronce `processed`; silver 575 sondeos / 6.125 resultados / 28 encuestadoras, anualidades 2023–2026 (campo desde 24-jul-2023). Informe `docs/ingestor/polls-run.md` (589 declaradas = 575 cargadas + 14 saltadas; SQL reproducible; fuera de alcance; avisos `FA`/`FV`; participación `66–67` → nula; cotejo de 6 sondeos) y sección «Sondeos (Wikipedia)» en `.agents/data-sources.md` (formato, rarezas, CC BY-SA + `oldid`). 8 tests de estado/documentos. Reviewer con una ronda (enlace roto, test reforzado, T7 y estado del arnés); **APPROVED**.
+- **Arnés:** ejecución «en serie» con dos `in_progress` transitorios — gate `./init.sh` rojo hasta cerrar la 10; resuelto con su cierre y el rebase de `feature/polls-run` encima.
+- **Verificación:** `./init.sh` verde (138 tests, ruff, `alembic check` sin drift). Sin push (pendiente del OK del usuario para el stack).
+- **Cierre:** features 10 y 11 `done`. Siguiente: tu aprobado de los specs 12–14 (`party-norm`; ya en `spec_ready`) para implementarlas en serie.
