@@ -1,6 +1,6 @@
 # Requisitos — `polls_schedule`
 
-Feature `id 10` de [`feature_list.json`](../../feature_list.json); tarea 6 del plan [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md), §«Ejecución periódica (2×/día)». Alcance: el job que sincroniza los sondeos cada 12 h —la entrada de cron/launchd documentada para el Postgres local y el esqueleto del workflow programado para cuando exista entorno de despliegue— y los tests del camino «sin novedades» del ciclo completo.
+Feature `id 10` de [`feature_list.json`](../../feature_list.json). Alcance: el job que sincroniza los sondeos cada 12 h —la entrada de cron/launchd documentada para el Postgres local y el esqueleto del workflow programado para cuando exista entorno de despliegue— y los tests del camino «sin novedades» del ciclo completo.
 
 El ciclo es el encadenado de los dos comandos ya existentes (features 6 y 9): `uv run ingestor fetch-polls` y, solo si termina con éxito, `uv run ingestor ingest-polls`; es la interfaz fijada en [`specs/009_polls_load/design.md`](../009_polls_load/design.md) §«Interfaz para las features 10–11». Esta feature **no añade código de producción**: su contrato son los artefactos (documentación y workflow) y los tests que fijan el comportamiento del ciclo sin novedades.
 
@@ -57,7 +57,7 @@ SI la API no devuelve ninguna revisión para la página (ausente o renombrada si
 | «entrada de cron/launchd documentada en `.agents/environment.md` (mientras el destino sea el Postgres local)» | R1, R2, R3 |
 | «esqueleto de workflow con `schedule:` para cuando exista entorno de despliegue» | R4, R5 |
 | «test del camino «sin novedades»: no descarga, exit 0» | R6, R7, R8, R9, R10 |
-| Extra (plan §«Ejecución periódica»): «página ausente o renombrada → exit ≠ 0 y log» | R11 |
+| Extra: «página ausente o renombrada → exit ≠ 0 y log» | R11 |
 
 ## Nota de verificación
 

@@ -1,6 +1,6 @@
 # Diseño — `polls_fetch`
 
-Feature 6. Plan de iniciativa: [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md), §§ «La fuente» y «Obtención (bronce)»; materializa la decisión 1 del plan («los sondeos se descargan por CLI»). Solo descarga al bronce: sin parseo (7–8) y sin base de datos (9).
+Feature 6. Materializa la excepción acotada «los sondeos se descargan por CLI» de [`.agents/architecture.md`](../../.agents/architecture.md). Solo descarga al bronce: sin parseo (7–8) y sin base de datos (9).
 
 **No toca el modelo de datos**: sin cambios en `docs/db/schema.drawio`, `models.py` ni Alembic (la regla de oro no aplica). Sin dependencias nuevas (`urllib` es stdlib). Sin excepciones nuevas: se reutiliza `IngestError` (`ingestor/errors.py`). En caso de necesitar modificación de modelo, siempre pregunta al usuario y anota el cambio.
 
@@ -89,7 +89,7 @@ Formas reales de la respuesta (base de las fixtures):
 
 `snapshot_path` = `raw_dir / "polls" / SOURCE / snapshot_dir(page) / f"{revid}.wikitext"`.
 
-`snapshot_dir`: si el título (normalizando `_`→espacio) es `DEFAULT_PAGE` → `DEFAULT_SNAPSHOT_DIR` (`2026-general`, que fija el acceptance); para el resto, slug `re.sub(r"[^a-z0-9]+", "-", page.lower()).strip("-")`. La alternativa (slugificar también la página por defecto) se descarta en «Alternativas» porque rompería la ruta fijada. El `--page` queda listo para el renombrado futuro («2027…»); el contraste con la página española seguiría siendo manual (mismo host, plan §La fuente).
+`snapshot_dir`: si el título (normalizando `_`→espacio) es `DEFAULT_PAGE` → `DEFAULT_SNAPSHOT_DIR` (`2026-general`, que fija el acceptance); para el resto, slug `re.sub(r"[^a-z0-9]+", "-", page.lower()).strip("-")`. La alternativa (slugificar también la página por defecto) se descarta en «Alternativas» porque rompería la ruta fijada. El `--page` queda listo para el renombrado futuro («2027…»); el contraste con la página española seguiría siendo manual (mismo host).
 
 ## CLI — `src/ingestor/cli.py`
 
@@ -159,8 +159,8 @@ Los tests de docs comprueban subcadenas estables, no el texto completo: R17 → 
 
 ## Decisiones
 
-- **`urllib` (stdlib)**: el acceptance y el plan lo fijan; evita la puerta de dependencias nuevas y basta para dos GET.
-- **Sin registro en bronce desde `fetch-polls`**: el plan asigna el registro `bronze.ingestion` a `ingest-polls` (feature 9); así `fetch-polls` no necesita Postgres y el snapshot queda inmutable en disco antes de registrarse.
+- **`urllib` (stdlib)**: el acceptance lo fija; evita la puerta de dependencias nuevas y basta para dos GET.
+- **Sin registro en bronce desde `fetch-polls`**: el registro `bronze.ingestion` lo hace `ingest-polls` (feature 9); así `fetch-polls` no necesita Postgres y el snapshot queda inmutable en disco antes de registrarse.
 - **Escribir tras descargar completo, con `write_bytes`**: nada que limpiar si falla la red; no se escribe nunca sobre un `{revid}.wikitext` existente (bronce inmutable).
 - **`formatversion=2`**: listas en vez de diccionarios con `pageid` como clave; parseo trivial.
 - **`except OSError` para el reintento**: cubre `URLError`, `HTTPError` y `TimeoutError` sin enumerarlos; reintentar un 4xx es inocuo (una sola vez).
@@ -169,9 +169,9 @@ Los tests de docs comprueban subcadenas estables, no el texto completo: R17 → 
 
 ## Alternativas descartadas
 
-1. **`curl` a mano** (ya descartada en el plan): cada refresco dependería de que alguien recuerde la revisión exacta; sin test posible sin red.
+1. **`curl` a mano**: cada refresco dependería de que alguien recuerde la revisión exacta; sin test posible sin red.
 2. **`requests`/`httpx`**: dependencia nueva sin necesidad; prohibido añadir sin consentimiento explícito.
 3. **Descargar con la API (`prop=revisions&rvprop=content&rvslots=main`)**: payload más grande y anidado; `index.php?oldid=…&action=raw` devuelve el wikitexto canónico tal cual (verificado: 651.802 bytes, HTTP 200).
 4. **Descargar a un fichero temporal y `os.replace`**: resuelve un problema que no existe aquí (~650 KB en memoria; una sola escritura) y añade ficheros temporales que el cierre de sesión prohíbe.
-5. **Registrar `bronze.ingestion` desde `fetch-polls`**: duplicaría el registro que el plan asigna a `ingest-polls` y haría que el fetch necesitase Postgres.
-6. **Opciones extra `--dir`/`--host`**: YAGNI; el slug del título cubre el renombrado y el contraste con la página española es manual (plan §La fuente). Se añadirían el día que se scripte el contraste.
+5. **Registrar `bronze.ingestion` desde `fetch-polls`**: duplicaría el registro que hace `ingest-polls` y haría que el fetch necesitase Postgres.
+6. **Opciones extra `--dir`/`--host`**: YAGNI; el slug del título cubre el renombrado y el contraste con la página española es manual. Se añadirían el día que se scripte el contraste.

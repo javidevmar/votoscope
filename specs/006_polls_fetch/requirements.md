@@ -1,6 +1,6 @@
 # Requisitos — `polls_fetch`
 
-Feature `id 6` de [`feature_list.json`](../../feature_list.json); tarea 2 del plan [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md), §§ «La fuente» y «Obtención (bronce)». Alcance: descarga del snapshot de wikitexto de **revisión fija** de la página de sondeos al bronce (`data/raw/polls/`). El parseo del wikitexto (features 7–8) y la carga en `silver` (feature 9) quedan fuera.
+Feature `id 6` de [`feature_list.json`](../../feature_list.json). Alcance: descarga del snapshot de wikitexto de **revisión fija** de la página de sondeos al bronce (`data/raw/polls/`). El parseo del wikitexto (features 7–8) y la carga en `silver` (feature 9) quedan fuera.
 
 El alcance del snapshot es la **página completa** (todas las tablas de encuestas bajo *Voting intention estimates*, desde las generales del 23-jul-2023 hasta hoy): `fetch-polls` baja el wikitexto entero, sin recortar secciones.
 

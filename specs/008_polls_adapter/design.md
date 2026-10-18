@@ -1,6 +1,6 @@
 # Diseño — `polls_adapter`
 
-Feature 8. Plan de iniciativa: [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md), §§ «La fuente» (estructura de las tablas, cabecera a dos filas, celdas de partido, rarezas) y «Parser (wikitexto)» (mitad adaptador: reglas de esta fuente, mapeo de partidos completo, columna desconocida → warning). Consume el lexer genérico de la feature 7 (`polls/parsers/wikitext.py`: bloques, filas, celdas, expansión de `rowspan`, limpieza) y produce las filas que cargará la feature 9. No descarga (feature 6) ni toca la base de datos.
+Feature 8. Reglas de la fuente de sondeos: tablas por año, cabecera a dos filas, celdas de partido, rarezas y mapeo de partidos (columna desconocida → warning). Consume el lexer genérico de la feature 7 (`polls/parsers/wikitext.py`: bloques, filas, celdas, expansión de `rowspan`, limpieza) y produce las filas que cargará la feature 9. No descarga (feature 6) ni toca la base de datos.
 
 **No toca el modelo de datos**: sin cambios en `docs/db/schema.drawio`, `models.py` ni Alembic (la regla de oro no aplica). Sin dependencias nuevas (`re`, `logging`, `dataclasses`, `datetime`, `decimal` son stdlib). Sin excepciones nuevas: módulo puro; los casos raros se registran como warnings (R22–R25). Sin CLI.
 
@@ -109,7 +109,7 @@ Detalles que fijan el contrato:
 | `SALF` | `salf` | Se Acabó La Fiesta |
 | `Aliança.cat` | `alianca-cat` | Aliança Catalana |
 
-El rótulo de Adelante Andalucía es el resuelto del snapshot real (`link=Adelante Andalucía (2021)`); el plan lo escribe como «Adelante Andalucía». Si la wiki renombra el artículo, la columna cae en R8 (warning + rótulo crudo; el loader la da de alta): deriva aceptada por el plan (§Flecos). Los nombres solo se usan al crear un partido que falte; los fija el plan para `salf`/`alianca-cat`.
+El rótulo de Adelante Andalucía es el resuelto del snapshot real (`link=Adelante Andalucía (2021)`); se normaliza como «Adelante Andalucía». Si la wiki renombra el artículo, la columna cae en R8 (warning + rótulo crudo; el loader la da de alta): deriva aceptada. Los nombres solo se usan al crear un partido que falte; los de `salf` y `alianca-cat` los fija este spec.
 
 ## Lectura de filas (R10–R14, R20–R21)
 
@@ -216,14 +216,14 @@ Sin red; `FIXTURES = Path(__file__).parent / "fixtures" / "wikipedia_polls"`; he
 
 ## Decisiones
 
-- **El adaptador consume el lexer (feature 7)**: la tokenización de tablas, `rowspan` y limpieza ya están resueltos y testeados; aquí solo viven las reglas de la fuente (plan §Parser).
-- **Columnas por rótulo, no por posición** (acceptance): las columnas de partido cambian entre años (2023 no tiene SALF/Aliança.cat; 2026 añade Adelante Andalucía); el plan lo fija y el test lo verifica con un orden distinto.
+- **El adaptador consume el lexer (feature 7)**: la tokenización de tablas, `rowspan` y limpieza ya están resueltos y testeados; aquí solo viven las reglas de la fuente.
+- **Columnas por rótulo, no por posición** (acceptance): las columnas de partido cambian entre años (2023 no tiene SALF/Aliança.cat; 2026 añade Adelante Andalucía); el test lo verifica con un orden distinto.
 - **Corte jerárquico de secciones**: el cuerpo termina en el encabezado de nivel igual o superior; con un corte «a cualquier encabezado» el cuerpo de `Voting intention estimates` quedaría vacío y no se parsearía ninguna tabla.
 - **`–`/sin valores no producen resultado**: evita `poll_result` nulas y encaja con la validación de la feature 9 («≥2 partidos con valor»); `len(row.results)` es ese contador.
-- **`source` literal + `pollster_name` extraído**: el plan fija el literal completo en `poll.source` y la firma (antes de `(` o `/`) como pollster; las reestimaciones del CIS son filas propias, no un caso especial.
+- **`source` literal + `pollster_name` extraído**: el literal completo queda en `poll.source` y la firma (antes de `(` o `/`) en `pollster`; las reestimaciones del CIS son filas propias, no un caso especial.
 - **`ELECTION_TYPE` en el adaptador**: el ámbito (nacional, Congreso) es de la fuente; la carga (feature 9) no lo hardcodea.
 - **Año desde la subsección**: las celdas del snapshot real no llevan año; los rangos que cruzan año restan uno al inicio.
-- **Warning y seguir** (plan §Flecos): toda deriva del formato degrada a warning + valor nulo/salto, nunca a excepción; las fixtures fijan las formas actuales.
+- **Warning y seguir**: toda deriva del formato degrada a warning + valor nulo/salto, nunca a excepción; las fixtures fijan las formas actuales.
 - **Sin logs INFO**: consistente con el resto de parsers del repo.
 
 ## Alternativas descartadas
@@ -234,8 +234,8 @@ Sin red; `FIXTURES = Path(__file__).parent / "fixtures" / "wikipedia_polls"`; he
 4. **Emitir resultados con nulos para `–`/`?`**: ruido en `poll_result`; la ausencia de fila expresa «no listado»/«desconocido» y simplifica la validación de la carga.
 5. **Exponer el `Table` del lexer como contrato**: acoplaría la feature 9 al lexer; el contrato es `PollRow` (dataclasses propias).
 6. **Dejar el mapeo de partidos para la carga**: es regla de la fuente (rótulo de cabecera → slug) y las fixtures del adaptador deben fijarla; la carga solo hace `get-or-create` con slug/nombre.
-7. **`pollster` = literal completo (`CIS (Target Point)`)**: el plan fija la firma (`CIS`) y el literal en `source`; el gráfico puede filtrar por `source`.
-8. **Parsear HTML o usar una librería**: descartado en el plan (wikitexto es el formato canónico; sin dependencias nuevas).
+7. **`pollster` = literal completo (`CIS (Target Point)`)**: la firma (`CIS`) va a `pollster` y el literal a `source`; el gráfico puede filtrar por `source`.
+8. **Parsear HTML o usar una librería**: descartado (wikitexto es el formato canónico; sin dependencias nuevas).
 9. **Soporte de `||`/`!!`/celdas multilínea o tablas anidadas**: no existen en la fuente (verificado: 0); se añadirían si una deriva los introduce (warning y a seguir).
 
 ## Interfaz para la feature 9

@@ -1,6 +1,6 @@
 # Requisitos — `polls_adapter`
 
-Feature `id 8` de [`feature_list.json`](../../feature_list.json); tarea 4 del plan [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md), §§ «La fuente» y «Parser (wikitexto)». Alcance: `polls/adapters/wikipedia_polls.py` — reglas de la fuente de sondeos de Wikipedia (secciones y tablas por año, cabecera a dos filas, filas → sondeos, fechas, números, mapeo de partidos, saltos) — sobre el lexer genérico de la feature 7 (`polls/parsers/wikitext.py`). No descarga (feature 6) ni carga en `silver` (feature 9).
+Feature `id 8` de [`feature_list.json`](../../feature_list.json). Alcance: `polls/adapters/wikipedia_polls.py` — reglas de la fuente de sondeos de Wikipedia (secciones y tablas por año, cabecera a dos filas, filas → sondeos, fechas, números, mapeo de partidos, saltos) — sobre el lexer genérico de la feature 7 (`polls/parsers/wikitext.py`). No descarga (feature 6) ni carga en `silver` (feature 9).
 
 Formas verificadas en el snapshot real (2026-10-17) que fijan los requisitos: tablas por año bajo `====Voting intention estimates====` (`2026 (after FA)` — vacía en esa revisión —, `2026 (before FA)`, `2025`, `2024`, `2023`); cabecera a dos filas `!` (la segunda, de `{{party color|…}}`, se ignora); 17–20 columnas; filas separadoras `| colspan="17" style="background:#A0A0A0"|`; filas de resultado `|- style="background:#EFEFEF;"`; celdas de partido con `%` + `<br/>` + `{{font|…|text=escaños}}`, `–`, `?`, `<2.0` y rangos `135/137`; fechas `10–11 Oct`, `5 Oct`, `29 Sep–1 Oct`, `29 Dec–5 Jan`, `?`; muestras `1,000`/`?`; participación `67.6`/`66`/`?`.
 
@@ -129,13 +129,13 @@ El sistema DEBE actualizar `ingestor/AGENTS.md` (bullet de `adapters/`) para doc
 | «mapeo a slugs de `silver.party`; SALF y Aliança.cat se crean; reestimaciones del CIS (Target Point, Ateneo del Dato…) se cargan como filas con source literal» | R6, R7, R20, R21 |
 | «filas separadoras y la fila del resultado de 2023 se saltan» | R10, R11 |
 | «fixtures recortadas reales + sintéticas en `tests/fixtures/wikipedia_polls/`» | R28 |
-| Extra: robustez ante deriva del formato (plan §Flecos: «warning y a seguir») | R22, R23, R24, R25 |
+| Extra: robustez ante deriva del formato («warning y a seguir») | R22, R23, R24, R25 |
 | Extra: contrato para la feature 9 (`ELECTION_TYPE`) y pureza del adaptador | R26, R27 |
 | Extra: regla de documentación (módulo nuevo de `adapters/` documentado en el mismo commit) | R29 |
 
 ## Notas de alcance
 
-- **`FA` (Broad Front / Frente Amplio)**: el snapshot verificado trae esa columna en varias tablas (p. ej. `2026 (after FA)`), fuera del mapeo del plan. Cae en R8: warning y sus resultados se emiten con el rótulo crudo `FA`; el loader (feature 9) lo dará de alta como `fa`/«FA», y la curación fina llega con el catálogo de party-norm (feature 14).
+- **`FA` (Broad Front / Frente Amplio)**: el snapshot verificado trae esa columna en varias tablas (p. ej. `2026 (after FA)`), fuera del mapeo inicial. Cae en R8: warning y sus resultados se emiten con el rótulo crudo `FA`; el loader (feature 9) lo dará de alta como `fa`/«FA», y la curación fina llega con el catálogo de party-norm (feature 14).
 - **Creación de partidos**: el adaptador no toca la base de datos; expone slug y nombre (R7) para que la carga (feature 9, `get-or-create`) cree `salf` y `alianca-cat`.
 - **Sin cambios de modelo**: esta feature no toca `docs/db/schema.drawio`, `models.py` ni Alembic (la regla de oro no aplica).
 

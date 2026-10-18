@@ -1,6 +1,6 @@
 # Requisitos — `polls_load`
 
-Feature `id 9` de [`feature_list.json`](../../feature_list.json); tarea 5 del plan [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md), §§ «Obtención (bronce)» (`ingest-polls [ruta]`), «Carga (bronce → plata)» (registro bronce, transacción, get-or-create, borrado+inserción, guard por `max(poll.revision_id)`, validaciones) y decisión 4 (pase de resolución de `poll.election_id`). Alcance: loader y comando `ingest-polls` — registro del snapshot en bronce, parseo con el adaptador de la feature 8 y carga de `pollster`/`poll`/`poll_result` en `silver`, con guard de revisión y pase de resolución de elección. La descarga es de la feature 6; el lexer (7) y el adaptador (8) ya están specificados e implementados antes en la cadena.
+Feature `id 9` de [`feature_list.json`](../../feature_list.json). Alcance: loader y comando `ingest-polls` — registro del snapshot en bronce, parseo con el adaptador de la feature 8 y carga de `pollster`/`poll`/`poll_result` en `silver`, con guard de revisión y pase de resolución de elección. La descarga es de la feature 6; el lexer (7) y el adaptador (8) ya están specificados e implementados antes en la cadena.
 
 Sin cambios de modelo: `pollster`, `poll` y `poll_result` existen desde la feature 5 (ERD ↔ `models.py` ↔ migración no aplican). Sin dependencias nuevas; se reutilizan `IngestError`, `sha256`/`slugify` (`elections/loaders/election.py`), `SOURCE` (`polls/fetch.py`) y `ELECTION_TYPE`/`PARTY_COLUMNS`/`parse_polls` (`polls/adapters/wikipedia_polls.py`).
 
@@ -145,8 +145,8 @@ CUANDO la clave de un resultado no es un slug del mapeo (rótulo crudo de una co
 
 ## Notas de alcance
 
-- **Reemplazo total**: `silver` refleja el último snapshot ingerido (decisión 3 del plan); el histórico de revisiones vive en bronce. Por eso el borrado es de toda la tabla (`poll_result` y `poll`), no solo de las filas del snapshot.
-- **Pase de resolución al inicio**: corre antes de seleccionar snapshots pendientes (decisión 4 del plan: «corre en cada ejecución, también sin snapshot nuevo»); los sondeos de un snapshot cargado en esa misma ejecución quedan enlazados en la siguiente ejecución (≤12 h con el job programado de la feature 10). La alternativa de resolver también tras la carga se descarta en [`design.md`](design.md).
+- **Reemplazo total**: `silver` refleja el último snapshot ingerido ; el histórico de revisiones vive en bronce. Por eso el borrado es de toda la tabla (`poll_result` y `poll`), no solo de las filas del snapshot.
+- **Pase de resolución al inicio**: corre antes de seleccionar snapshots pendientes («corre en cada ejecución, también sin snapshot nuevo»); los sondeos de un snapshot cargado en esa misma ejecución quedan enlazados en la siguiente ejecución (≤12 h con el job programado de la feature 10). La alternativa de resolver también tras la carga se descarta en [`design.md`](design.md).
 - **«Ámbito nacional»**: columnas de ámbito (`autonomous_community_ine_code`, `municipality_id`) nulas en `silver.election`; hoy todos los sondeos son al Congreso nacional (`ELECTION_TYPE` del adaptador).
 - **R21 es una validación extra** a la lista mínima del acceptance: un parseo vacío (deriva del formato) haría un borrado total sin inserción; se aborta la carga.
 - **Sin cambios de modelo**: esta feature no toca `docs/db/schema.drawio`, `models.py` ni Alembic (la regla de oro no aplica).

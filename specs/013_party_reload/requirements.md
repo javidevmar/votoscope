@@ -73,7 +73,7 @@ La limpieza de huérfanos DEBE dejar `silver.party` sin filas que no tengan ni c
 | Criterio de `acceptance` (feature_list.json) | Requirements |
 | --- | --- |
 | «el loader de elecciones resuelve por parties.py (misma marca → una fila; test con siglas punteadas → un solo party)» | R1, R2, R3, R4 |
-| «ingest --force de los 13 procesos locales; comprobaciones del plan en verde (0 grupos por puntuación; BNG/UPL/FIA/Cs/PP/PSOE/IU en una fila)» | R7, R8, R9 |
+| «ingest --force de los 13 procesos locales; comprobaciones de curación en verde (0 grupos por puntuación; BNG/UPL/FIA/Cs/PP/PSOE/IU en una fila)» | R7, R8, R9 |
 | «huérfanos borrados; hechos intactos salvo el party_id de las candidaturas fusionadas» | R5, R6, R10 |
 | «docs al día: .agents/data-model.md, docs/ingestor/ingesta.md, ingestor/AGENTS.md» | R11, R12, R13, R14, R15 |
 

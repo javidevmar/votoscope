@@ -1,6 +1,6 @@
 # Requisitos — `polls_model`
 
-Feature `id 5` de [`feature_list.json`](../../feature_list.json); tarea 1 del plan [`.agents/plans/polls-wikipedia.md`](../../.agents/plans/polls-wikipedia.md), § «Modelo (silver)». Alcance: solo el modelo `silver` de los sondeos y su sincronización ERD ↔ `models.py` ↔ migración. Parser, loader y CLI son features posteriores.
+Feature `id 5` de [`feature_list.json`](../../feature_list.json). Alcance: solo el modelo `silver` de los sondeos y su sincronización ERD ↔ `models.py` ↔ migración. Parser, loader y CLI son features posteriores.
 
 ## R1
 
