@@ -164,7 +164,11 @@ def load_polls(session: Session, rows: list[PollRow], revision_id: int) -> None:
         }
         for row in rows
     ]
-    poll_ids = list(session.scalars(insert(Poll).returning(Poll.id), poll_rows))
+    poll_ids = list(
+        session.scalars(
+            insert(Poll).returning(Poll.id, sort_by_parameter_order=True), poll_rows
+        )
+    )
     result_rows = [
         {
             "poll_id": poll_id,
@@ -259,6 +263,8 @@ def _validate(rows: list[PollRow], revision_id: int) -> None:
             raise IngestError(f"{label}: no signature")
         if len(row.results) < 2:
             raise IngestError(f"{label}: fewer than two parties with a value")
+        if row.turnout is not None and not 0 <= row.turnout <= 100:
+            raise IngestError(f"{label}: turnout out of range: {row.turnout}")
         for key, result in row.results.items():
             if result.pct is not None and not 0 <= result.pct <= 100:
                 raise IngestError(

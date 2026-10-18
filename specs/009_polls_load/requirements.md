@@ -78,7 +78,7 @@ SI una fila del snapshot produce menos de dos partidos con valor ENTONCES el sis
 
 ## R19
 
-SI un porcentaje queda fuera de 0–100, un escaño fuera de 0–350 o `seats_min` es mayor que `seats_max` ENTONCES el sistema DEBE abortar la carga con `IngestError`.
+SI un porcentaje o `turnout` queda fuera de 0–100, un escaño fuera de 0–350 o `seats_min` es mayor que `seats_max` ENTONCES el sistema DEBE abortar la carga con `IngestError`.
 
 ## R20
 

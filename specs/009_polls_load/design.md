@@ -87,7 +87,7 @@ El registro en bronce y los cambios de estado van en transacciones aparte, como 
 2. `_resolve_pollsters`: slugs `slugify(row.pollster_name)`; `select(Pollster).where(slug.in_(...))` + creación de los que falten; `flush` (R3).
 3. `_resolve_parties`: claves de `row.results`; para los slugs del mapeo, nombres `{col.slug: col.name for col in PARTY_COLUMNS.values()}`; para rótulos crudos (R31): slug = `slugify(clave)`, nombre = clave y `logger.warning` de alta; los que falten se crean (`names.get(slug, slug)` defensivo); `flush` (R4, R31).
 4. Borrado total: `session.execute(delete(PollResult))` y `session.execute(delete(Poll))` — `pollster` y `party` no se tocan (R7).
-5. Inserción en bloque: `insert(Poll).returning(Poll.id)` con una fila por `PollRow` (`election_type=ELECTION_TYPE`, `election_id=None`, `revision_id=revid`; R5) y `insert(PollResult)` con una fila por resultado, casando `poll_id` por orden de retorno (R6).
+5. Inserción en bloque: `insert(Poll).returning(Poll.id, sort_by_parameter_order=True)` con una fila por `PollRow` (`election_type=ELECTION_TYPE`, `election_id=None`, `revision_id=revid`; R5) y `insert(PollResult)` con una fila por resultado, casando `poll_id` por orden de retorno garantizado (R6).
 6. Warnings de suma de porcentajes, por sondeo (R20).
 
 Con las fixtures (3 filas) cualquier estrategia vale; con la página real son ~584 sondeos y ~8,7k resultados, así que la inserción va en bloque (`insert()` con `returning`), no con objetos ORM.
@@ -98,7 +98,7 @@ Con las fixtures (3 filas) cualquier estrategia vale; con la página real son ~5
 | --- | --- | --- | --- |
 | `not row.source.strip() or not row.pollster_name.strip()` | `IngestError` (rollback) | `no signature` | R17 |
 | `len(row.results) < 2` | `IngestError` (rollback) | `fewer than two parties` | R18 |
-| `pct` fuera de 0–100; `seats_min`/`seats_max` fuera de 0–350; `seats_min > seats_max` | `IngestError` (rollback) | `out of range` | R19 |
+| `pct` o `turnout` fuera de 0–100; `seats_min`/`seats_max` fuera de 0–350; `seats_min > seats_max` | `IngestError` (rollback) | `out of range` | R19 |
 | `sum(pct) > 100.5` (constante `PCT_SUM_LIMIT`) | warning y seguir | `percentages add up to` | R20 |
 | `not rows` | `IngestError` (rollback) | `no polls` | R21 |
 
@@ -183,7 +183,7 @@ Helper `_snapshot(tmp_path, revid, fixture)`: copia la fixture a `tmp_path/polls
 | `test_resolution_is_idempotent` (segunda pasada: 0 enlaces, sin cambios) | R16 |
 | `test_missing_signature_fails` (celda de firma vacía → `IngestError`/`failed`, silver intacto) | R17, R22 |
 | `test_fewer_than_two_parties_fails` (solo un partido con valor) | R18, R22 |
-| `test_pct_and_seats_out_of_range_fail` (`150` de pct; `400` de escaños) | R19, R22 |
+| `test_pct_turnout_and_seats_out_of_range_fail` (`150` de pct; `101` de turnout; `400` de escaños) | R19, R22 |
 | `test_pct_sum_warns_and_loads` (60 + 45: warning «add up to», carga en verde) | R20 |
 | `test_empty_snapshot_fails_and_keeps_silver` (snapshot sin sondeos tras una carga buena: `failed` y datos anteriores intactos) | R21, R22 |
 | `test_missing_path_raises` | R26 |
@@ -206,7 +206,7 @@ Helper `_snapshot(tmp_path, revid, fixture)`: copia la fixture a `tmp_path/polls
 - **Reemplazo total, no por revisión**: `silver` refleja el último snapshot y el histórico vive en bronce. Consecuencia: los ids de `poll` cambian en cada recarga (inocuo, ya previsto).
 - **Validar antes de borrar**: las validaciones estructurales van al principio de `load_polls`; un fallo no llega a tocar `silver` (el rollback es trivial) y el mensaje del `IngestError` nombra la revisión y la fila.
 - **Snapshot vacío = error** (R21, extra sobre el acceptance): un parseo vacío por deriva del formato haría un borrado total sin inserción; abortar deja `silver` como estaba y el fichero `failed`.
-- **Inserción en bloque con `returning`**: ~9k filas por ejecución; los objetos ORM se descartan. El orden de ids devuelto por `insert().returning()` con `insertmanyvalues` sigue al de entrada (Postgres).
+- **Inserción en bloque con `returning`**: ~9k filas por ejecución; los objetos ORM se descartan. El orden de ids se fija con `sort_by_parameter_order=True`: `insertmanyvalues` no garantiza que el `RETURNING` siga al orden de entrada, y PostgreSQL tampoco garantiza el orden de un `INSERT ... RETURNING` multi-row; sin ese flag, `zip` podría casar cada `poll_id` con otro sondeo.
 - **Tests con Postgres en esquemas aislados** (`schema_translate_map`): fidelidad total (CHECK, FK, `NUMERIC`) sin tocar los esquemas reales ni crear bases nuevas; `skip` si no hay Postgres para no romper `init.sh` sin Docker (la CI lo levanta como servicio).
 - **`SOURCE` se importa de `polls/fetch.py`**: una sola definición del nombre de la fuente para descarga y registro.
 - **Sin logs INFO por celda**: los parsers/adaptadores del repo solo avisan; el loader sí registra el resultado por fichero (procesado/saltado) y los enlaces del pase.
