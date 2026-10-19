@@ -5,10 +5,10 @@ from pathlib import Path
 import pytest
 
 from ingestor.elections.adapters.congreso import CongresoAdapter
-from ingestor.elections.loaders.election import slugify
 from ingestor.elections.loaders.geography import read_geography
 from ingestor.elections.parsers.common import parse_station_ref
 from ingestor.errors import IngestError
+from ingestor.parties import slugify
 
 adapter = CongresoAdapter()
 

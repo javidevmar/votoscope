@@ -288,7 +288,7 @@ def test_slugify_single_source() -> None:
     from ingestor.elections.loaders import election
     from ingestor.polls.loaders import polls
 
-    assert election.slugify is slugify
+    assert not hasattr(election, "slugify")
     assert polls.slugify is slugify
     assert slugify("C's") == "c-s"
     assert slugify("U.P.N.") == "u-p-n"
