@@ -18,8 +18,6 @@ from __future__ import annotations
 import collections
 import hashlib
 import logging
-import re
-import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -41,6 +39,7 @@ from ingestor.models import (
     Turnout,
     Vote,
 )
+from ingestor.parties import slugify
 
 logger = logging.getLogger(__name__)
 
@@ -477,10 +476,3 @@ def _name_hints(path: Path | None) -> dict[str, str]:
         for row in file05.parse(path)
         if row.district == "99" and row.name
     }
-
-
-def slugify(value: str) -> str:
-    """ASCII, lowercase, dash-separated slug (for party slugs)."""
-    value = unicodedata.normalize("NFKD", value)
-    value = "".join(char for char in value if not unicodedata.combining(char))
-    return re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")

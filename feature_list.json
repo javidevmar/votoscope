@@ -178,7 +178,7 @@
         "sin dependencias nuevas (tomllib de la stdlib)"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 13,

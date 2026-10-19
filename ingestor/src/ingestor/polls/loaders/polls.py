@@ -27,9 +27,10 @@ from pathlib import Path
 from sqlalchemy import delete, func, insert, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
-from ingestor.elections.loaders.election import sha256, slugify
+from ingestor.elections.loaders.election import sha256
 from ingestor.errors import IngestError
 from ingestor.models import Election, Ingestion, Party, Poll, PollResult, Pollster
+from ingestor.parties import slugify
 from ingestor.polls.adapters.wikipedia_polls import (
     ELECTION_TYPE,
     PARTY_COLUMNS,
