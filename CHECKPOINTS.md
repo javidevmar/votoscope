@@ -52,4 +52,7 @@
 - [ ] `requirements.md` usa EARS estricto (ver [`.agents/specs.md`](.agents/specs.md)).
 - [ ] Toda feature `done` con `"sdd": true` tiene todas sus tasks marcadas `[x]`.
 - [ ] Cada `R<n>` de `requirements.md` está cubierto por al menos un test
-      concreto en `ingestor/tests/` (mapa en `progress/impl_<name>.md`).
+      concreto en `ingestor/tests/`. Excepción aprobada: si el R describe el
+      estado operativo de datos locales, se verifica con SQL reproducible
+      documentado en `progress/impl_<name>.md` (o en el informe de ejecución).
+      El mapa R ↔ verificación vive en `progress/impl_<name>.md`.

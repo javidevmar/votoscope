@@ -1,8 +1,8 @@
 """The 2×/day polls cycle (``fetch-polls`` + ``ingest-polls``) and its artifacts.
 
 No network: the MediaWiki API transport is injected through a fake opener on
-``ingestor.polls.fetch.urlopen``. The cycle tests use the isolated PostgreSQL
-test schemas (``conftest.py``; skipped without Postgres).
+``ingestor.polls.fetch.urlopen``. The cycle tests use a throwaway PostgreSQL
+test database (``conftest.py``; skipped without Postgres).
 """
 
 from __future__ import annotations

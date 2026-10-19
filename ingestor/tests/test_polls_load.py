@@ -1,6 +1,6 @@
 """``polls/loaders/polls.py`` and the ``ingest-polls`` command.
 
-Real database in isolated test schemas (``conftest.py``); snapshots are copies
+Real database in a throwaway test database (``conftest.py``); snapshots are copies
 of the fixtures in ``fixtures/wikipedia_polls/`` or inline synthetic strings,
 never network or ``refs/``.
 """
@@ -62,7 +62,7 @@ def test_database_fixture(db):  # test infra
         schemas = set(
             session.scalars(text("SELECT schema_name FROM information_schema.schemata"))
         )
-    assert {"polls_test_bronze", "polls_test_silver"} <= schemas
+    assert {"bronze", "silver"} <= schemas
 
 
 # --- Fixtures and helper (T2) -----------------------------------------------
