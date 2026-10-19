@@ -5,6 +5,19 @@
 - Spec: `specs/011_polls_run/` (T1–T7, requirements R1–R15).
 - Sin cambios de modelo, sin código de producción nuevo, sin dependencias nuevas.
 
+## Cambio de criterio (2026-10-19)
+
+- Aprobado por el usuario: se retiran los tests de estado
+  (`test_snapshot_present_and_registered_processed`,
+  `test_silver_matches_snapshot_parse`, `test_silver_covers_year_tables_and_range`,
+  `test_completeness_arithmetic_no_lost_rows`) y los helpers `_newest_snapshot` /
+  `_real_session`. Motivo: leían el `silver` y el `data/raw/` locales; el estado
+  real pasa a **evidencia operativa** (informe y este documento).
+- La infraestructura de tests (`ingestor/tests/conftest.py`) deja de usar
+  esquemas dentro de la BD configurada: crea una **base de datos temporal por
+  sesión** (`votoscope_test_<pid>`) desde la BD de mantenimiento `postgres` y la
+  borra al terminar. El suite ya no depende de que exista la BD de la aplicación.
+
 ## Evidencia de la ejecución real (T2)
 
 Página: «Opinion polling for the 2026 Spanish general election».
@@ -65,18 +78,20 @@ el comportamiento previsto ante deriva/novedades de la fuente. No aplica
   fuera de alcance, avisos y cotejo de 6 sondeos.
 - `.agents/data-sources.md` — sección «Sondeos (Wikipedia)» (formato, rarezas
   estructurales y de valores, licencia CC BY-SA y enlace `oldid`).
-- `ingestor/tests/test_polls_run.py` — tests de estado (solo lectura) y de
-  documentos.
+- `ingestor/tests/test_polls_run.py` — tests de documentos (informe y sección
+  de la fuente).
 
 ## Verificación
 
-- `cd ingestor && uv run pytest -q` → **138 passed**.
-- `uv run pytest tests/test_polls_run.py -q` → **8 passed**.
+- `cd ingestor && uv run pytest -q` → **136 passed**.
+- `uv run pytest tests/test_polls_run.py -q` → **4 passed** (solo documentos).
+- `DATABASE_URL=postgresql+psycopg://votoscope:votoscope@localhost:5434/does_not_exist uv run pytest -q` → **136 passed**: el fixture crea su BD temporal y no necesita que exista la BD configurada.
+- `docker compose exec -T db psql -U votoscope -d votoscope -c "\l"` → sin bases `votoscope_test_*` tras el suite (el teardown las borra).
 - `uv run ruff check .` → limpio.
 - `uv run ruff format --check .` → limpio.
 - `uv run alembic check` (dentro de `./init.sh`) → sin drift.
 - `./init.sh` → **exit 0** (puerta verde): tras cerrar la #10 solo queda la #11
-  en `in_progress`; pasos 4–5 verdes (ruff, **138 passed**, `alembic check` sin
+  en `in_progress`; pasos 4–5 verdes (ruff, **136 passed**, `alembic check` sin
   drift). T7 cerrada con esta evidencia.
 
 ### Cambios del review aplicados
@@ -90,15 +105,19 @@ el comportamiento previsto ante deriva/novedades de la fuente. No aplica
 
 ## Trazabilidad R ↔ test
 
-| Requirement | Test |
+R1–R7 se verifican con **evidencia operativa** (comandos y SQL reproducible en
+`docs/ingestor/polls-run.md` y en este documento), no con tests de estado
+(decisión aprobada el 2026-10-19).
+
+| Requirement | Evidencia / test |
 | --- | --- |
-| R1 | `test_snapshot_present_and_registered_processed` — el `{revid}.wikitext` más reciente existe y es el de bronce |
-| R2 | `test_snapshot_present_and_registered_processed` — fila de `bronze.ingestion` por sha256: `processed`, `source=wikipedia-en`, `file_path` relativo a `RAW_DIR` |
-| R3 | `test_silver_matches_snapshot_parse` — `count(poll where revision_id=revid)` = filas de `parse_polls`; primera/última fila cotejadas (firma, fechas, muestra, turnout) |
-| R4 | `test_silver_matches_snapshot_parse` — `count(poll_result)` = resultados del parseo; un resultado cotejado por slug de `party` (pct y escaños) |
-| R5 | `test_silver_covers_year_tables_and_range` — `poll_tables` cubre 2023–2026 y hay ≥1 `poll` con `fieldwork_end` en cada año |
-| R6 | `test_silver_covers_year_tables_and_range` — `min(fieldwork_start)` entre 2023-07-23 y 2023-08-31 |
-| R7 | `test_completeness_arithmetic_no_lost_rows` (declaradas = cargadas + cabeceras + separadoras + resultados; cargadas de `silver` = parseadas) y `test_docs_polls_run_completeness` (`Completitud`, `584`, `cabecera`, `separadora`, `resultado`) |
+| R1 | Evidencia operativa — `fetch-polls` exit 0; revisión `1380859635` y ruta `data/raw/polls/wikipedia-en/2026-general/1380859635.wikitext` en el informe y en este impl |
+| R2 | Evidencia operativa — `ingest-polls` exit 0; snapshot registrado `processed` en `bronze.ingestion` (`source=wikipedia-en`, sha256, `file_path` relativo a `RAW_DIR`) |
+| R3 | Evidencia operativa — 575 `silver.poll` con `revision_id=1380859635`, igual a las filas parseadas del snapshot |
+| R4 | Evidencia operativa — 6.125 `silver.poll_result` del snapshot |
+| R5 | Evidencia operativa — anualidades del trabajo de campo: 2023=71, 2024=168, 2025=178, 2026=158 |
+| R6 | Evidencia operativa — `min(fieldwork_start)=2023-07-24` (dentro de 23-jul / 31-ago-2023) |
+| R7 | Evidencia operativa — tabla de completitud 589 = 575 + 14 y método SQL en el informe; `test_docs_polls_run_completeness` fija las subcadenas (`Completitud`, `584`, `cabecera`, `separadora`, `resultado`) |
 | R8 | `test_docs_polls_run_completeness` (`fetch-polls`, `ingest-polls`, `select count(*)`, `silver.poll`, `silver.poll_result`, `bronze.ingestion`, `revision_id`, `oldid=`) |
 | R9 | `test_docs_polls_run_completeness` (`Lead`, `Fuera de alcance`, `FA`) |
 | R10 | `test_docs_polls_run_completeness` (`FA`, `66–67`; el informe añade `FV`) |

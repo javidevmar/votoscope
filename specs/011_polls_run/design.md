@@ -2,7 +2,7 @@
 
 Feature 11. Ejecución real y cotejo: corre el ciclo contra la página, cuenta la completitud y documenta la fuente (`.agents/data-sources.md`: formato, rarezas y licencia CC BY-SA con enlace a la revisión). Interfaz de entrada: [`specs/009_polls_load/design.md`](../009_polls_load/design.md) §«Interfaz para las features 10–11» — el ciclo es `fetch-polls` + `ingest-polls` y el cotejo manual usa `poll.source`/`revision_id` — y [`specs/010_polls_schedule/design.md`](../010_polls_schedule/design.md) §«Interfaz para la feature 11».
 
-Esta feature **no añade código de producción**: ejecuta los comandos existentes (features 6 y 9) y produce documentos (informe de ejecución y sección de la fuente) más los tests que fijan el estado cargado y los documentos. **No toca el modelo de datos** (sin cambios en `docs/db/schema.drawio`, `models.py` ni Alembic; la regla de oro no aplica). Sin dependencias nuevas. Sin excepciones nuevas. No se toca `ingestor/src/` ni `docs/ingestor/ingesta.md` ni `ingestor/AGENTS.md` (no hay cambios de CLI ni de comportamiento que documentar).
+Esta feature **no añade código de producción**: ejecuta los comandos existentes (features 6 y 9) y produce documentos (informe de ejecución y sección de la fuente) más los tests que fijan los documentos. El estado real de la carga local es **evidencia operativa** (comandos y SQL reproducible en el informe y en `progress/impl_polls_run.md`), sin tests de estado. **No toca el modelo de datos** (sin cambios en `docs/db/schema.drawio`, `models.py` ni Alembic; la regla de oro no aplica). Sin dependencias nuevas. Sin excepciones nuevas. No se toca `ingestor/src/` ni `docs/ingestor/ingesta.md` ni `ingestor/AGENTS.md` (no hay cambios de CLI ni de comportamiento que documentar).
 
 ## Archivos
 
@@ -10,7 +10,7 @@ Esta feature **no añade código de producción**: ejecuta los comandos existent
 | --- | --- |
 | crear | `docs/ingestor/polls-run.md` — informe de la ejecución real y cotejo (R7–R11) |
 | modificar | `.agents/data-sources.md` — sección «Sondeos (Wikipedia)» tras «Gazetteer INE» (R12–R15) |
-| crear | `ingestor/tests/test_polls_run.py` — tests de estado y de documentos (R1–R15) |
+| crear | `ingestor/tests/test_polls_run.py` — tests de documentos (R7–R15) |
 | crear | `progress/impl_polls_run.md` — evidencia de la ejecución y trazabilidad R ↔ test (convención del arnés; no es un artefacto del acceptance) |
 
 ## La ejecución (T2)
@@ -135,24 +135,10 @@ Contenido de «Rarezas» (el texto exacto lo redacta el implementer; debe cubrir
 
 ## Tests — `ingestor/tests/test_polls_run.py`
 
-Anclaje: el snapshot más reciente de `settings.raw_dir / "polls" / "wikipedia-en" / "2026-general"` y la base real (`settings.database_url`). **Solo lectura** (SELECT): los tests no ejecutan los comandos ni escriben en `bronze`/`silver`; la carga la hace el implementer por CLI (T2).
-
-Helpers:
-
-```python
-def _newest_snapshot() -> tuple[int, Path]:
-    """Newest {revid}.wikitext under RAW_DIR/polls/wikipedia-en/2026-general; skip if none."""
-
-def _real_session() -> Session:
-    """Session over settings.database_url; skip on OperationalError (no Postgres)."""
-```
+Solo documentos: no leen `data/raw/` ni la base de la aplicación, así que corren siempre (también en CI). El estado real de la carga es evidencia operativa (T2): comandos y SQL reproducible en `docs/ingestor/polls-run.md` y `progress/impl_polls_run.md`.
 
 | Test | Cubre | Qué fija |
 | --- | --- | --- |
-| `test_snapshot_present_and_registered_processed` | R1, R2 | el `{revid}.wikitext` más reciente existe; la fila de `bronze.ingestion` con su sha256 está `processed`, con `source = wikipedia-en` y `file_path` relativo a `RAW_DIR` |
-| `test_silver_matches_snapshot_parse` | R3, R4 | `count(poll where revision_id=revid)` = filas de `parse_polls(snapshot)`; `count(poll_result)` = resultados del parseo; cotejo puntual de la primera y la última fila (firma, fechas, muestra, turnout) y de un resultado (pct/escaños por slug de `party`) |
-| `test_silver_covers_year_tables_and_range` | R5, R6 | `poll_tables` del snapshot cubre las anualidades 2023–2026; ≥1 `poll` con `fieldwork_end` en cada año; `min(fieldwork_start)` entre 2023-07-23 y 2023-08-31 |
-| `test_completeness_arithmetic_no_lost_rows` | R7 | declaradas (Σ `len(table.rows)`) = cargadas (`parse_polls`) + saltadas (cabeceras: `cell.header`; separadoras: una celda con `colspan`; resultados: `RESULT_ROW_STYLE`); y cargadas de `silver` = cargadas del parseo. Una fila declarada sin explicación rompe el test |
 | `test_docs_polls_run_completeness` | R7–R10 | subcadenas del informe (lista arriba) |
 | `test_docs_polls_run_cotejo` | R11 | tabla de cotejo con ≥5 filas; cada fila con `%` y escaños |
 | `test_docs_data_sources` | R12, R15 | subcadenas de la sección (lista arriba) |
@@ -160,16 +146,14 @@ def _real_session() -> Session:
 
 Detalles que fijan el contrato:
 
-- El test de bronce busca por `sha256` del fichero (no por `file_path`): el registro es único por sha.
-- Si el snapshot más reciente no está cargado (p. ej. `fetch-polls` bajó una revisión y `ingest-polls` no llegó a correr), los tests de estado fallan a propósito: el estado no cumple el acceptance y se resuelve re-ejecutando `ingest-polls`.
-- Sin Postgres o sin snapshot: `pytest.skip` (la CI no tiene `data/raw/`; `init.sh` queda verde).
 - Los tests de documentos no se saltan: el informe y la sección van versionados.
+- R1–R7 se verifican con la evidencia operativa de la ejecución, no con SELECTs desde el suite: el conteo por tabla, la aritmética y el método SQL quedan en el informe y en `progress/impl_polls_run.md` (decisión aprobada el 2026-10-19).
 
 ## Decisiones
 
 - **El informe vive en `docs/ingestor/polls-run.md`** (durable, junto a `ingesta.md`): el conteo y el cotejo son evidencia de esta ejecución y a la vez método reutilizable (job 2×/día, re-verificaciones); los tests de documentos lo fijan. `progress/impl_polls_run.md` se escribe igual (trazabilidad del harness), pero no es el artefacto del acceptance.
-- **Tests de estado de solo lectura, anclados al snapshot más reciente**: verifican el estado real en local; en CI se saltan. La ejecución (fetch + ingest) es trabajo del implementer, no de un test que mutaría los esquemas de la aplicación.
-- **La aritmética de completitud se calcula en el test** desde `poll_tables` (declaradas), la clasificación de filas saltadas y `parse_polls` (cargadas), y se compara con `silver`: fija el método, no cifras; cualquier pérdida silenciosa de filas rompe el test.
+- **Estado real como evidencia operativa**: la ejecución (fetch + ingest) y su conteo quedan transcritos en `docs/ingestor/polls-run.md` y `progress/impl_polls_run.md` con comandos y SQL reproducibles. El suite no lee el `silver`/`bronze` local ni depende de `data/raw/` (decisión aprobada el 2026-10-19).
+- **La aritmética de completitud es contrato del informe, no de un test**: declaradas (`poll_tables`), cargadas (`parse_polls`/`silver`) y saltadas (cabeceras, separadoras, resultados) quedan desglosadas y cuadradas en el informe; cualquier revisión futura puede repetir el método SQL documentado.
 - **Cotejo como tabla markdown de ≥5 filas** con formato fijo: el test cuenta filas y exige `%`/escaños; el contenido lo valida el reviewer contra el snapshot (los sondeos se eligen entre filas con datos completos).
 - **Subcadenas estables en los tests de documentos** (patrón del repo: features 6, 9 y 10): fijan el contrato sin acoplarse al texto completo.
 - **Sin tocar código**: si la ejecución destapa un defecto del adaptador/loader, se para y se documenta; la corrección se decide fuera de esta feature.
@@ -178,13 +162,13 @@ Detalles que fijan el contrato:
 ## Alternativas descartadas
 
 1. **Copiar el snapshot real a `tests/fixtures/`** (646 KB): duplicaría el bronce y no aportaría nada — la verificación es del estado local; el parser y el loader ya tienen fixtures (features 8–9).
-2. **Recargar el snapshot en los esquemas de test (`schema_translate_map`) desde el test y comparar con `silver`**: repite la ejecución (~9k inserts), acopla los tests a la maquinaria del loader y no prueba nada que no fijen los conteos + la aritmética.
+2. **Tests de estado contra la base de la aplicación**: leen el `silver` local y se saltan en CI; el usuario aprobó (2026-10-19) sustituirlos por evidencia operativa en el informe y `progress/impl_polls_run.md`.
 3. **Congelar los números del informe en los tests** (589/575): la página se edita a diario; el método es lo verificable.
-4. **Documentar el conteo solo en `progress/impl_polls_run.md`**: es estado de sesión; el acceptance pide documentación revisable y los tests no deben leer `progress/`.
-5. **Un script `scripts/verify-polls.py` para el conteo**: un fichero más para lo que ya hacen los tests (aritmética) y el informe (método reproducible con SQL).
+4. **Documentar el conteo solo en `progress/impl_polls_run.md`**: es estado de sesión; el acceptance pide documentación revisable (el informe versionado), y los tests no deben leer `progress/`.
+5. **Un script `scripts/verify-polls.py` para el conteo**: un fichero más para lo que ya cubren la aritmética del informe y su método SQL reproducible.
 6. **Tests que ejecuten `fetch-polls`/`ingest-polls` por `subprocess`**: red en el suite y mutación de los esquemas reales; la ejecución queda documentada en el informe y los tests solo leen.
 7. **Meter los sondeos en `docs/ingestor/ingesta.md`**: mezclaría «cómo funciona» con «de dónde vienen los datos»; el acceptance fija `.agents/data-sources.md`.
-8. **Anclar los tests a `max(poll.revision_id)`** en vez del snapshot más reciente: ocultaría un snapshot pendiente sin ingerir (fetch sin ingest), que es precisamente un estado que el acceptance no admite.
+8. **Mantener tests de estado anclados al snapshot más reciente**: dependían de `data/raw/` y del `silver` local; retirados el 2026-10-19 a favor de la evidencia operativa.
 
 ## Notas
 

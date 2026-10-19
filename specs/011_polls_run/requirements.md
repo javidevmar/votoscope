@@ -1,6 +1,6 @@
 # Requisitos — `polls_run`
 
-Feature `id 11` de [`feature_list.json`](../../feature_list.json). Alcance: ejecutar el ciclo `uv run ingestor fetch-polls` + `uv run ingestor ingest-polls` sobre el Postgres local contra la página real, verificar la carga (completitud y cotejo) y documentar la fuente (formato, rarezas y licencia) en `.agents/data-sources.md`. Los comandos son los de las features 6 y 9 —interfaz fijada en [`specs/009_polls_load/design.md`](../009_polls_load/design.md) §«Interfaz para las features 10–11»—; esta feature **no añade código de aplicación**: sus artefactos son el informe de ejecución, la sección de la fuente y los tests que fijan el estado cargado y los documentos.
+Feature `id 11` de [`feature_list.json`](../../feature_list.json). Alcance: ejecutar el ciclo `uv run ingestor fetch-polls` + `uv run ingestor ingest-polls` sobre el Postgres local contra la página real, verificar la carga (completitud y cotejo) y documentar la fuente (formato, rarezas y licencia) en `.agents/data-sources.md`. Los comandos son los de las features 6 y 9 —interfaz fijada en [`specs/009_polls_load/design.md`](../009_polls_load/design.md) §«Interfaz para las features 10–11»—; esta feature **no añade código de aplicación**: sus artefactos son el informe de ejecución, la sección de la fuente y los tests que fijan los documentos. El estado de la carga local es **evidencia operativa** (comandos y SQL reproducible documentados en `docs/ingestor/polls-run.md` y `progress/impl_polls_run.md`), no un test de estado.
 
 Sin cambios de modelo (ERD ↔ `models.py` ↔ migración no aplican). Sin dependencias nuevas. Sin excepciones nuevas.
 
@@ -82,13 +82,12 @@ La sección DEBE declarar la licencia CC BY-SA del texto de Wikipedia y enlazar 
 - **La página es cambiante**: no se congelan revisiones ni recuentos. «Las cuatro tablas» del acceptance son las cuatro anualidades de *Voting intention estimates* (2023–2026); una anualidad puede partirse en varias tablas (hoy, `2026 (after FA)` y `2026 (before FA)`).
 - **Filas declaradas**: filas `|-` de cada tabla por año, incluidas las dos filas de cabecera, las separadoras y las de resultado. El desglose de saltadas (cabeceras, separadoras, resultados —el de las generales de 2023 y el de las europeas de 2024—) y la aritmética `declaradas = cargadas + saltadas` son el contrato del informe; las cifras concretas las recalcula cada ejecución.
 - **Cotejo manual**: contra el wikitexto de la revisión usada; el informe deja la muestra por escrito con el enlace a la revisión.
-- **Los tests de ejecución real son de solo lectura** (SELECT) y se saltan sin Postgres o sin snapshot: `data/raw/` es local y no se versiona, así que la CI queda verde sin ellos; en local verifican el estado cargado.
+- **El estado real de la carga es evidencia operativa, no un test**: los comandos de la ejecución y las consultas SQL reproducibles quedan en `docs/ingestor/polls-run.md` y en `progress/impl_polls_run.md`; `data/raw/` es local y no se versiona, así que el suite no lee el estado de la base de la aplicación.
 - **Sin cambios de modelo**: esta feature no toca `docs/db/schema.drawio`, `models.py` ni Alembic (la regla de oro no aplica).
 
 ## Nota de verificación
 
-- R1–R6: `ingestor/tests/test_polls_run.py` — `test_snapshot_present_and_registered_processed` (R1, R2), `test_silver_matches_snapshot_parse` (R3, R4) y `test_silver_covers_year_tables_and_range` (R5, R6); anclados al snapshot más reciente de `RAW_DIR/polls/wikipedia-en/2026-general/` y a SELECTs sobre el Postgres local, con `pytest.skip` si no hay snapshot o base.
-- R7: `test_completeness_arithmetic_no_lost_rows` (aritmética sobre el snapshot real: declaradas = cargadas + saltadas, y cargadas de `silver` = parseadas) y `test_docs_polls_run_completeness` (subcadenas del informe).
-- R8–R10: `test_docs_polls_run_completeness` (subcadenas del informe).
+- R1–R7: **evidencia operativa** en `docs/ingestor/polls-run.md` (comandos, conteo por tabla y método SQL reproducible con `revision_id`/`oldid`) y en `progress/impl_polls_run.md` (transcripción de la ejecución y aritmética declaradas = cargadas + saltadas). No hay tests de estado: el suite no lee el `silver`/`bronze` local.
+- R7–R10: `test_docs_polls_run_completeness` (subcadenas del informe, incluida la completitud).
 - R11: `test_docs_polls_run_cotejo` (tabla de cotejo con ≥5 filas, con `%` y escaños por fila).
 - R12–R15: `test_docs_data_sources` (R12, R15) y `test_docs_data_sources_quirks` (R13, R14).
