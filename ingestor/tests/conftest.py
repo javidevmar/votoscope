@@ -1,57 +1,81 @@
-"""Shared test fixtures: isolated PostgreSQL test schemas.
+"""Shared test fixtures: a session-scoped throwaway PostgreSQL database.
 
 The polls loader needs a real database (transactions, CHECK constraints,
-foreign keys, NUMERIC), so tests run against ``settings.database_url`` with the
-``bronze``/``silver`` schemas translated to throwaway test schemas: the
-application schemas are never touched. Without a reachable Postgres the
-database tests skip (CI provides the service).
+foreign keys, NUMERIC), so tests run against a temporary database
+(``votoscope_test_<pid>``) created from ``settings.database_url``. Only the
+maintenance database (``postgres``) and the temporary one are used: the
+application database and its schemas are never touched. Without a reachable
+Postgres the database tests skip (CI provides the service).
 """
 
 from __future__ import annotations
 
+import os
+
 import pytest
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine import URL, make_url
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
 from ingestor.models import Base
 from ingestor.settings import settings
 
-TEST_SCHEMAS = {"bronze": "polls_test_bronze", "silver": "polls_test_silver"}
+
+def _temp_database_url() -> URL:
+    """URL of this session's throwaway database, next to the configured one."""
+    url = make_url(settings.database_url)
+    return url.set(database=f"votoscope_test_{os.getpid()}")
 
 
-def _drop_test_schemas(connection) -> None:
-    for schema in TEST_SCHEMAS.values():
-        connection.execute(text(f"DROP SCHEMA IF EXISTS {schema} CASCADE"))
+def _drop_database(engine, database: str) -> None:
+    with engine.connect() as connection:
+        connection.execute(text(f'DROP DATABASE IF EXISTS "{database}" WITH (FORCE)'))
 
 
 @pytest.fixture(scope="session")
 def polls_engine():
-    """Engine whose ``bronze``/``silver`` schemas point to the test schemas."""
-    engine = create_engine(
-        settings.database_url,
-        execution_options={"schema_translate_map": TEST_SCHEMAS},
+    """Engine on a fresh temporary database with the real ``bronze``/``silver``."""
+    url = _temp_database_url()
+    database = url.database
+    maintenance = create_engine(
+        url.set(database="postgres"), isolation_level="AUTOCOMMIT"
     )
     try:
-        with engine.connect() as connection:
+        with maintenance.connect() as connection:
             connection.execute(text("SELECT 1"))
     except OperationalError:
-        engine.dispose()
+        maintenance.dispose()
         pytest.skip("Postgres is not reachable (docker compose up -d --wait)")
-    with engine.begin() as connection:
-        _drop_test_schemas(connection)
-        for schema in TEST_SCHEMAS.values():
-            connection.execute(text(f"CREATE SCHEMA {schema}"))
-    Base.metadata.create_all(engine)
-    yield engine
-    with engine.begin() as connection:
-        _drop_test_schemas(connection)
-    engine.dispose()
+
+    try:
+        _drop_database(maintenance, database)
+        with maintenance.connect() as connection:
+            connection.execute(text(f'CREATE DATABASE "{database}"'))
+    finally:
+        maintenance.dispose()
+
+    engine = create_engine(url)
+    try:
+        with engine.begin() as connection:
+            connection.execute(text("CREATE SCHEMA bronze"))
+            connection.execute(text("CREATE SCHEMA silver"))
+        Base.metadata.create_all(engine)
+        yield engine
+    finally:
+        engine.dispose()
+        cleanup = create_engine(
+            url.set(database="postgres"), isolation_level="AUTOCOMMIT"
+        )
+        try:
+            _drop_database(cleanup, database)
+        finally:
+            cleanup.dispose()
 
 
 @pytest.fixture()
 def db(polls_engine):
-    """Session factory against the test schemas, emptied before each test."""
+    """Session factory against the temporary database, emptied before each test."""
     factory = sessionmaker(bind=polls_engine, expire_on_commit=False)
     with factory() as session:
         for table in reversed(Base.metadata.sorted_tables):
