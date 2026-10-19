@@ -207,7 +207,7 @@
         "docs/ingestor/ingesta.md actualizado (sustitución de la tabla de mapeo por el catálogo, documentada)"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 15,

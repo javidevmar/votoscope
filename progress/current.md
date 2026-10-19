@@ -1,54 +1,18 @@
 # Sesión actual
 
-- **Feature en curso:** 13 — `party_reload` (iniciativa `party-norm`)
-- **Inicio:** 2026-10-18
+- **Feature en curso:** _ninguna_ (12–14 cerradas; 15–18 pendientes)
+- **Inicio:** 2026-10-19
 - **Agente:** leader
 
 ## Plan
 
-1. Implementar 12, 13 y 14 en serie, una rama por feature apilada sobre la anterior (gh stack): `feature/party-catalog` → `feature/party-reload` → `feature/party-polls`.
-2. Con el OK del usuario (2026-10-19): implementar y comitear cada rama sin más paradas; el usuario revisará todas las implementaciones después.
-3. Al terminar: `gh stack submit` para dejar las PRs del stack y que el usuario las revise.
+1. Tu revisión de las PRs del stack `party-norm` (12–14) y merge cuando toque.
+2. Después: 15 `delivery_gold`, 16 `web_scaffold`, 17 `close_minor` (entrega) y 18 `source_norm`.
 
 ## Bitácora
 
-- 2026-10-18: el usuario aprueba los specs 12–14 y pide implementarlas en serie en ramas lineales del mismo gh stack.
-- 2026-10-18: pila iniciada con `gh stack init feature/party-catalog` (`main ← feature/party-catalog`); `./init.sh` verde antes de empezar.
-
-## Implementación (implementer)
-
-- **Feature en curso:** 12 — `party_catalog` (rama `feature/party-catalog`).
-- **Plan:** las tasks T1..T13 de `specs/012_party_catalog/tasks.md`, en orden (TDD: test rojo → implementación).
-- **Trazabilidad:** `progress/impl_party_catalog.md` al cerrar (R1–R28 ↔ test, extracción SQL + salida, decisiones de curación).
-
-### Bitácora del implementer
-
-- 2026-10-18: `./init.sh` verde antes de empezar (140 tests). T1: extracción contra el `silver` local (549 `party`, 13 procesos) → `ingestor/tests/fixtures/party_catalog/brands_2023.txt` (59 grafías del 23-jul-2023) y volcado completo (547 filas con candidaturas) para redactar el catálogo.
-- 2026-10-18: fichas redactadas desde la extracción: 79 fichas (59 marcas del 2023 — 3 se cubren por normalización: B.N.G.→bng, F.I.A.→fia, U.P.L.→upl —, las 15 etiquetas de sondeos, las 10 parejas punteadas y las familias del diagnóstico). Alias solo donde la normalización no coincide: `Junts`, `PNV`, `Adelante Andalucía (2021)`, `UNIDOS PODEMOS` (ficha `podemos-iu-equo`) y `Unidas Podemos` (ficha `podemos-iu`, la cabecera del 2019; R14/R15); `SALF` y `Aliança.cat` resuelven por la clave del slug (sin alias redundante).
-- 2026-10-18: T2–T13 en TDD (43 tests nuevos); `./init.sh` verde (183 tests, ruff, format, `alembic check` sin drift). Trazabilidad R1–R28, extracción y decisiones de curación en `progress/impl_party_catalog.md`.
-- 2026-10-18: reviewer **APPROVED** (`progress/review_party_catalog.md`; verificaciones independientes: fixture contrastada con `silver`, las 15 etiquetas contra el `PARTY_COLUMNS` real, `slugify` única, wheel con el catálogo).
-
-- 2026-10-19: auditoría de grafías anteriores sobre los 13 procesos reales (921 cabeceras → 0 altas, 0 grupos duplicados; 28 filas legadas quedarán huérfanas); documentada en `progress/impl_party_catalog.md`.
-- 2026-10-19: el usuario pide seguir con 13 y 14 sin esperar OK entre features y comitear las ramas para revisarlas después. Feature 12 commiteada (`2d5e2f0`) y `done`.
-
-## Implementación (implementer)
-
-- **Feature en curso:** 13 — `party_reload` (rama `feature/party-reload`, piso 2 del stack).
-- **Plan:** las tasks T1..T8 de `specs/013_party_reload/tasks.md`, en orden (TDD: test rojo → implementación).
-- **Trazabilidad:** `progress/impl_party_reload.md` al cerrar (R1–R15 ↔ test, comandos, conteos y salida de la recarga).
-
-### Bitácora del implementer
-
-- 2026-10-19: `./init.sh` verde antes de empezar (183 tests). Baseline `silver`: 549 `party`, 2.106 `party_election`, 13 `election`, 575 `poll`, 6.125 `poll_result`.
-- 2026-10-19: T1–T4 en TDD (fixtures sintéticas, integración y estado en rojo); T3 pasa `_resolve_parties` a `PartyResolver`/`load_catalog` y retira el re-export de `slugify` (`test_rules.py` y la aserción de `test_parties.py` apuntan a `ingestor.parties`).
-- 2026-10-19: T5–T6: recarga real `--force` de los 13 procesos (exit 0, 13 `processed`, 0 `unknown party label`); conteos de hechos idénticos; `DELETE 28` huérfanos → 549→521 `party`; comprobaciones en verde (0 grupos, 7 marcas, 0 huérfanos; `salf`/`alianca-cat` preservados).
-- 2026-10-19: T7–T8: docs actualizados (`.agents/data-model.md`, `docs/ingestor/ingesta.md`, `ingestor/AGENTS.md`); tests nuevos en verde (10). Evidencia y trazabilidad en `progress/impl_party_reload.md`.
-- 2026-10-19: T8 cerrada: `./init.sh` verde (193 tests, ruff check/format, `alembic check` sin drift). Cambios en el working tree, pendientes de `reviewer` y OK del usuario; sin commit.
-
-## Cierre de features (leader)
-
-- 2026-10-19: reviewer **APPROVED** la 13 (`progress/review_party_reload.md`; tests de estado contra el `silver` real, no saltados). Commit `e21944a` (loader + fixtures + docs) y cierre `chore(party_reload): mark feature 13 done`; evidencia en `progress/impl_party_reload.md`.
+- Sesión cerrada: features 12 `party_catalog`, 13 `party_reload` y 14 `party_polls` `done` (detalle en `history.md`).
 
 ## Próximo paso
 
-- Piso 3 del stack: `feature/party-polls` (feature 14, adaptador + loader de sondeos por catálogo).
+- Tu revisión de las PRs del stack (`feature/party-catalog` → `feature/party-reload` → `feature/party-polls`); después, 15 `delivery_gold` (spec pendiente de redactar).
