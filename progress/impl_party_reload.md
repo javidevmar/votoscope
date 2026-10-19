@@ -174,3 +174,9 @@ Las filas de `party` referenciadas solo por sondeos se preservaron: `salf` (391 
 - **Fixtures:** nombres con el patrón real del adaptador `<tipo>02<AAMM>.DAT` (`02020806.DAT`…), no `<tipo><código de proceso>.DAT`; el glob de `find_files` (`{kind}02*.DAT`) lo exige.
 - **Catálogo:** sin cambios. La recarga resolvió las 921 cabeceras con 0 altas; no hubo grafías sin ficha que registrar como alias.
 - **`polls/loaders/polls.py`:** no se tocó; ya importaba `slugify` de `ingestor.parties` (nunca pasó por el re-export de `election.py`).
+
+## Corrección de CI (`test_state_*`)
+
+- **Causa:** el workflow ejecuta `uv run pytest` antes de `alembic upgrade head`; el Postgres del servicio responde pero no existe el esquema `silver`, así que los `test_state_*` fallaban con `ProgrammingError: relation "silver.party" does not exist` en vez de saltar.
+- **Fix:** `_real_session()` comprueba `inspect(connection).has_table("party", schema="silver")` y hace `pytest.skip` si falta; sin tablas = «sin datos locales». Con las tablas presentes se mantiene el comportamiento: vacías → skip, con datos → corren.
+- **Evidencia:** `DATABASE_URL=...@localhost:5434/postgres uv run pytest tests/test_party_reload.py -k state -v` → 4 skipped; `uv run pytest` local → 193 passed (los 4 `test_state_*` corren); `./init.sh` → verde.

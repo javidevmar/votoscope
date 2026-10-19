@@ -14,7 +14,7 @@ import shutil
 from pathlib import Path
 
 import pytest
-from sqlalchemy import create_engine, func, select, text
+from sqlalchemy import create_engine, func, inspect, select, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
@@ -62,9 +62,13 @@ def _real_session() -> Session:
     try:
         with engine.connect() as connection:
             connection.execute(text("SELECT 1"))
+            has_party_table = inspect(connection).has_table("party", schema="silver")
     except OperationalError:
         engine.dispose()
         pytest.skip("Postgres is not reachable (docker compose up -d --wait)")
+    if not has_party_table:
+        engine.dispose()
+        pytest.skip("silver schema is not created (alembic upgrade head)")
     session = Session(engine)
     if session.scalar(select(func.count()).select_from(Party)) == 0:
         session.close()
