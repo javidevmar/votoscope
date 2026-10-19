@@ -12,7 +12,7 @@
 | modificado | `ingestor/src/ingestor/elections/loaders/election.py` — `_resolve_parties` por `PartyResolver(session.scalars(select(Party)), load_catalog())`; sin slug provisional; `slugify` fuera del módulo |
 | modificado | `ingestor/tests/test_rules.py` — `slugify` importada de `ingestor.parties` |
 | modificado | `ingestor/tests/test_parties.py` — `test_slugify_single_source` ya no exige el re-export de `election` |
-| creado | `ingestor/tests/test_party_reload.py` — 10 tests (7 de integración/estado + 3 de documentos) |
+| creado | `ingestor/tests/test_party_reload.py` — 6 tests (3 de integración + 3 de documentos) |
 | creado | `ingestor/tests/fixtures/party_reload/{02200806,02201905,02202601}/` — 02/03/09/10 sintéticos (12 ficheros) |
 | modificado | `.agents/data-model.md` — identidad de `party` por `parties.py` + catálogo; sin «provisional» |
 | modificado | `docs/ingestor/ingesta.md` — paso 4 y fila `party` de «Qué queda en `silver`»; sin «provisional» |
@@ -24,10 +24,10 @@
 - T1: fixtures sintéticas validadas con `file02`/`file03`/`file09`/`file10` (2008-06-15 `B.N.G.`, 2019-05-26 `BNG`, 2026-01-01 `PARTIDO SIN FICHA`; una mesa, 300 votos, 09/10 internamente consistentes).
 - T2: tests de integración en rojo antes de tocar el loader (`3 failed`: dos filas `party`, sin warning de alta).
 - T3: loader delegado → `test_two_processes_one_party`, `test_unknown_head_label_warns` y `test_force_reload_preserves_facts` en verde.
-- T4: tests de estado en rojo con el `silver` previo (`test_state_no_punctuation_groups`: 27 grupos; `test_state_key_brands_single_row`: 14 filas; R7 y R10 ya pasaban).
+- T4: verificación de estado (solo lectura) con el `silver` previo y el SQL de `design.md`: 27 grupos por puntuación, 14 filas de marcas, R7 y R10 ya en verde. Esa comprobación se documentó entonces con `test_state_*`; los tests se eliminaron después (ver §«Cambio de criterio»).
 - T5–T6: recarga real y limpieza (abajo).
 - T7: tests de documentos en rojo → documentos actualizados → verde.
-- T8: `./init.sh` verde (193 tests: 183 previos + 10 nuevos), ruff check/format y `alembic check` sin drift.
+- T8: `./init.sh` verde (189 tests: 183 previos + 6 nuevos), ruff check/format y `alembic check` sin drift.
 
 ## Recarga real
 
@@ -118,9 +118,18 @@ Salida: **`DELETE 28`** (exit code 0).
 
 Las filas de `party` referenciadas solo por sondeos se preservaron: `salf` (391 resultados) y `alianca-cat` (21) siguen en `silver.party`.
 
-### Comprobaciones finales (las tres de `design.md`)
+### Comprobaciones finales (las cuatro de `design.md`)
 
-**1. Grupos por puntuación — 0 filas:**
+**1. Procesos `congress` nacionales con candidaturas y votos — 13:**
+
+```text
+ procesos
+----------
+       13
+(1 row)
+```
+
+**2. Grupos por puntuación — 0 filas:**
 
 ```text
  slugs | count
@@ -128,7 +137,7 @@ Las filas de `party` referenciadas solo por sondeos se preservaron: `salf` (391 
 (0 rows)
 ```
 
-**2. Marcas clave — exactamente 7 filas, una por marca:**
+**3. Marcas clave — exactamente 7 filas, una por marca:**
 
 | `slug` | `name` | procesos |
 | --- | --- | ---: |
@@ -140,7 +149,7 @@ Las filas de `party` referenciadas solo por sondeos se preservaron: `salf` (391 
 | `psoe` | PSOE | 12 |
 | `upl` | UPL | 8 |
 
-**3. Huérfanos — 0:**
+**4. Huérfanos — 0:**
 
 ```text
  count
@@ -150,7 +159,7 @@ Las filas de `party` referenciadas solo por sondeos se preservaron: `salf` (391 
 
 ## Trazabilidad
 
-| Requirement | Test |
+| Requirement | Test / evidencia |
 | --- | --- |
 | R1 — resolución por `PartyResolver` | `test_two_processes_one_party` |
 | R2 — dos grafías, una fila de `party` | `test_two_processes_one_party` |
@@ -158,10 +167,10 @@ Las filas de `party` referenciadas solo por sondeos se preservaron: `salf` (391 
 | R4 — alta con warning | `test_unknown_head_label_warns` |
 | R5 — recarga sin duplicar `party` | `test_force_reload_preserves_facts` |
 | R6 — hechos conservados en `--force` | `test_force_reload_preserves_facts` |
-| R7 — 13 procesos con candidaturas y votos | `test_state_covers_13_processes` |
-| R8 — 0 grupos por puntuación | `test_state_no_punctuation_groups` |
-| R9 — 7 marcas en una fila | `test_state_key_brands_single_row` |
-| R10 — 0 huérfanos (preservando `poll_result`) | `test_state_no_orphan_parties` |
+| R7 — 13 procesos con candidaturas y votos | Evidencia SQL (§«Comprobaciones finales»: 13; 13/13 `processed` en §«Recarga») |
+| R8 — 0 grupos por puntuación | Evidencia SQL (§«Comprobaciones finales»: 0 filas) |
+| R9 — 7 marcas en una fila | Evidencia SQL (§«Comprobaciones finales»: 7 filas) |
+| R10 — 0 huérfanos (preservando `poll_result`) | Evidencia SQL (§«Comprobaciones finales»: 0; `salf` y `alianca-cat` preservadas) |
 | R11 — `data-model.md` describe `parties.py` + catálogo | `test_docs_data_model` |
 | R12 — `data-model.md` sin «provisional» | `test_docs_data_model` |
 | R13 — `ingesta.md` describe `parties.py` + catálogo | `test_docs_ingesta` |
@@ -175,8 +184,8 @@ Las filas de `party` referenciadas solo por sondeos se preservaron: `salf` (391 
 - **Catálogo:** sin cambios. La recarga resolvió las 921 cabeceras con 0 altas; no hubo grafías sin ficha que registrar como alias.
 - **`polls/loaders/polls.py`:** no se tocó; ya importaba `slugify` de `ingestor.parties` (nunca pasó por el re-export de `election.py`).
 
-## Corrección de CI (`test_state_*`)
+## Cambio de criterio (2026-10-19)
 
-- **Causa:** el workflow ejecuta `uv run pytest` antes de `alembic upgrade head`; el Postgres del servicio responde pero no existe el esquema `silver`, así que los `test_state_*` fallaban con `ProgrammingError: relation "silver.party" does not exist` en vez de saltar.
-- **Fix:** `_real_session()` comprueba `inspect(connection).has_table("party", schema="silver")` y hace `pytest.skip` si falta; sin tablas = «sin datos locales». Con las tablas presentes se mantiene el comportamiento: vacías → skip, con datos → corren.
-- **Evidencia:** `DATABASE_URL=...@localhost:5434/postgres uv run pytest tests/test_party_reload.py -k state -v` → 4 skipped; `uv run pytest` local → 193 passed (los 4 `test_state_*` corren); `./init.sh` → verde.
+- **Qué:** se eliminan del suite `_real_session()` y los cuatro `test_state_*` de `ingestor/tests/test_party_reload.py`. El fichero queda con 6 tests: 3 de integración (`db`) y 3 de documentos.
+- **Por qué:** en CI nunca corrían (se saltaban) y dependían del estado operativo local; su valor es evidencia operativa, no un test. Las invariantes R7–R10 se mantienen como verificación manual con el SQL reproducible de `design.md` §«Comprobaciones» y su salida registrada en §«Comprobaciones finales».
+- **Trazabilidad:** R7–R10 pasan de «test» a «evidencia SQL» en la tabla de §«Trazabilidad».
