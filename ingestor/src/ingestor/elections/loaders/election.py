@@ -39,7 +39,7 @@ from ingestor.models import (
     Turnout,
     Vote,
 )
-from ingestor.parties import slugify
+from ingestor.parties import PartyResolver, load_catalog
 
 logger = logging.getLogger(__name__)
 
@@ -343,7 +343,7 @@ def _resolve_parties(
     candidacies: list[file03.Candidacy],
     candidacy_by_code: dict[str, file03.Candidacy],
 ) -> dict[str, Party]:
-    """Group candidacies by national head (provisional party identity)."""
+    """Group candidacies by national head through the shared party resolver."""
     heads: dict[str, file03.Candidacy] = {}
     for candidacy in candidacies:
         heads.setdefault(
@@ -351,28 +351,12 @@ def _resolve_parties(
             candidacy_by_code.get(candidacy.national_head, candidacy),
         )
 
-    slugs: dict[str, str] = {}
-    used: set[str] = set()
-    for head_code, head in heads.items():
-        base = slugify(head.short_name) or slugify(head.name) or f"party-{head_code}"
-        slug = base if base not in used else f"{base}-{head_code}"
-        used.add(slug)
-        slugs[head_code] = slug[:60]
-
-    existing = {
-        party.slug: party
-        for party in session.scalars(
-            select(Party).where(Party.slug.in_(slugs.values()))
-        )
-    }
+    resolver = PartyResolver(session.scalars(select(Party)), load_catalog())
     parties: dict[str, Party] = {}
     for head_code, head in heads.items():
-        slug = slugs[head_code]
-        party = existing.get(slug)
-        if party is None:
-            party = Party(name=head.short_name or head.name or slug, slug=slug)
-            session.add(party)
-            existing[slug] = party
+        label = head.short_name or head.name or f"party-{head_code}"
+        party = resolver.resolve(label, code=head_code)
+        session.add(party)  # no-op if the row was already persistent
         parties[head_code] = party
     session.flush()
     return parties

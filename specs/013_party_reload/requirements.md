@@ -82,7 +82,7 @@ La limpieza de huérfanos DEBE dejar `silver.party` sin filas que no tengan ni c
 - R1–R3: `ingestor/tests/test_party_reload.py::test_two_processes_one_party` — dos procesos sintéticos (2008 con `B.N.G.`, 2019 con `BNG`) en los esquemas de test (fixture `db`, sin `data/raw` ni red): una sola fila `party` (slug del catálogo), dos `party_election` con el mismo `party_id` y sin warning.
 - R4: `::test_unknown_head_label_warns` — proceso sintético con `PARTIDO SIN FICHA`: fila nueva con el literal y warning con su slug.
 - R5, R6: `::test_force_reload_preserves_facts` — segunda pasada `--force` sobre los mismos procesos: la fila `party` no se duplica (mismo `id`) y los conteos de `vote`/`turnout`/`party_election` no cambian.
-- R7–R10: tests de estado de solo lectura sobre el Postgres local (se saltan sin base o sin datos locales): `test_state_covers_13_processes` (R7), `test_state_no_punctuation_groups` (R8), `test_state_key_brands_single_row` (R9), `test_state_no_orphan_parties` (R10). La recarga y la limpieza que los dejan verdes son trabajo del implementer (CLI + SQL), no del test.
+- R7–R10: verificación operativa con el SQL de [`design.md`](design.md) §«Comprobaciones», registrada en `progress/impl_party_reload.md`; sin test automatizado.
 - R11–R15: `test_docs_data_model` (R11, R12 — subcadenas y ausencia de «provisional»), `test_docs_ingesta` (R13, R14 — ídem) y `test_docs_ingestor_agents` (R15).
 
 ## Notas de alcance

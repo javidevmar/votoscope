@@ -26,7 +26,10 @@ Nunca se escribe DDL a mano ni ficheros SQL de inicialización. Nunca se edita u
 - `silver.autonomous_community` / `province` / `municipality`: geografía con códigos INE (municipio de 5 dígitos); CCAA y provincia usan `ine_code` como PK y las FK que las referencian se nombran por su clave (`autonomous_community_ine_code`, `province_ine_code`). `municipality.name` es nullable: los municipios extintos que no estén ni en el gazetteer ni en el 05 de su elección se cargan sin nombre. CERA se modela como pseudo-municipio `<provincia>999` (solo se ingiere su nivel provincial; los totales de CCAA y nación son sumas).
 - `silver.polling_station`: mesa, agnóstica a elección; UK (municipio, distrito, sección, código); las pseudo-mesas CERA cuelgan del municipio CERA.
 - `silver.election`: tipo + fecha + ámbito (CCAA o municipio; nacional sin ámbito); UK con nulls-not-distinct y CHECK de ámbito único.
-- `silver.party`: identidad del partido (nombre, `slug` único; `color` se curará al construir `gold`). La carga provisional agrupa por **cabecera nacional de candidatura**; la curación acordada la sustituye por un **catálogo versionado** (`src/ingestor/data/party_catalog.toml`: `name` y `aliases` literales ya ingeridos) y un **resolver compartido** (`src/ingestor/parties.py`): normalización → catálogo → nombre existente → alta con warning, sin fuzzy-matching. Criterio: continuidad de la **marca electoral** (las grafías de una misma marca se fusionan; las coaliciones con nombre propio, no). Sin cambio de esquema: la recarga es reingesta (features 12–14).
+- `silver.party`: identidad del partido (nombre, `slug` único, `color`); la carga de
+  elecciones resuelve cada **cabecera nacional de candidatura** con la resolución
+  compartida de `parties.py` sobre el catálogo `data/party_catalog.toml` (catálogo →
+  nombre existente → alta con warning).
 - `silver.party_election`: candidatura por elección (código de fuente, `short_name` y `name` propios); UK (elección, código).
 - `silver.turnout`: censo, blancos y nulos por mesa y elección; los votantes se derivan: `sum(vote.votes) + blank_votes + null_votes`.
 - `silver.vote`: votos por candidatura y mesa; UK (mesa, candidatura).

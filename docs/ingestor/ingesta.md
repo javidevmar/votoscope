@@ -85,7 +85,12 @@ Por cada carpeta de elección, todo el trabajo de plata va en **una transacción
 1. **Identificación**: se localizan los ficheros, se comprueba que están bajo `RAW_DIR` y se parsea el `02` (tipo de proceso y fecha de celebración).
 2. **Bronce**: se calcula el sha256 de cada fichero. Los sha nuevos se registran en `bronze.ingestion` (`registered`, ruta relativa, tamaño, fuente `infoelectoral`). Si todos los ficheros de la elección ya están `processed`, se salta (salvo `--force`).
 3. **Recarga**: se busca o crea la fila de `silver.election` y se **borran** los hechos y candidaturas previos de esa elección (`vote`, `turnout` y `party_election`). Reingerir una elección = borrar y recargar; `party` (identidad) y la geografía no se tocan.
-4. **Candidaturas** (`03`): se agrupan por **cabecera nacional** → una fila de `party` por grupo (slug único a partir de las siglas; si dos grupos colisionan en la misma elección, el slug lleva el código de cabecera). Cada fila del `03` se inserta como `party_election`, con su código, siglas y denominación.
+4. **Candidaturas** (`03`): cada **cabecera nacional** se resuelve con la resolución
+   compartida de `parties.py` sobre el catálogo `data/party_catalog.toml` (catálogo →
+   nombre existente → alta con warning): las grafías de la misma marca (`B.N.G.`/`BNG`)
+   acaban en una sola fila de `party`, con el slug canónico del catálogo (si el slug
+   choca, lleva el código de cabecera). Cada fila del `03` se inserta como
+   `party_election`, con su código, siglas y denominación.
 5. **Mesas y participación** (`09`): se descartan las filas agregadas de CERA (provincia `99`) y, por cada mesa:
    - el municipio se resuelve contra la geografía; si no existe, se crea: pseudo-municipio CERA (`<provincia>999`, nombre «CERA») o municipio extinto con el nombre del `05` de esa misma elección (si no hay nombre en ninguna fuente, queda `NULL` y se avisa por log);
    - la mesa (`polling_station`) se busca o crea por (municipio, distrito, sección, código): es agnóstica a la elección;
@@ -112,7 +117,7 @@ Por cada snapshot, todo el trabajo de plata va en **una transacción**; el regis
 | --- | --- |
 | `autonomous_community`, `province`, `municipality` | geografía INE; los municipios CERA y los extintos los crea la ingesta; `name` solo es `NULL` si no hay nombre en ninguna fuente |
 | `election` | una fila por proceso (tipo `congress`, fecha; ámbito nulo = nacional) |
-| `party` | identidad provisional del partido (agrupada por cabecera nacional, slug único) |
+| `party` | identidad del partido (catálogo `data/party_catalog.toml` vía `parties.py`; `slug` único) |
 | `party_election` | candidatura por elección, tal y como la publica el `03` |
 | `polling_station` | mesa (municipio, distrito, sección, código), compartida entre elecciones |
 | `turnout` | censo INE, blancos y nulos por mesa y elección |

@@ -22,6 +22,7 @@ Los datos electorales se siguen descargando a mano; los sondeos de Wikipedia se 
 - **`src/ingestor/settings.py`** — configuración: `DATABASE_URL` (por defecto, el Postgres de docker-compose en `localhost:5434`), `RAW_DIR` (por defecto, `../data/raw`) e `INE_DIR` (por defecto, `../refs/ine`).
 - **`src/ingestor/db.py`** — engine y factoría de sesiones de SQLAlchemy.
 - **`src/ingestor/models.py`** — definición del esquema, modelo v2 (inglés; esquemas `bronze` y `silver`; PK natural INE en `autonomous_community`/`province`).
+- **`src/ingestor/parties.py`** — resolución compartida de la identidad de partido: normalización → catálogo `data/party_catalog.toml` → nombre existente → alta con warning; la usa el loader de elecciones.
 - **`src/ingestor/elections/`** — dominio de elecciones (ficheros del ministerio):
   - `parsers/` — longitud fija, agnóstica al proceso: un módulo por fichero (`file02`, `file03`, `file05`, `file09`, `file10`) y helpers en `common.py`.
   - `adapters/` — reglas por proceso electoral; registro por código (`congreso.py` para el 02; Senado/autonómicas/municipales añadirán módulo propio).
