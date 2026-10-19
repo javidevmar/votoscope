@@ -5,8 +5,11 @@ the year tables of the ``Voting intention estimates`` section into ``PollRow``
 records: firm, dates, sample, turnout and results per party. Source drift
 degrades to a warning and a null value or a skipped row, never to an exception.
 
-Stdlib only (``re``, ``logging``, ``dataclasses``, ``datetime``, ``decimal``);
-pure functions, no network, disk or database access.
+Party column labels resolve against the curated catalogue (``ingestor.parties``):
+the key of a mapped column is its catalogue slug, the raw label otherwise.
+
+Stdlib only (``re``, ``logging``, ``dataclasses``, ``datetime``, ``decimal``)
+plus ``ingestor.parties``; no network or database access.
 """
 
 from __future__ import annotations
@@ -17,6 +20,7 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
+from ingestor.parties import Catalog, load_catalog
 from ingestor.polls.parsers.wikitext import Cell, Row, Table, parse_tables
 
 logger = logging.getLogger(__name__)
@@ -60,35 +64,6 @@ _DATE_RANGE = re.compile(r"^(\d{1,2}) ([A-Z][a-z]{2})–(\d{1,2}) ([A-Z][a-z]{2}
 
 
 @dataclass(frozen=True)
-class PartyColumn:
-    """Known party column: ``silver.party`` slug and display name."""
-
-    slug: str
-    name: str
-
-
-PARTY_COLUMNS: dict[str, PartyColumn] = {
-    "PP": PartyColumn("pp", "Partido Popular"),
-    "PSOE": PartyColumn("psoe", "Partido Socialista Obrero Español"),
-    "Vox": PartyColumn("vox", "Vox"),
-    "Sumar": PartyColumn("sumar", "Sumar"),
-    "ERC": PartyColumn("erc", "Esquerra Republicana de Catalunya"),
-    "Junts": PartyColumn("jxcat-junts", "Junts per Catalunya"),
-    "EH Bildu": PartyColumn("eh-bildu", "Euskal Herria Bildu"),
-    "PNV": PartyColumn("eaj-pnv", "Euzko Alderdi Jeltzalea-Partido Nacionalista Vasco"),
-    "BNG": PartyColumn("bng", "Bloque Nacionalista Galego"),
-    "CCa": PartyColumn("cca", "Coalición Canaria"),
-    "UPN": PartyColumn("u-p-n", "Unión del Pueblo Navarro"),
-    "Adelante Andalucía (2021)": PartyColumn(
-        "adelante-andalucia", "Adelante Andalucía"
-    ),
-    "Podemos": PartyColumn("podemos", "Podemos"),
-    "SALF": PartyColumn("salf", "Se Acabó La Fiesta"),
-    "Aliança.cat": PartyColumn("alianca-cat", "Aliança Catalana"),
-}
-
-
-@dataclass(frozen=True)
 class PollResultRow:
     """One party in one poll: percentage and seat projection."""
 
@@ -114,8 +89,8 @@ class PollRow:
 class _Plan:
     """Column roles by index: fixed label → column, column → party key.
 
-    A party key is the ``silver.party`` slug of a mapped label or the raw label
-    of an unknown column (R8); the loader resolves its identity.
+    A party key is the catalogue slug of a labelled column or the raw label of
+    an unknown one; the loader resolves its identity.
     """
 
     fixed: dict[str, int]
@@ -164,10 +139,13 @@ def poll_tables(wikitext: str) -> list[tuple[int, Table]]:
     return tables
 
 
-def parse_polls(wikitext: str) -> list[PollRow]:
+def parse_polls(wikitext: str, catalog: Catalog | None = None) -> list[PollRow]:
     """Polls of every year table of the page, in page order."""
+    catalog = load_catalog() if catalog is None else catalog
     return [
-        row for year, table in poll_tables(wikitext) for row in _read_table(table, year)
+        row
+        for year, table in poll_tables(wikitext)
+        for row in _read_table(table, year, catalog)
     ]
 
 
@@ -218,7 +196,7 @@ def _label(cell_text: str) -> str:
     return link.group(1).strip() if link else label
 
 
-def _column_plan(label_cells: list[Cell]) -> _Plan | None:
+def _column_plan(label_cells: list[Cell], catalog: Catalog) -> _Plan | None:
     """Column roles from the label row; None when the fixed labels are missing."""
     labels = [_label(cell.text) for cell in label_cells]
     if not set(FIXED_COLUMNS) <= set(labels):
@@ -231,15 +209,17 @@ def _column_plan(label_cells: list[Cell]) -> _Plan | None:
             fixed[label] = index
         elif label == LEAD_COLUMN:
             continue
-        elif label in PARTY_COLUMNS:
-            parties[index] = PARTY_COLUMNS[label].slug
         else:
-            logger.warning("unknown party column: %s", label)
-            parties[index] = label
+            entry = catalog.lookup(label)
+            if entry is None:
+                logger.warning("unknown party column: %s", label)
+                parties[index] = label
+            else:
+                parties[index] = entry.slug
     return _Plan(fixed=fixed, parties=parties)
 
 
-def _read_table(table: Table, year: int) -> list[PollRow]:
+def _read_table(table: Table, year: int, catalog: Catalog) -> list[PollRow]:
     """Data rows of one table: headers, separators and results skipped.
 
     Cells are read by the plan (never by position); misaligned rows are skipped
@@ -248,7 +228,7 @@ def _read_table(table: Table, year: int) -> list[PollRow]:
     if not table.rows:
         return []
     header = table.rows[0].cells
-    plan = _column_plan(header)
+    plan = _column_plan(header, catalog)
     if plan is None:
         return []
     rows: list[PollRow] = []

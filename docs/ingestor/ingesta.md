@@ -108,7 +108,13 @@ Por cada snapshot, todo el trabajo de plata va en **una transacción**; el regis
 3. **Guard de revisión**: si el `revision_id` es anterior a `max(poll.revision_id)`, el snapshot se ignora con warning y sin registrar (salvo `--force`).
 4. **Parseo**: el wikitexto se convierte en filas de sondeo con el adaptador de la fuente (`polls/adapters/wikipedia_polls.py`).
 5. **Validaciones** (antes de tocar `silver`): cada fila necesita firma (literal y nombre de encuestadora) y al menos dos partidos con valor; porcentajes 0–100, escaños 0–350 y `seats_min ≤ seats_max`; un snapshot sin sondeos es error (protege el borrado total de `silver`). La suma de porcentajes de un sondeo por encima de 100.5 solo avisa (la página no publica «otros»).
-6. **Plata (una transacción)**: get-or-create de `pollster` (por el slug de la firma) y de `party` (slugs del mapeo; un rótulo desconocido de una columna nueva se da de alta con su slug y un warning), **borrado total** de `poll`/`poll_result` e inserción de las filas del snapshot. `silver` refleja el último snapshot ingerido; el histórico de revisiones vive en bronce.
+6. **Plata (una transacción)**: get-or-create de `pollster` (por el slug de la firma) y de
+   `party`: el adaptador resuelve cada rótulo de columna contra el catálogo
+   `data/party_catalog.toml` y el loader convierte cada clave en fila con la resolución
+   compartida de `parties.py` (catálogo → nombre existente → alta con warning); un rótulo
+   sin ficha se conserva con su literal y el resolver lo da de alta con un warning.
+   **Borrado total** de `poll`/`poll_result` e inserción de las filas del snapshot.
+   `silver` refleja el último snapshot ingerido; el histórico de revisiones vive en bronce.
 7. **Estados**: si todo va bien, los sondeos quedan en `silver` y el fichero pasa a `processed`; si algo falla, la transacción se deshace y el fichero queda `failed` (la próxima ejecución lo reintenta).
 
 ## Qué queda en `silver`

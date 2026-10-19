@@ -30,6 +30,7 @@ from ingestor.models import (
     Pollster,
     Province,
 )
+from ingestor.parties import load_catalog
 from ingestor.polls.adapters.wikipedia_polls import parse_polls
 from ingestor.polls.loaders.polls import ingest_polls_path, resolve_poll_elections
 
@@ -142,9 +143,10 @@ def test_cli_registers_and_loads(db, tmp_path, monkeypatch):  # R1, R3-R8, R23, 
 
         parties = {row.slug: row for row in session.scalars(select(Party))}
         assert set(parties) == {"pp", "psoe", "salf"}
+        catalog = load_catalog()
         assert parties["salf"].name == "Se Acabó La Fiesta"
-        assert parties["pp"].name == "Partido Popular"
-        assert parties["psoe"].name == "Partido Socialista Obrero Español"
+        assert parties["pp"].name == catalog.lookup("PP").name
+        assert parties["psoe"].name == catalog.lookup("PSOE").name
 
         polls = {row.source: row for row in session.scalars(select(Poll))}
         assert set(polls) == {"Alpha/Medio", "CIS (Target Point)"}
