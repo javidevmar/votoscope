@@ -12,9 +12,10 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
+from ingestor.parties import load_catalog
+from ingestor.polls.adapters import wikipedia_polls
 from ingestor.polls.adapters.wikipedia_polls import (
     ELECTION_TYPE,
-    PARTY_COLUMNS,
     PollResultRow,
     parse_date,
     parse_polls,
@@ -99,13 +100,48 @@ PARTY_LABELS = {
 }
 
 
-def test_party_columns_mapping():  # R6, R7
-    assert {
-        label: column.slug for label, column in PARTY_COLUMNS.items()
-    } == PARTY_LABELS
-    assert len({column.slug for column in PARTY_COLUMNS.values()}) == 15
-    assert PARTY_COLUMNS["SALF"].name == "Se Acabó La Fiesta"
-    assert PARTY_COLUMNS["Aliança.cat"].name == "Aliança Catalana"
+def test_party_labels_resolve_through_catalog():  # R1, R2, R5
+    catalog = load_catalog()
+    assert {label: catalog.lookup(label).slug for label in PARTY_LABELS} == PARTY_LABELS
+    for entry in catalog.entries:
+        assert catalog.lookup(entry.slug).slug == entry.slug
+    assert catalog.lookup("SALF").name == "Se Acabó La Fiesta"
+    assert catalog.lookup("Aliança.cat").name == "Aliança Catalana"
+
+
+OUTSIDE_MAPPING_TABLE = (
+    "====Voting intention estimates====\n"
+    "=====2026=====\n"
+    '{| class="wikitable"\n'
+    "|-\n"
+    "! Polling firm/Commissioner\n"
+    "! Fieldwork date\n"
+    "! Sample size\n"
+    "! Turnout\n"
+    "! PP\n"
+    "! C's\n"
+    "|-\n"
+    "| Alpha/Medio\n"
+    "| 5 Oct\n"
+    "| 1,000\n"
+    "| 67.6\n"
+    "| 30.0\n"
+    "| 12.0\n"
+    "|}\n"
+)
+
+
+def test_parse_resolves_label_outside_mapping(caplog):  # R1, R2
+    catalog = load_catalog()
+    with caplog.at_level(logging.WARNING):
+        (row,) = parse_polls(OUTSIDE_MAPPING_TABLE, catalog=catalog)
+    assert list(row.results) == ["pp", catalog.lookup("C's").slug]
+    assert "unknown party column" not in caplog.text
+
+
+def test_mapping_table_removed():  # R6
+    assert not hasattr(wikipedia_polls, "PARTY_COLUMNS")
+    assert not hasattr(wikipedia_polls, "PartyColumn")
 
 
 def test_synthetic_columns_mapping():  # R5, R6, R7
@@ -132,9 +168,13 @@ def test_fixed_columns_by_label():  # R4
     assert row.turnout == Decimal("67.6")
 
 
-def test_unknown_column_warns_and_kept(caplog):  # R8
+def test_unknown_column_warns_and_kept(tmp_path, caplog):  # R3, R4
+    catalog_path = tmp_path / "party_catalog.toml"
+    catalog_path.write_text('[parties.pp]\nname = "PP"\n', encoding="utf-8")
     with caplog.at_level(logging.WARNING):
-        (row,) = parse_polls(_fixture("synthetic_columns.wikitext"))
+        (row,) = parse_polls(
+            _fixture("synthetic_columns.wikitext"), catalog=load_catalog(catalog_path)
+        )
     assert "unknown party column" in caplog.text
     assert "FA" in caplog.text
     assert row.results["FA"].pct == Decimal("5.0")
@@ -426,7 +466,8 @@ def test_module_is_stdlib_only_and_pure():  # R27
         "ingestor"
     }
     assert {module for module in modules if module.startswith("ingestor")} == {
-        "ingestor.polls.parsers.wikitext"
+        "ingestor.polls.parsers.wikitext",
+        "ingestor.parties",
     }
     for banned in (
         "urlopen",
