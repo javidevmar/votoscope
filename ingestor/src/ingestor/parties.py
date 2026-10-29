@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 CATALOG_PATH: Path = Path(__file__).parent / "data" / "party_catalog.toml"
 SLUG_MAX = 60  # silver.party.slug is String(60)
+COLOR_PATTERN = re.compile(r"^#[0-9a-fA-F]{6}$")  # hex colour, e.g. #1d84ce
 
 
 def normalize(label: str) -> str:
@@ -41,11 +42,12 @@ def slugify(value: str) -> str:
 
 @dataclass(frozen=True)
 class PartyEntry:
-    """One curated electoral brand: canonical slug, literal name and aliases."""
+    """One curated electoral brand: canonical slug, literal name, aliases, colour."""
 
     slug: str
     name: str
     aliases: tuple[str, ...] = ()
+    color: str | None = None
 
 
 class Catalog:
@@ -98,6 +100,13 @@ def load_catalog(path: Path = CATALOG_PATH) -> Catalog:
             isinstance(alias, str) for alias in aliases
         ):
             raise IngestError(f"{path}: party {slug!r}: aliases must be a string list")
+        color = ficha.get("color")
+        if color is not None and (
+            not isinstance(color, str) or not COLOR_PATTERN.fullmatch(color)
+        ):
+            raise IngestError(
+                f"{path}: party {slug!r}: color {color!r} is not a #rrggbb hex"
+            )
         name_key = normalize(name)
         for value in (name, *aliases):
             if not normalize(value):
@@ -113,7 +122,9 @@ def load_catalog(path: Path = CATALOG_PATH) -> Catalog:
                 )
             claim(key, slug)
         claim(normalize(slug), slug)
-        entries.append(PartyEntry(slug=slug, name=name, aliases=tuple(aliases)))
+        entries.append(
+            PartyEntry(slug=slug, name=name, aliases=tuple(aliases), color=color)
+        )
 
     return Catalog(entries)
 
@@ -141,6 +152,8 @@ class PartyResolver:
             if party is None:
                 party = Party(name=entry.name, slug=entry.slug)
                 self._index(party)
+            if entry.color is not None:
+                party.color = entry.color  # recolours existing rows too
             return party
 
         key = normalize(label)

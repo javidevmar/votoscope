@@ -20,6 +20,7 @@ name = "3e"
 [parties.adelante-andalucia]
 # (2021) is the label of the polls source; the literal of file 03 is undated.
 name = "ADELANTE ANDALUCÍA"
+color = "#00a651"
 aliases = ["Adelante Andalucía (2021)"]
 
 [parties.ahora-canarias-pcpc]
@@ -28,6 +29,7 @@ name = "AHORA CANARIAS-PCPC"
 [parties.alianca-cat]
 # Polls-only brand (no file 03 yet): name as the polls source publishes it.
 name = "Aliança Catalana"
+color = "#1f4e9c"
 
 [parties.alm]
 name = "ALM"
@@ -40,12 +42,14 @@ name = "AUN"
 
 [parties.bng]
 name = "BNG"
+color = "#4d9de0"
 
 [parties.bqex]
 name = "BQEX"
 
 [parties.cca]
 name = "CCa"
+color = "#f2c200"
 
 [parties.ccd]
 name = "CCD"
@@ -61,6 +65,7 @@ name = "Cs"
 
 [parties.cup-pr]
 name = "CUP-PR"
+color = "#f5c400"
 
 [parties.dn]
 name = "DN"
@@ -68,13 +73,16 @@ name = "DN"
 [parties.eaj-pnv]
 # PNV is the label of the polls source; EAJ-PNV the literal of file 03.
 name = "EAJ-PNV"
+color = "#007a33"
 aliases = ["PNV"]
 
 [parties.eh-bildu]
 name = "EH Bildu"
+color = "#8fbf2f"
 
 [parties.erc]
 name = "ERC"
+color = "#ffb232"
 
 [parties.erc-catsi]
 name = "ERC-CATSI"
@@ -99,6 +107,7 @@ name = "EVC"
 
 [parties.existe]
 name = "EXISTE"
+color = "#607d8b"
 
 [parties.fe-de-las-j]
 name = "FE de las J"
@@ -114,6 +123,7 @@ name = "FIA"
 
 [parties.fo]
 name = "FO"
+color = "#1b3a6b"
 
 [parties.fuerza-civica]
 name = "FUERZA CÍVICA"
@@ -133,6 +143,7 @@ name = "JM+"
 [parties.jxcat-junts]
 # Junts is the label of the polls source; JxCAT - JUNTS the literal of file 03.
 name = "JxCAT - JUNTS"
+color = "#00a2ad"
 aliases = ["Junts"]
 
 [parties.jxg]
@@ -158,9 +169,11 @@ name = "Na-Bai"
 
 [parties.nc-bc]
 name = "NC-bc"
+color = "#f6a800"
 
 [parties.pacma]
 name = "PACMA"
+color = "#00a99d"
 
 [parties.par]
 name = "PAR"
@@ -176,12 +189,14 @@ name = "PCTE"
 
 [parties.pdecat-e-ciu]
 name = "PDeCAT-E-CiU"
+color = "#0b3d91"
 
 [parties.ph]
 name = "PH"
 
 [parties.podemos]
 name = "PODEMOS"
+color = "#6b2c91"
 
 [parties.podemos-iu]
 # The 2019 Unidas Podemos coalition ran under this national head; the literal
@@ -199,34 +214,40 @@ name = "POR MI REGIÓN"
 
 [parties.pp]
 name = "PP"
+color = "#1d84ce"
 
 [parties.prepal]
 name = "PREPAL"
 
 [parties.psoe]
 name = "PSOE"
+color = "#e30713"
 
 [parties.puede]
 name = "PUEDE"
 
 [parties.pum-j]
 name = "PUM+J"
+color = "#6a1b9a"
 
 [parties.rds]
 name = "+RDS+"
 
 [parties.recortes-cero]
 name = "RECORTES CERO"
+color = "#9e1b32"
 
 [parties.salf]
 # Polls-only brand (no file 03 yet): name as the polls source publishes it.
 name = "Se Acabó La Fiesta"
+color = "#2b2b2b"
 
 [parties.somos-cc]
 name = "Somos Cc"
 
 [parties.sumar]
 name = "SUMAR"
+color = "#e51c55"
 
 [parties.sy]
 name = "SY"
@@ -234,6 +255,7 @@ name = "SY"
 [parties.u-p-n]
 # The ingested acronym is dotted; the poll label UPN resolves by normalization.
 name = "U.P.N."
+color = "#1f3a93"
 
 [parties.ud-ca]
 name = "Ud.Ca"
@@ -243,6 +265,7 @@ name = "UNIDOS SI"
 
 [parties.upl]
 name = "UPL"
+color = "#2e7d32"
 
 [parties.vb]
 name = "VB"
@@ -252,6 +275,7 @@ name = "VERDES"
 
 [parties.vox]
 name = "VOX"
+color = "#63be21"
 
 [parties.vp]
 name = "VP"
