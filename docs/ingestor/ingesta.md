@@ -1,6 +1,6 @@
-# El ingestador: comandos y carga en `silver`
+# El ingestador: comandos y carga en `silver` y `gold`
 
-Cómo funciona `ingestor/`: los comandos, el comportamiento de la ingesta y qué acaba en el esquema `silver`.
+Cómo funciona `ingestor/`: los comandos, el comportamiento de la ingesta y qué acaba en los esquemas `silver` y `gold`.
 Para el formato de los ficheros fuente y sus rarezas, ver [`../../.agents/data-sources.md`](../../.agents/data-sources.md); para el modelo de datos, [`../../.agents/data-model.md`](../../.agents/data-model.md).
 
 ## Comandos
@@ -136,3 +136,28 @@ Por cada snapshot, todo el trabajo de plata va en **una transacción**; el regis
 - Los sondeos (`pollster`, `poll`, `poll_result`) los carga `ingest-polls` y se reemplazan enteros en cada carga: `silver` refleja el último snapshot ingerido, no un histórico.
 - No se cargan: el `04` (candidatos), los agregados `05`–`08` (el `05` solo se usa como fuente de nombres) ni las filas agregadas de CERA (CCAA y nacional: son sumas de las provinciales).
 - `bronze.ingestion` guarda una fila por fichero leído (ruta, sha256, tamaño, fuente y estado).
+
+## Esquema `gold`
+
+`gold` no se carga: son seis **vistas de solo lectura** que la migración crea
+sobre `silver`. Su SQL vive en `ingestor/src/ingestor/gold.py` (`view_ddl()`),
+única fuente que consumen la migración y los tests; los agregados y porcentajes
+solo existen aquí (la web no los recalcula).
+
+| Vista | Grano |
+| --- | --- |
+| `gold.election_summary` | una fila por elección con censo, nulos, blancos, candidaturas, válidos, votantes y participación |
+| `gold.result_by_area` | una fila por (elección, nivel, área, partido); `level` = `national`, `community`, `province` o `municipality` |
+| `gold.result_by_station` | una fila por (elección, mesa, partido) con la identidad y geografía de la mesa |
+| `gold.station_turnout` | una fila por (elección, mesa) con censo, nulos, blancos, válidos, votantes y participación |
+| `gold.poll_flat` | una fila por (sondeo, partido): encuestadora, fechas, muestra, `pct`, escaños y snapshot (`source`/`revision_id`) |
+| `gold.poll_trend` | la misma fila con `poll_date` = fin (o inicio) del trabajo de campo, ordenada para la tendencia |
+
+- Se aplican con `uv run alembic upgrade head` (la migración crea el esquema y
+  las seis vistas). `alembic check` las excluye del autogenerate con
+  `include_object` en `alembic/env.py`: no se crean como tablas ni se vigilan
+  como tales.
+- Un cambio de columnas o de SQL es **otra migración** con `view_ddl()`
+  actualizado; nunca se edita la vista a mano ni se duplica su SQL.
+- Contrato pantalla ↔ vista y semántica de porcentajes:
+  [`../db/gold.md`](../db/gold.md).
