@@ -1,18 +1,19 @@
 # Sesión actual
 
-- **Feature en curso:** _ninguna_ (12–14 cerradas; 15–18 pendientes)
-- **Inicio:** 2026-10-19
+- **Feature en curso:** _ninguna_ (15 cerrada; la 16 arranca en su rama)
+- **Inicio:** 2026-10-29
 - **Agente:** leader
 
 ## Plan
 
-1. Tu revisión de las PRs del stack `party-norm` (12–14) y merge cuando toque.
-2. Después: 15 `delivery_gold`, 16 `web_scaffold`, 17 `close_minor` (entrega) y 18 `source_norm`.
+1. Feature 16 `web_scaffold` en `feature/web-scaffold`, apilada sobre `feature/delivery-gold`: pnpm, Tailwind + shadcn/ui y BFF obligatorio en `app/api/`.
+2. Después: 17 `close_minor` y 18 `source_norm`.
 
 ## Bitácora
 
-- Sesión cerrada: features 12 `party_catalog`, 13 `party_reload` y 14 `party_polls` `done` (detalle en `history.md`).
+- 2026-10-29: feature 15 `delivery_gold` cerrada, commiteada y pusheada (detalle en `history.md`). Reviewer **APPROVED**.
+- 2026-10-29: specs 16 y 17 commiteados en esta rama; el spec 18 sigue sin commitear (pendiente de OK).
 
 ## Próximo paso
 
-- Tu revisión de las PRs del stack (`feature/party-catalog` → `feature/party-reload` → `feature/party-polls`); después, 15 `delivery_gold` (spec pendiente de redactar).
+- Implementar la 16 en la rama nueva.

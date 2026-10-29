@@ -97,3 +97,13 @@ Las sesiones anteriores al arnés SDD están registradas en el historial de git.
 - **Criterio de tests (petición del usuario, en la misma sesión):** fuera los tests de estado que leían el `silver` local (features 11 y 13): se saltan en CI y dependen del estado operativo; las invariantes quedan como SQL reproducible + evidencia. La suite de integración pasa a una BD temporal en la rama aparte `feature/test-infra`.
 - **Verificación:** `./init.sh` verde en cada cierre (195 tests al final de la 13/14, ruff, `alembic check` sin drift); los tests de integración corrieron contra el Postgres real (esquemas desechables).
 - **Cierre:** features 12–14 `done`; PRs del stack abiertas para revisión. Siguiente: 15 `delivery_gold`, 16 `web_scaffold`, 17 `close_minor`, 18 `source_norm`.
+
+---
+
+## 2026-10-29 — Feature 15 `delivery_gold` (vistas gold y contrato con el frontend)
+
+- **Agente:** leader + implementer + reviewer (rama `feature/delivery-gold`, apilada sobre `feature/party-polls`).
+- **Cambios:** seis vistas de solo lectura en `gold` (`election_summary`, `result_by_area`, `result_by_station`, `station_turnout`, `poll_flat`, `poll_trend`) declaradas en `models.py` (`info={"view": True}`) y creadas por la migración `bcd8a7409aec` desde `gold.py` (`view_ddl()`, única fuente del SQL); `include_object` en `alembic/env.py`; contrato `docs/db/gold.md`; página «Gold» del ERD; topología de entornos (local / Vercel + Neon + GitHub Actions, sin staging) y docs de ingesta/arquitectura/modelo al día. Curación de `party.color` en el catálogo (24 fichas, validación `#rrggbb`) y materialización por el resolver: recarga real de los 13 procesos y de los sondeos (575 sondeos, 15/15 marcas de sondeos con color).
+- **Review:** APPROVED. Rondas: separación de alcance de los specs 16–18 (decisión del usuario: se quedan en la rama) y refuerzo de tests (orden completo de `poll_trend`, nombres de geografía en `station_turnout`, comparación de colores con el catálogo).
+- **Verificación:** `./init.sh` verde (224 tests, ruff check/format, `alembic check` sin drift); datos reales contrastados (13 elecciones, 2023: censo 37.469.141, participación 66,60; 575 sondeos / 6.125 resultados).
+- **Cierre:** feature 15 `done`; commits atómicos y push de `feature/delivery-gold` (sin PR). Siguiente: 16 `web_scaffold`.

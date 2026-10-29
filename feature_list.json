@@ -221,21 +221,21 @@
         "ERD ↔ modelos ↔ migración para lo que toque el esquema"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 16,
       "name": "web_scaffold",
       "title": "Scaffold de la web (Next.js)",
-      "description": "Aplicación Next.js en web/ que lee las vistas gold desde el servidor, con rol de Postgres de solo lectura.",
+      "description": "Aplicación Next.js en web/ con BFF en app/api/ que lee las vistas gold desde el servidor, con rol de Postgres de solo lectura.",
       "acceptance": [
-        "app Next.js (App Router) en web/ que consulta gold.* en Server Components; sin API intermedia",
+        "app Next.js (App Router) en web/ con BFF obligatorio en app/api/: toda consulta a gold.* y a servicios externos vive ahí y el navegador nunca ve llamadas ni credenciales de BD",
         "rol de Postgres de solo lectura (SELECT solo sobre gold) creado por migración",
         "logging por niveles con LOG_LEVEL en servidor",
         "web/AGENTS.md y .agents/conventions.md actualizados (estrategia de tests y logging)"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 17,
@@ -248,7 +248,7 @@
         ".agents/status.md y documentos de contexto al día"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     },
     {
       "id": 18,
