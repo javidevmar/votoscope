@@ -89,6 +89,3 @@ La base de datos se levanta desde la raíz del repo: `docker compose up -d --wai
 - Ficheros fuente: `../data/raw/` (no versionados; nunca se modifican); bronce por proceso en `data/raw/congreso/{código}/`.
 - Cada fichero ingerido queda registrado en `bronze.ingestion` con su sha256.
 
-## Pendiente
-
-- Nada bloqueante para el MVP del ingestador: elecciones (bronce → plata) y sondeos cargados, vistas `gold` desplegadas por migración.
