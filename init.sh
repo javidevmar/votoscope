@@ -114,7 +114,29 @@ else
 fi
 
 echo ""
-echo "── 5. Drift del modelo (si la base responde) ───────────"
+echo "── 5. Web: tests y lint (si node_modules existe) ───────"
+
+if [ ! -d web ]; then
+  warn "Falta la carpeta web/; se omite la verificación de la web"
+elif [ ! -d web/node_modules ]; then
+  warn "web/node_modules no existe; se omite pnpm test (cd web && pnpm install)"
+else
+  if (cd web && pnpm --silent test); then
+    ok "pnpm test: tests de la web pasan"
+  else
+    fail "pnpm test: hay tests rotos en web/"
+    EXIT_CODE=1
+  fi
+  if (cd web && pnpm --silent lint); then
+    ok "pnpm lint"
+  else
+    fail "pnpm lint con errores"
+    EXIT_CODE=1
+  fi
+fi
+
+echo ""
+echo "── 6. Drift del modelo (si la base responde) ───────────"
 
 # El Postgres es compartido (host 5434); puede estar levantado desde otro
 # checkout/worktree, por eso se comprueba el puerto y no el proyecto compose.
@@ -130,7 +152,7 @@ else
 fi
 
 echo ""
-echo "── 6. Resumen ──────────────────────────────────────────"
+echo "── 7. Resumen ──────────────────────────────────────────"
 
 if [ $EXIT_CODE -eq 0 ]; then
   ok "Entorno listo. Puedes empezar a trabajar."
