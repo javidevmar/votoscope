@@ -235,7 +235,7 @@
         "web/AGENTS.md y .agents/conventions.md actualizados (estrategia de tests y logging)"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
     },
     {
       "id": 17,
@@ -263,7 +263,7 @@
         ".agents/data-sources.md y docs del ingestador actualizados"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "spec_ready"
     }
   ]
 }

@@ -1,19 +1,19 @@
 # Sesión actual
 
-- **Feature en curso:** _ninguna_ (15 cerrada; la 16 arranca en su rama)
-- **Inicio:** 2026-10-29
+- **Feature en curso:** _ninguna_ (16 cerrada; la 17 es la siguiente)
+- **Inicio:** 2026-10-31
 - **Agente:** leader
 
 ## Plan
 
-1. Feature 16 `web_scaffold` en `feature/web-scaffold`, apilada sobre `feature/delivery-gold`: pnpm, Tailwind + shadcn/ui y BFF obligatorio en `app/api/`.
-2. Después: 17 `close_minor` y 18 `source_norm`.
+1. Feature 17 `close_minor`: README raíz, atribución de fuentes y puesta al día de `.agents/status.md` (spec ya en `spec_ready`).
+2. Después: 18 `source_norm` (spec con inventario histórico y sin lista blanca).
 
 ## Bitácora
 
-- 2026-10-29: feature 15 `delivery_gold` cerrada, commiteada y pusheada (detalle en `history.md`). Reviewer **APPROVED**.
-- 2026-10-29: specs 16 y 17 commiteados en esta rama; el spec 18 sigue sin commitear (pendiente de OK).
+- 2026-10-31: feature 16 `web_scaffold` cerrada, commiteada en `feature/web-scaffold` (sin push ni PR). Reviewer **APPROVED** (detalle en `history.md`).
+- 2026-10-31: spec 18 movido a esta rama y corregido: inventario sobre todos los snapshots de bronce y R20 (sin lista blanca).
 
 ## Próximo paso
 
-- Implementar la 16 en la rama nueva.
+- Implementar la 17 en su rama.
