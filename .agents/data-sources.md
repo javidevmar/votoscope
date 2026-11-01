@@ -137,6 +137,15 @@ sección *Voting intention estimates* (tablas por año, ámbito nacional).
     2024): se saltan; los resultados ya viven en `vote`. La columna `Lead` se
     ignora (es derivable); las notas al pie (`{{efn|…}}`) y referencias
     (`<ref>…</ref>`) se descartan.
+- **Papeles del literal de firma**: la columna «Polling firm/Commissioner» mezcla
+  papeles y el loader los separa. `Encuestadora/Medio` (`SocioMétrica/El Español`):
+  la encuestadora va a `pollster` y el medio/comisionante a `poll.media`.
+  `CIS {{smaller|(Reestimador)}}` (`CIS (Target Point)`, `(Sondaxe)`, `(Logoslab)`…):
+  el paréntesis del CIS es una proyección alternativa sobre sus datos brutos y su
+  contenido va a `poll.reestimator`. Un literal sin separadores (`More in Common`,
+  `CIS`, `PSOE`) solo tiene encuestadora: no se le inventan medio ni reestimador.
+  El literal completo se conserva en `poll.source`; `CIS (JM)` y `CIS (Jaime Miquel)`
+  se guardan tal cual, sin fusionar.
 - **Rarezas de los valores**:
   - Fechas: un día (`5 Oct`), rango en el mismo mes (`10–11 Oct`) o entre
     meses (`29 Sep–1 Oct`); el año sale de la sección y un rango con `cruce de año`

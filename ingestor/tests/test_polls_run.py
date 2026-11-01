@@ -260,5 +260,8 @@ def test_docs_data_sources_quirks():  # R13, R14
         "<2.0",
         "fecha de publicación",
         "participación",
+        "reestimador",
+        "Encuestadora/Medio",
+        "paréntesis",
     ):
         assert needle in text
