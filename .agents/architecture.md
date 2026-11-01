@@ -14,8 +14,8 @@ Votoscope es un agregador de resultados electorales de España.
 1. **Ingestador — `ingestor/` (Python)**: pipeline bronce → plata → oro sobre PostgreSQL.
    - **Bronce**: ficheros originales, inmutables, en `data/raw/`, más un registro por fichero en `bronze.ingestion` (ruta, sha256, tamaño, fuente, estado). Un fichero corregido entra como fichero nuevo.
    - **Plata**: tablas normalizadas en el esquema `silver`. Sin agregados.
-   - **Oro**: vistas en el esquema `gold`, una por consulta del frontend. Pendientes de crear.
-2. **Frontend — `web/` (Next.js)**: lee las vistas `gold` directamente de PostgreSQL, en servidor (Server Components). Sin API intermedia: solo dos partes. Pendiente de scaffold.
+   - **Oro**: seis vistas de solo lectura en el esquema `gold`, creadas por migración desde `ingestor/src/ingestor/gold.py` (`election_summary`, `result_by_area`, `result_by_station`, `station_turnout`, `poll_flat`, `poll_trend`). Los agregados y porcentajes solo existen aquí; la web no los recalcula. Contrato pantalla ↔ vista: [`../docs/db/gold.md`](../docs/db/gold.md).
+2. **Frontend — `web/` (Next.js)**: lee las vistas `gold` a través de un BFF obligatorio en `web/app/api/` (Route Handlers y módulos privados): toda llamada a PostgreSQL o a servicios externos vive ahí y el navegador no accede a la base. Render en servidor (Server Components), con rol de solo lectura. Contrato de datos: [`../docs/db/gold.md`](../docs/db/gold.md). Pendiente de scaffold.
 
 ## Flujo de datos
 
@@ -34,7 +34,7 @@ Bronce por proceso: `data/raw/congreso/{código}/` con los 10 `.DAT` (los ZIP or
 ├── AGENTS.md                  ← enrutador
 ├── .agents/                   ← documentación por temas (este directorio)
 ├── README.md
-├── docker-compose.yml         ← Postgres 18 local (host: 5433)
+├── docker-compose.yml         ← Postgres 18 local (host: 5434)
 ├── data/
 │   └── raw/                   ← ficheros fuente (bronce, gitignored)
 ├── refs/
@@ -42,7 +42,7 @@ Bronce por proceso: `data/raw/congreso/{código}/` con los 10 `.DAT` (los ZIP or
 │   └── ine/                   ← gazetteer INE: CCAA, provincias y municipios en CSV (gitignored) — ver `.agents/data-sources.md`
 ├── docs/
 │   ├── db/schema.drawio       ← ERD de referencia
-│   └── ingestor/ingesta.md    ← cómo funciona el ingestador (comandos y carga en silver)
+│   └── ingestor/ingesta.md    ← cómo funciona el ingestador (comandos y carga en silver y gold)
 ├── ingestor/                  ← ingestador Python (ver ingestor/AGENTS.md)
 └── web/                       ← frontend Next.js (ver web/AGENTS.md)
 ```

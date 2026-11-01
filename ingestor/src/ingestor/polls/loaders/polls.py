@@ -6,9 +6,10 @@ Contract (see docs/ingestor/ingesta.md, «Comportamiento de ingest-polls»):
   (source ``wikipedia-en``); a snapshot already ``processed`` is skipped.
 - Revision guard: a snapshot older than ``max(poll.revision_id)`` is ignored
   with a warning unless ``force``.
-- Silver: pollsters and parties are get-or-create; ``poll``/``poll_result``
-  are replaced in full, because silver reflects the last ingested snapshot
-  (the revision history lives in bronze).
+- Silver: pollsters and parties are get-or-create; parties go through the
+  shared resolver (catalogue → existing name → creation with a warning), and
+  ``poll``/``poll_result`` are replaced in full, because silver reflects the
+  last ingested snapshot (the revision history lives in bronze).
 - Election resolution: every poll with a null ``election_id`` is linked to the
   first national election of its type after its fieldwork; it runs on every
   execution, also without new snapshots.
@@ -27,12 +28,12 @@ from pathlib import Path
 from sqlalchemy import delete, func, insert, select, update
 from sqlalchemy.orm import Session, sessionmaker
 
-from ingestor.elections.loaders.election import sha256, slugify
+from ingestor.elections.loaders.election import sha256
 from ingestor.errors import IngestError
 from ingestor.models import Election, Ingestion, Party, Poll, PollResult, Pollster
+from ingestor.parties import PartyResolver, load_catalog, slugify
 from ingestor.polls.adapters.wikipedia_polls import (
     ELECTION_TYPE,
-    PARTY_COLUMNS,
     PollRow,
     parse_polls,
 )
@@ -42,7 +43,6 @@ logger = logging.getLogger(__name__)
 
 MAX_SEATS = 350  # Congress size: a seat projection cannot exceed it
 PCT_SUM_LIMIT = Decimal("100.5")
-_PARTY_NAMES = {column.slug: column.name for column in PARTY_COLUMNS.values()}
 
 
 @dataclass(frozen=True)
@@ -172,7 +172,7 @@ def load_polls(session: Session, rows: list[PollRow], revision_id: int) -> None:
     result_rows = [
         {
             "poll_id": poll_id,
-            "party_id": party_ids[_party_slug(key)],
+            "party_id": party_ids[key],
             "pct": result.pct,
             "seats_min": result.seats_min,
             "seats_max": result.seats_max,
@@ -302,35 +302,15 @@ def _resolve_pollsters(session: Session, rows: list[PollRow]) -> dict[str, int]:
     return {slug: pollster.id for slug, pollster in existing.items()}
 
 
-def _party_slug(key: str) -> str:
-    """Result key as a party slug: mapped slugs as is, raw labels slugified."""
-    return key if key in _PARTY_NAMES else slugify(key)
-
-
 def _resolve_parties(session: Session, rows: list[PollRow]) -> dict[str, int]:
-    """Get or create the party of every result key (slug -> id).
-
-    A raw label of an unknown column (adapter R8) is provisionally registered
-    under its slugified label, with a warning; the party catalogue will cure it.
-    """
+    """Resolve every result key (catalogue slug or raw label) to a party row."""
     keys = {key for row in rows for key in row.results}
-    names: dict[str, str] = {}
-    for key in keys:
-        if key in _PARTY_NAMES:
-            names[key] = _PARTY_NAMES[key]
-        else:
-            logger.warning("unknown party label: %s -> %s", key, slugify(key))
-            names[slugify(key)] = key
-    existing = {
-        party.slug: party
-        for party in session.scalars(select(Party).where(Party.slug.in_(names)))
-    }
-    for slug, name in names.items():
-        if slug not in existing:
-            existing[slug] = Party(name=name, slug=slug)
-            session.add(existing[slug])
+    resolver = PartyResolver(session.scalars(select(Party)), load_catalog())
+    parties = {key: resolver.resolve(key) for key in keys}
+    for party in set(parties.values()):
+        session.add(party)  # no-op when the row was already persistent
     session.flush()
-    return {slug: party.id for slug, party in existing.items()}
+    return {key: party.id for key, party in parties.items()}
 
 
 def _pct_sum_warning(row: PollRow, revision_id: int) -> None:

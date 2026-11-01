@@ -34,4 +34,20 @@ Mientras el destino sea el Postgres local (docker-compose), el job que sincroniz
 
 ## Frontend
 
+- Contrato gold ↔ front: [`../docs/db/gold.md`](../docs/db/gold.md).
 - Pendiente de scaffold. Ver [`../web/AGENTS.md`](../web/AGENTS.md).
+
+## Topología de entornos
+
+Dos entornos, sin staging (el MVP se entrega con estos dos):
+
+| Pieza | Local (hoy) | Producción (entrega) |
+| --- | --- | --- |
+| Postgres | docker-compose (host 5434), datos reales | Postgres gestionado (Neon) |
+| Ingestador | `uv run ingestor …` en la máquina; cron/launchd 2×/día para los sondeos (feature 10) | job programado de GitHub Actions (`.github/workflows/polls-sync.yml`, hoy placeholder) con `DATABASE_URL` en secrets; ingestas de elecciones y recargas de curación a mano contra la base |
+| Web | `next dev` contra el Postgres local | Vercel; lee `gold` en servidor con un rol de solo lectura (feature 16) |
+| Migraciones | `uv run alembic upgrade head` antes de ingerir | `uv run alembic upgrade head` contra la base de producción antes de ingerir |
+| Secretos | `ingestor/.env` (gitignored) | `DATABASE_URL` en Vercel (solo servidor) y en GitHub secrets; nunca en el cliente |
+
+El workflow `polls-sync.yml` sigue en placeholder hasta que exista el entorno:
+esta sección fija la decisión, el cableado llega con el despliegue.

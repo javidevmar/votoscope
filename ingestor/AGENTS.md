@@ -6,14 +6,14 @@ Proceso: toda feature con `sdd: true` en [`../feature_list.json`](../feature_lis
 
 ## Qué es
 
-Pipeline de datos (Python) que convierte los ficheros electorales descargados en local en tablas normalizadas de PostgreSQL y, más adelante, en las vistas `gold` que consume el frontend. Patrón medallón: bronce (ficheros + registro) → plata (`silver`) → oro (`gold`).
+Pipeline de datos (Python) que convierte los ficheros electorales descargados en local en tablas normalizadas de PostgreSQL y en las seis vistas `gold` que consume el frontend. Patrón medallón: bronce (ficheros + registro) → plata (`silver`) → oro (`gold`).
 
 Los datos electorales se siguen descargando a mano; los sondeos de Wikipedia se descargan por CLI (`fetch-polls`) porque la revisión fija es parte del contrato del snapshot.
 
 ## Documentación
 
-- Cómo funciona el ingestador (comandos, comportamiento y carga en `silver`): [`../docs/ingestor/ingesta.md`](../docs/ingestor/ingesta.md).
-- **Todo cambio que afecte a cómo funciona** (CLI, flujo de ingesta, validaciones, geografía o lo que acaba en `silver`) **revisa y actualiza esa documentación en el mismo commit.**
+- Cómo funciona el ingestador (comandos, comportamiento y carga en `silver` y `gold`): [`../docs/ingestor/ingesta.md`](../docs/ingestor/ingesta.md).
+- **Todo cambio que afecte a cómo funciona** (CLI, flujo de ingesta, validaciones, geografía o lo que acaba en `silver` o en las vistas `gold`) **revisa y actualiza esa documentación en el mismo commit.**
 
 ## Ficheros
 
@@ -21,14 +21,16 @@ Los datos electorales se siguen descargando a mano; los sondeos de Wikipedia se 
 - **`.env.example`** — variables de entorno; copiar a `.env` para sobrescribir (gitignored).
 - **`src/ingestor/settings.py`** — configuración: `DATABASE_URL` (por defecto, el Postgres de docker-compose en `localhost:5434`), `RAW_DIR` (por defecto, `../data/raw`) e `INE_DIR` (por defecto, `../refs/ine`).
 - **`src/ingestor/db.py`** — engine y factoría de sesiones de SQLAlchemy.
-- **`src/ingestor/models.py`** — definición del esquema, modelo v2 (inglés; esquemas `bronze` y `silver`; PK natural INE en `autonomous_community`/`province`).
+- **`src/ingestor/models.py`** — definición del esquema, modelo v2 (inglés; esquemas `bronze`, `silver` y `gold`; PK natural INE en `autonomous_community`/`province`); las seis vistas `gold` son `Table` de Core con `info={"view": True}`, sin PK/FK.
+- **`src/ingestor/gold.py`** — única fuente del SQL de las vistas `gold` (`view_ddl()`, parametrizado por esquema); lo consumen la migración y los tests, y cubre `election_summary`, `result_by_area`, `result_by_station`, `station_turnout`, `poll_flat` y `poll_trend`.
+- **`src/ingestor/parties.py`** — resolución compartida de la identidad de partido: normalización → catálogo `data/party_catalog.toml` (con `color` opcional validado) → nombre existente → alta con warning; el resolver aplica el color curado a las filas nuevas y existentes.
 - **`src/ingestor/elections/`** — dominio de elecciones (ficheros del ministerio):
   - `parsers/` — longitud fija, agnóstica al proceso: un módulo por fichero (`file02`, `file03`, `file05`, `file09`, `file10`) y helpers en `common.py`.
   - `adapters/` — reglas por proceso electoral; registro por código (`congreso.py` para el 02; Senado/autonómicas/municipales añadirán módulo propio).
   - `loaders/` — persistencia: `geography.py` (`load-geography`), `election.py` (bronce + plata de una elección).
 - **`src/ingestor/polls/`** — dominio de sondeos: `fetch.py` (descarga del snapshot: resuelve la revisión actual vía API y baja su wikitexto a `data/raw/polls/`; solo `urllib` de la stdlib); `parsers/wikitext.py`, lexer genérico de tablas de wikitexto (sondeos de Wikipedia); `adapters/wikipedia_polls.py`, reglas de la fuente de sondeos (secciones y tablas por año, cabecera, partidos); `loaders/polls.py`, carga bronce → plata de los snapshots (`ingest-polls`) con guard de revisión y pase de resolución de elección.
 - **`src/ingestor/cli.py`** / **`logging.py`** — entrypoints (`ingestor load-geography`, `ingestor ingest <ruta>`, `ingestor fetch-polls`, `ingestor ingest-polls [ruta]`) y `configure_logging()`.
-- **`alembic/`** — migraciones; `2a1c9e836128` (inicial, regenerada con la PK natural INE) y `06a250c36252` (`municipality.name` nullable), aplicadas en local. `env.py` toma la URL de `settings.py` (la de `alembic.ini` se deja vacía a propósito).
+- **`alembic/`** — migraciones; `2a1c9e836128` (inicial, regenerada con la PK natural INE), `06a250c36252` (`municipality.name` nullable) y `bcd8a7409aec` (esquema `gold` y sus vistas), aplicadas en local. `env.py` toma la URL de `settings.py` (la de `alembic.ini` se deja vacía a propósito) y excluye del autogenerate las vistas (`include_object` sobre `info["view"]`).
 - **`alembic.ini`** — configuración de Alembic.
 - **`tests/`** — pytest; `tests/fixtures/` con recortes reales mínimos (sin red ni `refs/`).
 
@@ -57,6 +59,7 @@ Los datos electorales se siguen descargando a mano; los sondeos de Wikipedia se 
 - **Geografía**: `load-geography` es idempotente y actualiza nombres desde `refs/ine/`; la ingesta crea los pseudo-municipios CERA (`<provincia>999`) y los municipios que ya no existen (nombre del 05 de su elección, o null con warning).
 - **Adaptadores**: un módulo por proceso en `elections/adapters/`; el registro despacha por el código de proceso del fichero 02 (Congreso = `02`).
 - **Sondeos** (`ingest-polls`): los snapshots `.wikitext` de `data/raw/polls/` se registran en bronce (fuente `wikipedia-en`) y se cargan en `pollster`/`poll`/`poll_result`; `silver` refleja el último snapshot (reemplazo total, guard por `revision_id` y `--force`). Al inicio de cada ejecución corre el pase que enlaza cada sondeo con la primera elección nacional posterior a su trabajo de campo.
+- **Vistas `gold`**: solo lectura para la web, creadas por migración con el SQL de `src/ingestor/gold.py` (`view_ddl()`); `gold.election_summary`, `gold.result_by_area`, `gold.result_by_station`, `gold.station_turnout`, `gold.poll_flat` y `gold.poll_trend`. No se cargan ni se editan a mano: un cambio es una migración nueva con `view_ddl()` actualizado. Contrato en [`../docs/db/gold.md`](../docs/db/gold.md).
 
 1. Editar `src/ingestor/models.py`.
 2. `uv run alembic revision --autogenerate -m "descripción corta"`.
@@ -88,4 +91,4 @@ La base de datos se levanta desde la raíz del repo: `docker compose up -d --wai
 
 ## Pendiente
 
-- Vistas `gold`.
+- Nada bloqueante para el MVP del ingestador: elecciones (bronce → plata) y sondeos cargados, vistas `gold` desplegadas por migración.

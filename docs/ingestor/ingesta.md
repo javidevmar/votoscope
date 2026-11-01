@@ -1,6 +1,6 @@
-# El ingestador: comandos y carga en `silver`
+# El ingestador: comandos y carga en `silver` y `gold`
 
-Cómo funciona `ingestor/`: los comandos, el comportamiento de la ingesta y qué acaba en el esquema `silver`.
+Cómo funciona `ingestor/`: los comandos, el comportamiento de la ingesta y qué acaba en los esquemas `silver` y `gold`.
 Para el formato de los ficheros fuente y sus rarezas, ver [`../../.agents/data-sources.md`](../../.agents/data-sources.md); para el modelo de datos, [`../../.agents/data-model.md`](../../.agents/data-model.md).
 
 ## Comandos
@@ -85,7 +85,12 @@ Por cada carpeta de elección, todo el trabajo de plata va en **una transacción
 1. **Identificación**: se localizan los ficheros, se comprueba que están bajo `RAW_DIR` y se parsea el `02` (tipo de proceso y fecha de celebración).
 2. **Bronce**: se calcula el sha256 de cada fichero. Los sha nuevos se registran en `bronze.ingestion` (`registered`, ruta relativa, tamaño, fuente `infoelectoral`). Si todos los ficheros de la elección ya están `processed`, se salta (salvo `--force`).
 3. **Recarga**: se busca o crea la fila de `silver.election` y se **borran** los hechos y candidaturas previos de esa elección (`vote`, `turnout` y `party_election`). Reingerir una elección = borrar y recargar; `party` (identidad) y la geografía no se tocan.
-4. **Candidaturas** (`03`): se agrupan por **cabecera nacional** → una fila de `party` por grupo (slug único a partir de las siglas; si dos grupos colisionan en la misma elección, el slug lleva el código de cabecera). Cada fila del `03` se inserta como `party_election`, con su código, siglas y denominación.
+4. **Candidaturas** (`03`): cada **cabecera nacional** se resuelve con la resolución
+   compartida de `parties.py` sobre el catálogo `data/party_catalog.toml` (catálogo →
+   nombre existente → alta con warning): las grafías de la misma marca (`B.N.G.`/`BNG`)
+   acaban en una sola fila de `party`, con el slug canónico del catálogo (si el slug
+   choca, lleva el código de cabecera). Cada fila del `03` se inserta como
+   `party_election`, con su código, siglas y denominación.
 5. **Mesas y participación** (`09`): se descartan las filas agregadas de CERA (provincia `99`) y, por cada mesa:
    - el municipio se resuelve contra la geografía; si no existe, se crea: pseudo-municipio CERA (`<provincia>999`, nombre «CERA») o municipio extinto con el nombre del `05` de esa misma elección (si no hay nombre en ninguna fuente, queda `NULL` y se avisa por log);
    - la mesa (`polling_station`) se busca o crea por (municipio, distrito, sección, código): es agnóstica a la elección;
@@ -103,7 +108,13 @@ Por cada snapshot, todo el trabajo de plata va en **una transacción**; el regis
 3. **Guard de revisión**: si el `revision_id` es anterior a `max(poll.revision_id)`, el snapshot se ignora con warning y sin registrar (salvo `--force`).
 4. **Parseo**: el wikitexto se convierte en filas de sondeo con el adaptador de la fuente (`polls/adapters/wikipedia_polls.py`).
 5. **Validaciones** (antes de tocar `silver`): cada fila necesita firma (literal y nombre de encuestadora) y al menos dos partidos con valor; porcentajes 0–100, escaños 0–350 y `seats_min ≤ seats_max`; un snapshot sin sondeos es error (protege el borrado total de `silver`). La suma de porcentajes de un sondeo por encima de 100.5 solo avisa (la página no publica «otros»).
-6. **Plata (una transacción)**: get-or-create de `pollster` (por el slug de la firma) y de `party` (slugs del mapeo; un rótulo desconocido de una columna nueva se da de alta con su slug y un warning), **borrado total** de `poll`/`poll_result` e inserción de las filas del snapshot. `silver` refleja el último snapshot ingerido; el histórico de revisiones vive en bronce.
+6. **Plata (una transacción)**: get-or-create de `pollster` (por el slug de la firma) y de
+   `party`: el adaptador resuelve cada rótulo de columna contra el catálogo
+   `data/party_catalog.toml` y el loader convierte cada clave en fila con la resolución
+   compartida de `parties.py` (catálogo → nombre existente → alta con warning); un rótulo
+   sin ficha se conserva con su literal y el resolver lo da de alta con un warning.
+   **Borrado total** de `poll`/`poll_result` e inserción de las filas del snapshot.
+   `silver` refleja el último snapshot ingerido; el histórico de revisiones vive en bronce.
 7. **Estados**: si todo va bien, los sondeos quedan en `silver` y el fichero pasa a `processed`; si algo falla, la transacción se deshace y el fichero queda `failed` (la próxima ejecución lo reintenta).
 
 ## Qué queda en `silver`
@@ -112,7 +123,7 @@ Por cada snapshot, todo el trabajo de plata va en **una transacción**; el regis
 | --- | --- |
 | `autonomous_community`, `province`, `municipality` | geografía INE; los municipios CERA y los extintos los crea la ingesta; `name` solo es `NULL` si no hay nombre en ninguna fuente |
 | `election` | una fila por proceso (tipo `congress`, fecha; ámbito nulo = nacional) |
-| `party` | identidad provisional del partido (agrupada por cabecera nacional, slug único) |
+| `party` | identidad del partido (catálogo `data/party_catalog.toml` vía `parties.py`; `slug` único) |
 | `party_election` | candidatura por elección, tal y como la publica el `03` |
 | `polling_station` | mesa (municipio, distrito, sección, código), compartida entre elecciones |
 | `turnout` | censo INE, blancos y nulos por mesa y elección |
@@ -125,3 +136,28 @@ Por cada snapshot, todo el trabajo de plata va en **una transacción**; el regis
 - Los sondeos (`pollster`, `poll`, `poll_result`) los carga `ingest-polls` y se reemplazan enteros en cada carga: `silver` refleja el último snapshot ingerido, no un histórico.
 - No se cargan: el `04` (candidatos), los agregados `05`–`08` (el `05` solo se usa como fuente de nombres) ni las filas agregadas de CERA (CCAA y nacional: son sumas de las provinciales).
 - `bronze.ingestion` guarda una fila por fichero leído (ruta, sha256, tamaño, fuente y estado).
+
+## Esquema `gold`
+
+`gold` no se carga: son seis **vistas de solo lectura** que la migración crea
+sobre `silver`. Su SQL vive en `ingestor/src/ingestor/gold.py` (`view_ddl()`),
+única fuente que consumen la migración y los tests; los agregados y porcentajes
+solo existen aquí (la web no los recalcula).
+
+| Vista | Grano |
+| --- | --- |
+| `gold.election_summary` | una fila por elección con censo, nulos, blancos, candidaturas, válidos, votantes y participación |
+| `gold.result_by_area` | una fila por (elección, nivel, área, partido); `level` = `national`, `community`, `province` o `municipality` |
+| `gold.result_by_station` | una fila por (elección, mesa, partido) con la identidad y geografía de la mesa |
+| `gold.station_turnout` | una fila por (elección, mesa) con censo, nulos, blancos, válidos, votantes y participación |
+| `gold.poll_flat` | una fila por (sondeo, partido): encuestadora, fechas, muestra, `pct`, escaños y snapshot (`source`/`revision_id`) |
+| `gold.poll_trend` | la misma fila con `poll_date` = fin (o inicio) del trabajo de campo, ordenada para la tendencia |
+
+- Se aplican con `uv run alembic upgrade head` (la migración crea el esquema y
+  las seis vistas). `alembic check` las excluye del autogenerate con
+  `include_object` en `alembic/env.py`: no se crean como tablas ni se vigilan
+  como tales.
+- Un cambio de columnas o de SQL es **otra migración** con `view_ddl()`
+  actualizado; nunca se edita la vista a mano ni se duplica su SQL.
+- Contrato pantalla ↔ vista y semántica de porcentajes:
+  [`../db/gold.md`](../db/gold.md).

@@ -1,0 +1,290 @@
+# Party catalogue: canonical electoral brands.
+# Keys are canonical `silver.party` slugs; `name` and `aliases` are literal
+# spellings as ingested (or as the polls source publishes them). Spellings
+# that coincide after normalization need no alias.
+#
+# Curation decisions (reviewable in this diff):
+# - Punctuation pairs (B.N.G./BNG, P.P./PP, C's/Cs, I.U./IU...) merge through
+#   normalization alone: the clean spelling of the brand is canonical.
+# - Distinct spellings of the same brand merge only with an explicit alias
+#   (Junts, PNV, Adelante Andalucía (2021), UNIDOS PODEMOS).
+# - Coalitions with their own name stay separate (Podemos / Unidas Podemos /
+#   Sumar); green, falange and ERC splinters stay separate too, because their
+#   spellings are distinct brands, not punctuation variants.
+# - A spelling that coincides with its own ficha's slug needs no alias (SALF,
+#   Aliança.cat): every ficha resolves through its slug key.
+
+[parties.3e]
+name = "3e"
+
+[parties.adelante-andalucia]
+# (2021) is the label of the polls source; the literal of file 03 is undated.
+name = "ADELANTE ANDALUCÍA"
+color = "#00a651"
+aliases = ["Adelante Andalucía (2021)"]
+
+[parties.ahora-canarias-pcpc]
+name = "AHORA CANARIAS-PCPC"
+
+[parties.alianca-cat]
+# Polls-only brand (no file 03 yet): name as the polls source publishes it.
+name = "Aliança Catalana"
+color = "#1f4e9c"
+
+[parties.alm]
+name = "ALM"
+
+[parties.asturias-existe-ev]
+name = "ASTURIAS EXISTE EV"
+
+[parties.aun]
+name = "AUN"
+
+[parties.bng]
+name = "BNG"
+color = "#4d9de0"
+
+[parties.bqex]
+name = "BQEX"
+
+[parties.cca]
+name = "CCa"
+color = "#f2c200"
+
+[parties.ccd]
+name = "CCD"
+
+[parties.cj]
+name = "CJ"
+
+[parties.cpm]
+name = "CpM"
+
+[parties.cs]
+name = "Cs"
+
+[parties.cup-pr]
+name = "CUP-PR"
+color = "#f5c400"
+
+[parties.dn]
+name = "DN"
+
+[parties.eaj-pnv]
+# PNV is the label of the polls source; EAJ-PNV the literal of file 03.
+name = "EAJ-PNV"
+color = "#007a33"
+aliases = ["PNV"]
+
+[parties.eh-bildu]
+name = "EH Bildu"
+color = "#8fbf2f"
+
+[parties.erc]
+name = "ERC"
+color = "#ffb232"
+
+[parties.erc-catsi]
+name = "ERC-CATSI"
+
+[parties.escanos-en-blanco]
+name = "ESCAÑOS EN BLANCO"
+
+[parties.espana-vaciada]
+name = "ESPAÑA VACIADA"
+
+[parties.esquerra]
+name = "ESQUERRA"
+
+[parties.ev-pcas-tc]
+name = "EV-PCAS-TC"
+
+[parties.evb]
+name = "EVB"
+
+[parties.evc]
+name = "EVC"
+
+[parties.existe]
+name = "EXISTE"
+color = "#607d8b"
+
+[parties.fe-de-las-j]
+name = "FE de las J"
+
+[parties.fe-de-las-jons]
+name = "FE de las JONS"
+
+[parties.fe-jons]
+name = "FE-JONS"
+
+[parties.fia]
+name = "FIA"
+
+[parties.fo]
+name = "FO"
+color = "#1b3a6b"
+
+[parties.fuerza-civica]
+name = "FUERZA CÍVICA"
+
+[parties.gbai]
+name = "GBAI"
+
+[parties.gitv]
+name = "GITV"
+
+[parties.iu]
+name = "IU"
+
+[parties.jm]
+name = "JM+"
+
+[parties.jxcat-junts]
+# Junts is the label of the polls source; JxCAT - JUNTS the literal of file 03.
+name = "JxCAT - JUNTS"
+color = "#00a2ad"
+aliases = ["Junts"]
+
+[parties.jxg]
+name = "JxG"
+
+[parties.lb]
+name = "LB"
+
+[parties.lv]
+name = "LV"
+
+[parties.lv-gv]
+name = "LV-GV"
+
+[parties.lve]
+name = "LVE"
+
+[parties.na]
+name = "NA"
+
+[parties.na-bai]
+name = "Na-Bai"
+
+[parties.nc-bc]
+name = "NC-bc"
+color = "#f6a800"
+
+[parties.pacma]
+name = "PACMA"
+color = "#00a99d"
+
+[parties.par]
+name = "PAR"
+
+[parties.partido-autonomos]
+name = "PARTIDO AUTÓNOMOS"
+
+[parties.pcpe]
+name = "PCPE"
+
+[parties.pcte]
+name = "PCTE"
+
+[parties.pdecat-e-ciu]
+name = "PDeCAT-E-CiU"
+color = "#0b3d91"
+
+[parties.ph]
+name = "PH"
+
+[parties.podemos]
+name = "PODEMOS"
+color = "#6b2c91"
+
+[parties.podemos-iu]
+# The 2019 Unidas Podemos coalition ran under this national head; the literal
+# name ingested for it is the truncated "PODEMOS-IU-".
+name = "PODEMOS-IU-"
+aliases = ["Unidas Podemos"]
+
+[parties.podemos-iu-equo]
+# UNIDOS PODEMOS ran under this national head: its literal short name.
+name = "PODEMOS-IU-EQUO"
+aliases = ["UNIDOS PODEMOS"]
+
+[parties.por-mi-region]
+name = "POR MI REGIÓN"
+
+[parties.pp]
+name = "PP"
+color = "#1d84ce"
+
+[parties.prepal]
+name = "PREPAL"
+
+[parties.psoe]
+name = "PSOE"
+color = "#e30713"
+
+[parties.puede]
+name = "PUEDE"
+
+[parties.pum-j]
+name = "PUM+J"
+color = "#6a1b9a"
+
+[parties.rds]
+name = "+RDS+"
+
+[parties.recortes-cero]
+name = "RECORTES CERO"
+color = "#9e1b32"
+
+[parties.salf]
+# Polls-only brand (no file 03 yet): name as the polls source publishes it.
+name = "Se Acabó La Fiesta"
+color = "#2b2b2b"
+
+[parties.somos-cc]
+name = "Somos Cc"
+
+[parties.sumar]
+name = "SUMAR"
+color = "#e51c55"
+
+[parties.sy]
+name = "SY"
+
+[parties.u-p-n]
+# The ingested acronym is dotted; the poll label UPN resolves by normalization.
+name = "U.P.N."
+color = "#1f3a93"
+
+[parties.ud-ca]
+name = "Ud.Ca"
+
+[parties.unidos-si]
+name = "UNIDOS SI"
+
+[parties.upl]
+name = "UPL"
+color = "#2e7d32"
+
+[parties.vb]
+name = "VB"
+
+[parties.verdes]
+name = "VERDES"
+
+[parties.vox]
+name = "VOX"
+color = "#63be21"
+
+[parties.vp]
+name = "VP"
+
+[parties.xav]
+name = "XAV"
+
+[parties.xh]
+name = "XH"
+
+[parties.zsi]
+name = "Zsi"

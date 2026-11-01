@@ -1,19 +1,19 @@
 # Sesión actual
 
-- **Feature en curso:** _ninguna_ (10 y 11 cerradas; specs 12–14 esperan tu aprobado)
-- **Inicio:** 2026-10-18
+- **Feature en curso:** _ninguna_ (15 cerrada; la 16 arranca en su rama)
+- **Inicio:** 2026-10-29
 - **Agente:** leader
 
 ## Plan
 
-1. Con tu aprobado de los specs 12–14 (`party-norm`, ya en `spec_ready`): implementarlas en serie en sus ramas del stack.
-2. Después: 15–17 entrega (`delivery_gold`, `web_scaffold`, `close_minor`) y 18 `source_norm`.
+1. Feature 16 `web_scaffold` en `feature/web-scaffold`, apilada sobre `feature/delivery-gold`: pnpm, Tailwind + shadcn/ui y BFF obligatorio en `app/api/`.
+2. Después: 17 `close_minor` y 18 `source_norm`.
 
 ## Bitácora
 
-- Sesión cerrada: features 10 `polls_schedule` y 11 `polls_run` `done` (detalle en `history.md`).
-- Revisión de los 20 hallazgos de CodeRabbit (PRs 4–12): 3 ya resueltos por cambios posteriores y 17 corregidos en la punta `feature/plans-to-specs` (cambios sin commitear; detalle en `impl_review_fixes.md`).
+- 2026-10-29: feature 15 `delivery_gold` cerrada, commiteada y pusheada (detalle en `history.md`). Reviewer **APPROVED**.
+- 2026-10-29: specs 16 y 17 commiteados en esta rama; el spec 18 sigue sin commitear (pendiente de OK).
 
 ## Próximo paso
 
-- Tu revisión del PR del stack (`feature/plans-to-specs` incluida) y el aprobado de los specs 12–14.
+- Implementar la 16 en la rama nueva.

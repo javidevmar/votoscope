@@ -159,7 +159,7 @@ def _descendants(cells: list[ET.Element], cell_id: str) -> list[ET.Element]:
 
 
 def test_drawio_has_a_page_per_schema_and_domain():  # R13, R14
-    assert {"Bronze", "Silver", "Bronze polls", "Silver polls"} <= set(_pages())
+    assert {"Bronze", "Silver", "Bronze polls", "Silver polls", "Gold"} <= set(_pages())
 
 
 def test_silver_polls_page_has_complete_tables():  # R13
@@ -215,7 +215,7 @@ def test_bronze_polls_page_shows_snapshot_flow():  # R14
 def test_data_model_documents_page_per_schema_and_domain():  # R15
     text = DATA_MODEL.read_text(encoding="utf-8")
     assert "una página por esquema y dominio" in text
-    assert "(Bronze, Silver, Bronze polls, Silver polls)" in text
+    assert "(Bronze, Silver, Bronze polls, Silver polls, Gold)" in text
 
 
 def test_data_model_v2_describes_polls_tables():  # R15

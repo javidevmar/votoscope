@@ -110,6 +110,21 @@ Los hechos no cambian (la recarga los re-deriva de los mismos ficheros): el crit
 
 ### Comprobaciones
 
+Los 13 procesos `congress` nacionales con candidaturas y votos (debe devolver 13):
+
+```sql
+SELECT count(*) FROM (
+    SELECT e.id
+    FROM silver.election e
+    JOIN silver.party_election pe ON pe.election_id = e.id
+    JOIN silver.vote v ON v.party_election_id = pe.id
+    WHERE e.type = 'congress'
+      AND e.autonomous_community_ine_code IS NULL
+      AND e.municipality_id IS NULL
+    GROUP BY e.id
+) AS covered;
+```
+
 Sin grupos repetidos por puntuación (0 filas):
 
 ```sql
@@ -149,11 +164,11 @@ WHERE NOT EXISTS (
         SELECT 1 FROM silver.poll_result pr WHERE pr.party_id = p.id);
 ```
 
-La exclusión de `poll_result` no es opcional: hoy hay filas de `party` que solo tienen resultados de sondeo (p. ej. `salf`) y la FK `poll_result.party_id → party.id` es `NO ACTION` (un `DELETE` sin exclusión fallaría o, peor, se llevaría hechos de sondeos). Tras la limpieza se repiten las tres consultas de §«Comprobaciones».
+La exclusión de `poll_result` no es opcional: hoy hay filas de `party` que solo tienen resultados de sondeo (p. ej. `salf`) y la FK `poll_result.party_id → party.id` es `NO ACTION` (un `DELETE` sin exclusión fallaría o, peor, se llevaría hechos de sondeos). Tras la limpieza se repiten las consultas de §«Comprobaciones».
 
 ### Evidencia
 
-`progress/impl_party_reload.md` registra: comandos y exit codes; los conteos pre/post de §«Conteos pre/post»; el número de filas borradas; la salida de las tres consultas; los avisos del resolver; y la trazabilidad R ↔ test. La ejecución de los comandos y del SQL la hace el implementer (los tests de estado solo leen).
+`progress/impl_party_reload.md` registra: comandos y exit codes; los conteos pre/post de §«Conteos pre/post»; el número de filas borradas; la salida de las consultas de §«Comprobaciones»; los avisos del resolver; y la trazabilidad R ↔ test o evidencia. La ejecución de los comandos y del SQL la hace el implementer y queda registrada aquí; no hay tests de estado automatizados.
 
 ## Fixtures
 
@@ -176,7 +191,7 @@ Los tres se validan con los parsers (`file02`/`file03`/`file09`/`file10`) al cre
 
 ## Tests — `ingestor/tests/test_party_reload.py`
 
-Dos bloques, como en la feature 11: integración en los **esquemas de test** (fixture `db` de `conftest.py`; sin `data/raw` ni red) y **estado real** de solo lectura (skip sin Postgres o sin datos locales).
+Integración en los **esquemas de test** (fixture `db` de `conftest.py`; sin `data/raw` ni red) y comprobaciones de documentos. Las comprobaciones R7–R10 sobre `silver` no son tests: se ejecutan a mano con el SQL de §«Comprobaciones» y se registran como evidencia en `progress/impl_party_reload.md` (§«Evidencia»).
 
 Helpers:
 
@@ -190,10 +205,6 @@ def _seed_geography(db) -> None:
 
 def _copy_fixtures(tmp_path: Path, *codes: str) -> Path:
     """Copia fixtures/party_reload/<code>/ a tmp_path/congreso/<code>/; devuelve la raíz."""
-
-
-def _real_session() -> Session:
-    """Sesión sobre settings.database_url; skip si no responde o silver está vacío."""
 ```
 
 | Test | Cubre | Qué fija |
@@ -201,10 +212,6 @@ def _real_session() -> Session:
 | `test_two_processes_one_party` | R1, R2, R3 | ingesta de `02200806` + `02201905` (B.N.G. y BNG): outcomes `processed`; una sola fila `party` (slug `bng`, el del catálogo); dos `party_election` con el mismo `party_id` y `short_name` literales; `unknown party label` ausente de `caplog` |
 | `test_unknown_head_label_warns` | R4 | ingesta de `02202601`: warning `unknown party label: PARTIDO SIN FICHA -> partido-sin-ficha` y fila creada con el nombre literal |
 | `test_force_reload_preserves_facts` | R5, R6 | segunda pasada con `force=True`: `party` no se duplica (misma fila, mismo `id`), y `party_election`/`vote`/`turnout` conservan conteos |
-| `test_state_covers_13_processes` | R7 | 13 elecciones `congress` nacionales con candidaturas y votos en `silver` (join `vote` → `party_election` → `election`) |
-| `test_state_no_punctuation_groups` | R8 | consulta de grupos por puntuación → 0 filas |
-| `test_state_key_brands_single_row` | R9 | consulta de marcas → exactamente 7 filas, una por clave |
-| `test_state_no_orphan_parties` | R10 | consulta de huérfanos (sin `party_election` ni `poll_result`) → 0 |
 | `test_docs_data_model` | R11, R12 | subcadenas `parties.py` y `party_catalog.toml`; ausencia de `provisional` |
 | `test_docs_ingesta` | R13, R14 | subcadenas `parties.py` y `party_catalog.toml`; ausencia de `provisional` |
 | `test_docs_ingestor_agents` | R15 | subcadenas `parties.py` y `party_catalog.toml` |
@@ -212,9 +219,7 @@ def _real_session() -> Session:
 Detalles que fijan el contrato:
 
 - Los tests de integración siembran geografía (CCAA `01` + provincia `04`); el municipio lo crea la propia ingesta. El bronce es `tmp_path` (los ficheros deben colgar de la raíz `RAW_DIR`).
-- Los tests de estado **no escriben**: solo SELECT; la recarga y el `DELETE` los ejecuta el implementer por CLI/psql. Si no hay Postgres o `silver` está vacío → `pytest.skip` (la CI queda verde).
-- `test_state_covers_13_processes` falla a propósito si hay base y datos pero no los 13: el estado no cumple el acceptance y se resuelve re-ejecutando la recarga.
-- El bloque de estado usa `settings.database_url` directo (esquemas reales), sin el `schema_translate_map` de `conftest.py`.
+- Las comprobaciones de estado (R7–R10) se ejecutan a mano tras la recarga y la limpieza, con el SQL de §«Comprobaciones», y su salida se registra en `progress/impl_party_reload.md`. Sin test automatizado: en CI se saltarían y su valor es evidencia operativa, no una garantía del código.
 
 ## Documentos
 
@@ -251,7 +256,7 @@ Subcadenas que fijan los tests: `parties.py` y `party_catalog.toml` en los tres 
 2. **Borrar los huérfanos desde el loader**: `party` es identidad compartida con los sondeos y la FK de `poll_result` es `NO ACTION`; un `DELETE` automático en la ingesta podría fallar o llevarse hechos de sondeos. El borrado es operación de mantenimiento revisable (este spec fija el SQL exacto).
 3. **Reiniciar `party` desde cero** (vaciar y reingerir los 13 procesos): rompería la continuidad de `id` que referencian `poll_result` y otras tablas, y no aporta nada frente a la recarga con catálogo, que converge sola.
 4. **Escribir fichas para los 27 grupos del diagnóstico**: la coincidencia por nombre normalizado ya une los pares durante la recarga (los `name` literales casa por NFKD); escribir fichas de más sería curar por duplicado fuera del alcance de la 12.
-5. **Tests que ejecuten la recarga real** (subprocess/CLI o escritura sobre `silver`): mutarían la base de la aplicación en `pytest`; la ejecución queda documentada con su evidencia y los tests solo leen (patrón de `specs/011_polls_run/`).
+5. **Tests que ejecuten la recarga real** (subprocess/CLI o escritura sobre `silver`): mutarían la base de la aplicación en `pytest`; la ejecución queda documentada con su evidencia y los tests se limitan a esquemas efímeros y documentos.
 
 ## Riesgos y notas
 
