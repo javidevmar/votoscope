@@ -1,6 +1,6 @@
 # Estado y hoja de ruta
 
-Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). Actualizado: 2026-10-31.
+Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). Actualizado: 2026-11-01.
 
 ## Hecho
 
@@ -14,10 +14,11 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). Actua
 - **Vistas `gold`** (feature 15): seis vistas de solo lectura creadas por migración (`election_summary`, `result_by_area`, `result_by_station`, `station_turnout`, `poll_flat`, `poll_trend`) y contrato pantalla ↔ vista en [`../docs/db/gold.md`](../docs/db/gold.md).
 - **Web** (feature 16): scaffold de Next.js 16 (App Router, TypeScript, pnpm, Tailwind 4 y shadcn/ui) en `web/`, con BFF en `app/api/`, logging por `LOG_LEVEL` y rol de solo lectura `votoscope_web`; arranque local con `cd web && pnpm install && pnpm dev`.
 - **Cierre** (feature 17): [`../README.md`](../README.md) con qué es el proyecto, puesta en marcha, datos, web, documentación y atribución de fuentes (infoelectoral y Wikipedia CC BY-SA con enlace a la revisión); documentos de contexto al día.
+- **Papeles de la firma** (feature 18 `source_norm`): `parse_signature` en el adaptador separa encuestadora, medio (`poll.media`) y reestimador (`poll.reestimator`) del literal de cabecera, sin lista blanca; 575 sondeos recargados en local desde la revisión `1380859635`.
 - Proceso: commits atómicos, fixtures herméticos, logging por niveles (`LOG_LEVEL`) en ingestador y web, y rol read-only reflejados en los docs temáticos.
 
 ## Pendiente, en orden
 
 La cola de trabajo vive en [`feature_list.json`](../feature_list.json) (una feature a la vez, con estado). En corto:
 
-1. **Sondeos (Wikipedia)** — feature 18 [`source_norm`](../feature_list.json): normalizar encuestadora, medio y reestimador en las fuentes de los sondeos.
+1. **Rendimiento de `gold`** — feature 19 [`gold_matviews`](../feature_list.json): vistas materializadas e índices para las consultas de resultados.

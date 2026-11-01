@@ -263,7 +263,38 @@
         ".agents/data-sources.md y docs del ingestador actualizados"
       ],
       "sdd": true,
-      "status": "spec_ready"
+      "status": "done"
+    },
+    {
+      "id": 19,
+      "name": "gold_matviews",
+      "title": "Vistas materializadas gold para resultados",
+      "description": "Las cuatro vistas de resultados pasan a vistas materializadas con índices y se refrescan al terminar la ingesta; las de sondeos siguen siendo vistas. Medido en local: result_by_area 12 s y result_by_station 3 s por consulta, y la reescritura de result_by_area más los índices bajan a menos de 1 ms.",
+      "acceptance": [
+        "gold.result_by_area se reescribe sin el JOIN ... IS NOT DISTINCT FROM de area_blank (blancos en el mismo CTE de hechos) y devuelve los mismos valores que hoy, verificado con un test de regresión sobre los datos de local",
+        "election_summary, result_by_area, result_by_station y station_turnout son vistas materializadas con índices para los filtros del contrato (elección + nivel + área, y elección + mesa); poll_flat y poll_trend siguen siendo vistas (milisegundos, y un matview no conserva el ORDER BY de poll_trend)",
+        "el refresco corre una sola vez al final de ingest, solo si hubo algún fichero procesado, y existe el comando idempotente uv run ingestor refresh-gold [--concurrently]; ingest-polls no refresca nada",
+        "models.py marca las matviews (info matview), alembic check sin drift, y ERD (página Gold), .agents/data-model.md, .agents/architecture.md y docs/db/gold.md actualizados en el mismo commit",
+        "test_gold.py crea las matviews en los esquemas de test, valida columnas y ejercita el refresco; votoscope_web conserva SELECT",
+        "medido en local en caliente: las consultas del contrato de resultados responden en menos de 50 ms"
+      ],
+      "sdd": true,
+      "status": "pending"
+    },
+    {
+      "id": 20,
+      "name": "poll_source_drift",
+      "initiative": "polls-wikipedia",
+      "title": "Deriva de la tabla de sondeos: colspan en filas y partidos nuevos",
+      "description": "La revisión 1383194971 (2026-11-01) añade las columnas de partido FA y FV y filas con colspan=2 en una celda de partido: el lexer no expande colspan en filas de datos y 5 sondeos reales se descartan; además FA/FV no están en el catálogo. Detectado al ingestar la revisión nueva como prueba end-to-end de la 18 (local restaurado a 1380859635).",
+      "acceptance": [
+        "el lexer expande colspan en filas de datos (y la fila vacía se clasifica como separador), de forma que la aritmética de completitud cuadra y no se pierde ningún sondeo",
+        "ingest-polls de la revisión 1383194971 carga los 588 sondeos con datos (hoy 583) con media/reestimator, y ./init.sh queda verde",
+        "party_catalog incluye FA y FV (nombre y color) y test_live_poll_brands_colored pasa con la revisión nueva cargada",
+        "prueba end-to-end documentada: fetch-polls + ingest-polls de la revisión nueva y conteo sin filas perdidas"
+      ],
+      "sdd": true,
+      "status": "pending"
     }
   ]
 }
