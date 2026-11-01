@@ -274,6 +274,8 @@ class Poll(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     pollster_id: Mapped[int] = mapped_column(ForeignKey("silver.pollster.id"))
     source: Mapped[str] = mapped_column(Text)  # header literal
+    media: Mapped[str | None] = mapped_column(Text)  # commissioner/media literal
+    reestimator: Mapped[str | None] = mapped_column(Text)  # alternative projection
     election_type: Mapped[str] = mapped_column(String(20))  # congress | ...
     election_id: Mapped[int | None] = mapped_column(ForeignKey("silver.election.id"))
     fieldwork_start: Mapped[date | None] = mapped_column(Date)

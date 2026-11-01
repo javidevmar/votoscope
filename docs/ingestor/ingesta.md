@@ -113,9 +113,16 @@ Por cada snapshot, todo el trabajo de plata va en **una transacción**; el regis
    `data/party_catalog.toml` y el loader convierte cada clave en fila con la resolución
    compartida de `parties.py` (catálogo → nombre existente → alta con warning); un rótulo
    sin ficha se conserva con su literal y el resolver lo da de alta con un warning.
+   El adaptador separa además los papeles del literal de firma —encuestadora, medio y
+   reestimador— y el loader los escribe en `poll.source` (literal completo),
+   `poll.media` y `poll.reestimator` (nulos cuando el literal no los distingue).
    **Borrado total** de `poll`/`poll_result` e inserción de las filas del snapshot.
    `silver` refleja el último snapshot ingerido; el histórico de revisiones vive en bronce.
+   La recarga (`--force`) es idempotente: reemplaza `poll`/`poll_result` enteros, así que
+   el mismo snapshot deja el mismo contenido sin duplicar filas.
 7. **Estados**: si todo va bien, los sondeos quedan en `silver` y el fichero pasa a `processed`; si algo falla, la transacción se deshace y el fichero queda `failed` (la próxima ejecución lo reintenta).
+
+- Las filas de `poll` cargadas antes de la migración de `media`/`reestimator` quedan con esas columnas nulas hasta recargar el snapshot con `uv run ingestor ingest-polls --force`; sin `--force`, el estado `processed` y el guard de revisión saltan el snapshot.
 
 ## Qué queda en `silver`
 
@@ -129,11 +136,11 @@ Por cada snapshot, todo el trabajo de plata va en **una transacción**; el regis
 | `turnout` | censo INE, blancos y nulos por mesa y elección |
 | `vote` | votos por candidatura y mesa (las filas con 0 votos no se guardan) |
 | `pollster` | encuestadora que firma el sondeo (slug único; se crea al vuelo desde la firma) |
-| `poll` | un sondeo por fila del snapshot: `source` (literal de cabecera), `election_type` (`congress`), `election_id` (nulo hasta que el pase de resolución encuentra elección), fechas de trabajo de campo, muestra, participación y `revision_id` de procedencia |
+| `poll` | un sondeo por fila del snapshot: `source` (literal de cabecera), `media` y `reestimator` (medio/comisionante y autor de la proyección alternativa extraídos del literal; nulos si no los distingue), `election_type` (`congress`), `election_id` (nulo hasta que el pase de resolución encuentra elección), fechas de trabajo de campo, muestra, participación y `revision_id` de procedencia |
 | `poll_result` | porcentaje y proyección de escaños (`seats_min`/`seats_max`) por partido y sondeo |
 
 - Los votantes no se almacenan: se derivan como `sum(vote.votes) + blank_votes + null_votes`.
-- Los sondeos (`pollster`, `poll`, `poll_result`) los carga `ingest-polls` y se reemplazan enteros en cada carga: `silver` refleja el último snapshot ingerido, no un histórico.
+- Los sondeos (`pollster`, `poll`, `poll_result`) los carga `ingest-polls` y se reemplazan enteros en cada carga: `silver` refleja el último snapshot ingerido, no un histórico; recargar el mismo snapshot (`--force`) es idempotente y deja el mismo contenido.
 - No se cargan: el `04` (candidatos), los agregados `05`–`08` (el `05` solo se usa como fuente de nombres) ni las filas agregadas de CERA (CCAA y nacional: son sumas de las provinciales).
 - `bronze.ingestion` guarda una fila por fichero leído (ruta, sha256, tamaño, fuente y estado).
 

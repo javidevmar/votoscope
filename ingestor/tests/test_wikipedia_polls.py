@@ -12,13 +12,17 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 from ingestor.parties import load_catalog
 from ingestor.polls.adapters import wikipedia_polls
 from ingestor.polls.adapters.wikipedia_polls import (
     ELECTION_TYPE,
     PollResultRow,
+    Signature,
     parse_date,
     parse_polls,
+    parse_signature,
     poll_tables,
 )
 
@@ -242,6 +246,13 @@ def test_real_head_first_rows():  # R1, R2, R5, R12, R13, R14, R18, R19, R20
     assert dym.turnout is None
     assert dym.results["pp"] == PollResultRow(Decimal("34.0"), 139, 143)
     assert dym.results["sumar"] == PollResultRow(Decimal("3.6"), 3, 5)
+    assert [
+        (row.pollster_name, row.media, row.reestimator) for row in (socio, target, dym)
+    ] == [
+        ("SocioMétrica", "El Español", None),
+        ("Target Point", "El Debate", None),
+        ("DYM", "Henneo", None),
+    ]
 
 
 def test_real_2023_tail_skips(caplog):  # R10, R11
@@ -335,18 +346,96 @@ POLLSTER_TABLE = (
 )
 
 
-def test_pollster_name_extraction():  # R21
+def test_pollster_name_extraction():  # R1, R2, R3, R6, R21
     rows = parse_polls(POLLSTER_TABLE)
     assert [row.source for row in rows] == [
         "SocioMétrica/El Español",
         "CIS (Target Point)",
         "More in Common",
     ]
-    assert [row.pollster_name for row in rows] == [
-        "SocioMétrica",
-        "CIS",
-        "More in Common",
+    assert [(row.pollster_name, row.media, row.reestimator) for row in rows] == [
+        ("SocioMétrica", "El Español", None),
+        ("CIS", None, "Target Point"),
+        ("More in Common", None, None),
     ]
+
+
+# --- Signature roles: firm / media / reestimator (R1-R6, R15, R20) ----------
+
+# Union of the ``poll.source`` literals of every local snapshot
+# (data/raw/polls/**, revisions 1380713440, 1380777984 and 1380859635),
+# frozen here as the case table (specs/018_source_norm/design.md). The
+# inventory is not closed: the code has no whitelist.
+SIGNATURE_CASES = [
+    ("40dB/Prisa", "40dB", "Prisa", None),
+    ("Ateneo del Dato", "Ateneo del Dato", None, None),
+    ("Ateneo del Dato/elDiario.es", "Ateneo del Dato", "elDiario.es", None),
+    ("Celeste-Tel/Onda Cero", "Celeste-Tel", "Onda Cero", None),
+    ("CIS", "CIS", None, None),
+    ("CIS (Ateneo del Dato)", "CIS", None, "Ateneo del Dato"),
+    ("CIS (Demócrata)", "CIS", None, "Demócrata"),
+    ("CIS (Jaime Miquel)", "CIS", None, "Jaime Miquel"),
+    ("CIS (JM)", "CIS", None, "JM"),
+    ("CIS (Logoslab)", "CIS", None, "Logoslab"),
+    ("CIS (Opina 360)", "CIS", None, "Opina 360"),
+    ("CIS (SocioMétrica)", "CIS", None, "SocioMétrica"),
+    ("CIS (Sondaxe)", "CIS", None, "Sondaxe"),
+    ("CIS (Target Point)", "CIS", None, "Target Point"),
+    ("Cluster17/Agenda Pública", "Cluster17", "Agenda Pública", None),
+    ("Data10/Okdiario", "Data10", "Okdiario", None),
+    ("Demoscopia y Servicios/esRadio", "Demoscopia y Servicios", "esRadio", None),
+    ("DYM/Henneo", "DYM", "Henneo", None),
+    ("EM-Analytics/Electomanía", "EM-Analytics", "Electomanía", None),
+    ("GAD3/ABC", "GAD3", "ABC", None),
+    ("GAD3/Mediaset", "GAD3", "Mediaset", None),
+    ("GAD3/Vocento", "GAD3", "Vocento", None),
+    ("GESOP/Prensa Ibérica", "GESOP", "Prensa Ibérica", None),
+    ("Hamalgama Métrica/Vozpópuli", "Hamalgama Métrica", "Vozpópuli", None),
+    ("IMOP/El Confidencial", "IMOP", "El Confidencial", None),
+    ("InvyMark/laSexta", "InvyMark", "laSexta", None),
+    ("Ipsos/La Vanguardia", "Ipsos", "La Vanguardia", None),
+    ("KeyData/Público", "KeyData", "Público", None),
+    ("More in Common", "More in Common", None, None),
+    ("NC Report/La Razón", "NC Report", "La Razón", None),
+    ("ODEC/Mediaflows–UV", "ODEC", "Mediaflows–UV", None),
+    ("Opina 360/Antena 3", "Opina 360", "Antena 3", None),
+    ("Opina 360/Telecinco", "Opina 360", "Telecinco", None),
+    ("PSOE", "PSOE", None, None),
+    ("Sigma Dos/Antena 3", "Sigma Dos", "Antena 3", None),
+    ("Sigma Dos/El Mundo", "Sigma Dos", "El Mundo", None),
+    ("Simple Lógica/elDiario.es", "Simple Lógica", "elDiario.es", None),
+    ("SocioMétrica/El Español", "SocioMétrica", "El Español", None),
+    ("SocioMétrica/PP", "SocioMétrica", "PP", None),
+    ("Sondaxe/La Voz de Galicia", "Sondaxe", "La Voz de Galicia", None),
+    ("Sumar", "Sumar", None, None),
+    ("Target Point/El Debate", "Target Point", "El Debate", None),
+    ("Winston/Artículo14", "Winston", "Artículo14", None),
+]
+
+
+@pytest.mark.parametrize(
+    ("source", "pollster_name", "media", "reestimator"), SIGNATURE_CASES
+)
+def test_parse_signature_real_literals(  # R1, R2, R3, R6, R15
+    source, pollster_name, media, reestimator
+):
+    assert parse_signature(source) == Signature(pollster_name, media, reestimator)
+
+
+def test_parse_signature_unknown_literal():  # R20
+    assert parse_signature("Encuestadora Nueva/Medio Nuevo") == Signature(
+        "Encuestadora Nueva", "Medio Nuevo", None
+    )
+
+
+def test_parse_signature_combined_and_empty_parts(caplog):  # R4, R5
+    assert parse_signature("Firm/Media (X)") == Signature("Firm", "Media", "X")
+    with caplog.at_level(logging.WARNING):
+        assert parse_signature("Firm/") == Signature("Firm", None, None)
+        assert parse_signature("CIS ()") == Signature("CIS", None, None)
+    assert "signature part is empty" in caplog.text
+    assert "Firm/" in caplog.text
+    assert "CIS ()" in caplog.text
 
 
 # --- Robustness: drift degrades to a warning (R22-R24) ----------------------
@@ -505,3 +594,8 @@ def test_real_cis_block():  # R16, R20
     assert opina.results["psoe"] == PollResultRow(Decimal("28.0"), 118, 118)
     assert cis.results["psoe"] == PollResultRow(Decimal("34.0"), None, None)
     assert [row.pollster_name for row in (opina, ateneo, cis)] == ["CIS", "CIS", "CIS"]
+    assert [(row.media, row.reestimator) for row in (opina, ateneo, cis)] == [
+        (None, "Opina 360"),
+        (None, "Ateneo del Dato"),
+        (None, None),
+    ]

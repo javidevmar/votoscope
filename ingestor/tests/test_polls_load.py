@@ -14,7 +14,7 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-from sqlalchemy import select, text
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from ingestor import cli
@@ -155,6 +155,7 @@ def test_cli_registers_and_loads(db, tmp_path, monkeypatch):  # R1, R3-R8, R23, 
         assert alpha.election_type == "congress"
         assert alpha.election_id is None
         assert alpha.revision_id == 200
+        assert (alpha.media, alpha.reestimator) == ("Medio", None)
         assert (alpha.fieldwork_start, alpha.fieldwork_end) == (
             date(2026, 10, 1),
             date(2026, 10, 2),
@@ -163,6 +164,7 @@ def test_cli_registers_and_loads(db, tmp_path, monkeypatch):  # R1, R3-R8, R23, 
         assert alpha.turnout == Decimal("67.6")
         assert cis.pollster_id == pollsters["cis"].id
         assert cis.revision_id == 200
+        assert (cis.media, cis.reestimator) == (None, "Target Point")
         assert (cis.fieldwork_start, cis.fieldwork_end) == (None, None)
         assert cis.sample_size is None
         assert cis.turnout is None
@@ -229,6 +231,31 @@ def test_replacement_deletes_previous_polls(db, tmp_path):  # R7
         assert pollsters == {"alpha", "cis", "beta"}
         parties = {row.slug for row in session.scalars(select(Party))}
         assert parties == {"pp", "psoe", "salf"}
+
+
+def test_reload_roles_is_idempotent(db, tmp_path):  # R14
+    _ingest(db, tmp_path, 200)
+    with db() as session:
+        before = sorted(
+            (poll.source, poll.media, poll.reestimator)
+            for poll in session.scalars(select(Poll))
+        )
+        count = session.scalar(select(func.count()).select_from(Poll))
+    assert before == [
+        ("Alpha/Medio", "Medio", None),
+        ("CIS (Target Point)", None, "Target Point"),
+    ]
+
+    (outcome,) = _ingest(db, tmp_path, 200, force=True)
+    assert outcome.status == "processed"
+
+    with db() as session:
+        after = sorted(
+            (poll.source, poll.media, poll.reestimator)
+            for poll in session.scalars(select(Poll))
+        )
+        assert session.scalar(select(func.count()).select_from(Poll)) == count
+    assert after == before
 
 
 # --- Revision guard (T7: R9, R10, R11) --------------------------------------
@@ -679,6 +706,10 @@ def test_docs_ingesta():  # R29
         "failed",
         "pollster",
         "poll_result",
+        "media",
+        "reestimator",
+        "idempotente",
+        "--force",
     ):
         assert needle in docs
 
@@ -687,3 +718,4 @@ def test_docs_ingestor_agents():  # R30
     docs = (REPO_ROOT / "ingestor" / "AGENTS.md").read_text(encoding="utf-8")
     assert "ingest-polls" in docs
     assert "polls.py" in docs
+    assert "reestimador" in docs

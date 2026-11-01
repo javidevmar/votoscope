@@ -154,6 +154,8 @@ def load_polls(session: Session, rows: list[PollRow], revision_id: int) -> None:
         {
             "pollster_id": pollster_ids[slugify(row.pollster_name)],
             "source": row.source,
+            "media": row.media,
+            "reestimator": row.reestimator,
             "election_type": ELECTION_TYPE,
             "election_id": None,
             "fieldwork_start": row.fieldwork_start,
