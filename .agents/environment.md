@@ -34,8 +34,9 @@ Mientras el destino sea el Postgres local (docker-compose), el job que sincroniz
 
 ## Frontend
 
-- Contrato gold ↔ front: [`../docs/db/gold.md`](../docs/db/gold.md).
-- Pendiente de scaffold. Ver [`../web/AGENTS.md`](../web/AGENTS.md).
+- Next.js en `web/` (App Router, TypeScript, pnpm 10.28, Tailwind 4 y shadcn/ui). Comandos: `cd web && pnpm install`, `pnpm dev` (http://localhost:3000), `pnpm build`, `pnpm start`, `pnpm lint` y `pnpm test`.
+- Configuración: copiar `web/.env.example` a `web/.env.local` (gitignored) con `DATABASE_URL` del rol de solo lectura `votoscope_web` y `LOG_LEVEL`. El rol lo crea la migración del ingestador; su contraseña local se fija una vez con `ALTER ROLE` (ver [`../web/AGENTS.md`](../web/AGENTS.md)).
+- Tests de la web: `pnpm test` (`node --test`, carga `.env.local`); los live se saltan sin base. Contrato gold ↔ front: [`../docs/db/gold.md`](../docs/db/gold.md). Ver [`../web/AGENTS.md`](../web/AGENTS.md).
 
 ## Topología de entornos
 

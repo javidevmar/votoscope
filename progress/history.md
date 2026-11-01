@@ -107,3 +107,13 @@ Las sesiones anteriores al arnés SDD están registradas en el historial de git.
 - **Review:** APPROVED. Rondas: separación de alcance de los specs 16–18 (decisión del usuario: se quedan en la rama) y refuerzo de tests (orden completo de `poll_trend`, nombres de geografía en `station_turnout`, comparación de colores con el catálogo).
 - **Verificación:** `./init.sh` verde (224 tests, ruff check/format, `alembic check` sin drift); datos reales contrastados (13 elecciones, 2023: censo 37.469.141, participación 66,60; 575 sondeos / 6.125 resultados).
 - **Cierre:** feature 15 `done`; commits atómicos y push de `feature/delivery-gold` (sin PR). Siguiente: 16 `web_scaffold`.
+
+---
+
+## 2026-10-31 — Feature 16 `web_scaffold` (Next.js, BFF y rol de solo lectura)
+
+- **Agente:** leader + implementer + reviewer (rama `feature/web-scaffold`, apilada sobre `feature/delivery-gold`).
+- **Cambios:** scaffold Next.js 16.4.3 (App Router, TS, pnpm 10.28, Tailwind 4, shadcn/ui) con portada (última elección + resultados nacionales) y logging `LOG_LEVEL`; **BFF obligatorio** en `app/api/` (`_lib/db.ts`, `_lib/gold.ts`, `_lib/params.ts` + Route Handlers `latest-election` y `national-results`), única frontera de datos, con tests estructurales que fallan si hay SQL o `pg` fuera de `app/api/`; migración `9f3c2a1b7d40_web_readonly_role.py` (rol `votoscope_web`, `SELECT` solo en `gold`, privilegios por defecto, sin contraseña) y `ingestor/tests/test_web_role.py`; `web/README.md` y `web/AGENTS.md` como guía y constitución; `.agents/` (architecture, conventions, environment, style) y `init.sh` con la sección web.
+- **Review:** APPROVED. La primera ejecución del implementer quedó interrumpida por un reinicio; se retomó sin rehacer el scaffold.
+- **Verificación:** `./init.sh` verde (231 tests pytest + 24 de `node --test`, lint y `alembic check` sin drift); `pnpm build` sin base y smoke del BFF (`/api/gold/latest-election`).
+- **Cierre:** feature 16 `done`; commits atómicos en `feature/web-scaffold`, sin push ni PR. Siguiente: 17 `close_minor`.

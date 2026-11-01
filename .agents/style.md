@@ -26,4 +26,7 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md). Nombr
 
 ## Frontend
 
-- Por definir al hacer el scaffold de `web/`.
+- TypeScript estricto; App Router con Server Components por defecto (componentes cliente solo si hacen falta).
+- Dependencias y ejecución con **pnpm** (`pnpm add`, `pnpm dlx shadcn@latest add …`).
+- Lint: **ESLint** con `eslint-config-next` (`pnpm lint`). Tests: `node --test` (`pnpm test`).
+- SQL solo en `web/app/api/_lib/gold.ts`; nada de SQL ni de `pg` en páginas, componentes o `lib/`.
