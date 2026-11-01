@@ -295,6 +295,22 @@
       ],
       "sdd": true,
       "status": "pending"
+    },
+    {
+      "id": 21,
+      "name": "bronze_poll_snapshots",
+      "initiative": "polls-wikipedia",
+      "title": "Bronce de sondeos en Postgres: wikitexto y linaje hasta silver.poll",
+      "description": "Para desplegar en internet el disco es efímero: el wikitexto de cada revisión pasa a una tabla de bronce (revisión, página, contenido, sha256, estado) y el registro deja de depender de data/raw. Decisión del usuario: Postgres, no almacenamiento de objetos; permite además enlazar silver.poll con el snapshot que lo originó. La topología de despliegue (cron/job) queda fuera de esta feature.",
+      "acceptance": [
+        "bronze guarda el wikitexto de cada revisión (revision_id, página, contenido, sha256, estado) y fetch-polls lo escribe ahí; ingest-polls puede cargar desde bronce sin depender de un fichero en disco, y el camino local con data/raw sigue funcionando",
+        "silver.poll.revision_id queda enlazado con el snapshot de bronce y la recarga no rompe el linaje; migración autogenerada, models.py, ERD y alembic check sin drift",
+        "idempotencia: reprocesar la misma revisión (misma clave/sha256) no duplica bronce ni poll, y el guard de revisión se mantiene",
+        "tests sin red con los esquemas de test: fetch simulado escribe en bronce, ingest carga desde bronce, linaje consultable y recarga idempotente",
+        "docs al día: architecture, data-model, data-sources e ingesta (el bronce de sondeos deja de ser un fichero en disco)"
+      ],
+      "sdd": true,
+      "status": "pending"
     }
   ]
 }
