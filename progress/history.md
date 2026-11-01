@@ -117,3 +117,12 @@ Las sesiones anteriores al arnés SDD están registradas en el historial de git.
 - **Review:** APPROVED. La primera ejecución del implementer quedó interrumpida por un reinicio; se retomó sin rehacer el scaffold.
 - **Verificación:** `./init.sh` verde (231 tests pytest + 24 de `node --test`, lint y `alembic check` sin drift); `pnpm build` sin base y smoke del BFF (`/api/gold/latest-election`).
 - **Cierre:** feature 16 `done`; commits atómicos en `feature/web-scaffold`, sin push ni PR. Siguiente: 17 `close_minor`.
+
+---
+
+## 2026-10-31 — Feature 17 `close_minor` (README, atribución y cierre)
+
+- **Agente:** leader + implementer + reviewer (rama `feature/close-minor`, apilada sobre `feature/web-scaffold`).
+- **Cambios:** `README.md` reescrito en español (qué es, requisitos, puesta en marcha, datos/CLI, web, documentación y atribución: portal infoelectoral y Wikipedia CC BY-SA con `oldid` de la revisión cargada `1380859635`); `.agents/status.md` al día (15–17 en «Hecho», cola apuntando a 18 `source_norm`); puerto `5433`→`5434` en `ingestor/.env.example` y comentario de `docker-compose.yml`; `ingestor/AGENTS.md` sin la sección «Pendiente»; 11 tests de documentos en `ingestor/tests/test_close_minor.py` (R1–R12).
+- **Verificación:** `./init.sh` verde (242 tests, ruff check/format, `alembic check` sin drift); reviewer **APPROVED** (`progress/review_close_minor.md`), con enlaces del README y `oldid` contrastados contra el repositorio y la base.
+- **Cierre:** feature 17 `done`; commits atómicos en `feature/close-minor`. Stack de PRs 15 → 16 → 17 abierto con `gh stack`. Siguiente: aprobar el spec 18 `source_norm`.

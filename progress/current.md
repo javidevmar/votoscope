@@ -1,19 +1,16 @@
 # Sesión actual
 
-- **Feature en curso:** _ninguna_ (16 cerrada; la 17 es la siguiente)
+- **Feature en curso:** _ninguna_ (17 cerrada; la 18 es la siguiente, spec en `spec_ready`)
 - **Inicio:** 2026-10-31
 - **Agente:** leader
 
 ## Plan
 
-1. Feature 17 `close_minor`: README raíz, atribución de fuentes y puesta al día de `.agents/status.md` (spec ya en `spec_ready`).
-2. Después: 18 `source_norm` (spec con inventario histórico y sin lista blanca).
+1. Revisión humana y aprobación del spec 18 `source_norm` (inventario histórico de fuentes y sin lista blanca).
+2. Implementar la 18 en su rama, apilada sobre `feature/close-minor`.
 
 ## Bitácora
 
-- 2026-10-31: feature 16 `web_scaffold` cerrada, commiteada en `feature/web-scaffold` (sin push ni PR). Reviewer **APPROVED** (detalle en `history.md`).
-- 2026-10-31: spec 18 movido a esta rama y corregido: inventario sobre todos los snapshots de bronce y R20 (sin lista blanca).
-
 ## Próximo paso
 
-- Implementar la 17 en su rama.
+- Revisar `specs/018_source_norm/` y dar el «aprobado» para implementar.
