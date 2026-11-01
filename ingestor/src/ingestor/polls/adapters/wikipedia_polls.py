@@ -41,6 +41,7 @@ _SECTION = re.compile(r"^(={2,6})\s*(.+?)\s*\1\s*$", re.MULTILINE)
 _YEAR = re.compile(r"^(\d{4})(\s|$)")
 _WIKILINK = re.compile(r"\[\[([^\]]*)\]\]")
 _LINK_PARAM = re.compile(r"^link=(.*)$")
+_PARENTHESISED = re.compile(r"^(?P<head>.+?)\s*\((?P<inner>[^()]*)\)$")
 
 _NO_PCT = {"?", "<2.0", "–", ""}
 _NO_SEATS = {"?", "–", ""}
@@ -73,11 +74,22 @@ class PollResultRow:
 
 
 @dataclass(frozen=True)
+class Signature:
+    """Roles of a signature literal: firm, media and reestimator."""
+
+    pollster_name: str
+    media: str | None
+    reestimator: str | None
+
+
+@dataclass(frozen=True)
 class PollRow:
     """One data row of a year table: firm, fieldwork, sample, turnout, results."""
 
     source: str
     pollster_name: str
+    media: str | None
+    reestimator: str | None
     fieldwork_start: date | None
     fieldwork_end: date | None
     sample_size: int | None
@@ -257,9 +269,12 @@ def _read_row(row: Row, plan: _Plan, year: int) -> PollRow:
             results[key] = result
     start, end = parse_date(row.cells[plan.fixed[DATE_COLUMN]].text, year)
     source = row.cells[plan.fixed[FIRM_COLUMN]].text
+    signature = parse_signature(source)
     return PollRow(
         source=source,
-        pollster_name=_pollster_name(source),
+        pollster_name=signature.pollster_name,
+        media=signature.media,
+        reestimator=signature.reestimator,
         fieldwork_start=start,
         fieldwork_end=end,
         sample_size=_parse_sample(row.cells[plan.fixed[SAMPLE_COLUMN]].text),
@@ -268,9 +283,30 @@ def _read_row(row: Row, plan: _Plan, year: int) -> PollRow:
     )
 
 
-def _pollster_name(source: str) -> str:
-    """Firm name of a signature: text before the first ``(`` or ``/``."""
-    return re.split(r"[/(]", source, maxsplit=1)[0].strip()
+def parse_signature(source: str) -> Signature:
+    """Signature literal as its three roles (firm / media / reestimator).
+
+    A final parenthesis holds the reestimator (the CIS alternative projection);
+    the first slash of the rest separates the firm from its media/commissioner.
+    Empty parts warn and stay null; the literal itself is never rewritten.
+    """
+    head, reestimator = source, None
+    parenthesised = _PARENTHESISED.match(source)
+    if parenthesised is not None:
+        head = parenthesised.group("head")
+        reestimator = parenthesised.group("inner").strip()
+        if not reestimator:
+            logger.warning("signature part is empty: %s", source)
+            reestimator = None
+    pollster_name, separator, media = head.partition("/")
+    media = media.strip()
+    if separator and not media:
+        logger.warning("signature part is empty: %s", source)
+    return Signature(
+        pollster_name=pollster_name.strip(),
+        media=media or None,
+        reestimator=reestimator,
+    )
 
 
 def _parse_party_cell(text: str) -> PollResultRow | None:
