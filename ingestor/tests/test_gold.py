@@ -209,6 +209,8 @@ SILVER_TABLES: dict[str, list[str]] = {
         "id",
         "pollster_id",
         "source",
+        "media",
+        "reestimator",
         "election_type",
         "election_id",
         "fieldwork_start",

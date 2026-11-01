@@ -804,7 +804,7 @@
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll" value="poll" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Arial;" parent="1" vertex="1">
-          <mxGeometry x="640" y="100" width="400" height="330" as="geometry" />
+          <mxGeometry x="640" y="100" width="400" height="390" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_id_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=1;strokeColor=#666666;whiteSpace=wrap;html=1;" parent="sp_poll" vertex="1">
           <mxGeometry y="30" width="400" height="30" as="geometry" />
@@ -842,8 +842,32 @@
         <mxCell id="sp_poll_source_row_flags" value="NOT NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="sp_poll_source_row" vertex="1">
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="sp_poll_election_type_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="sp_poll" vertex="1">
+        <mxCell id="sp_poll_media_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="sp_poll" vertex="1">
           <mxGeometry y="120" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_poll_media_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="sp_poll_media_row" vertex="1">
+          <mxGeometry width="55" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_poll_media_row_text" value="media text" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="sp_poll_media_row" vertex="1">
+          <mxGeometry x="55" width="255" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_poll_media_row_flags" value="NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="sp_poll_media_row" vertex="1">
+          <mxGeometry x="310" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_poll_reestimator_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="sp_poll" vertex="1">
+          <mxGeometry y="150" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_poll_reestimator_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="sp_poll_reestimator_row" vertex="1">
+          <mxGeometry width="55" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_poll_reestimator_row_text" value="reestimator text" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;align=left;spacingLeft=10;whiteSpace=wrap;html=1;" parent="sp_poll_reestimator_row" vertex="1">
+          <mxGeometry x="55" width="255" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_poll_reestimator_row_flags" value="NULL" style="shape=partialRectangle;fillColor=none;strokeColor=none;collapsible=0;dropTarget=0;connectable=0;overflow=hidden;verticalAlign=middle;fontSize=11;fontStyle=2;align=center;whiteSpace=wrap;html=1;" parent="sp_poll_reestimator_row" vertex="1">
+          <mxGeometry x="310" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="sp_poll_election_type_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="sp_poll" vertex="1">
+          <mxGeometry y="180" width="400" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_election_type_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="sp_poll_election_type_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
@@ -855,7 +879,7 @@
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_election_id_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="sp_poll" vertex="1">
-          <mxGeometry y="150" width="400" height="30" as="geometry" />
+          <mxGeometry y="210" width="400" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_election_id_row_key" value="FK2" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="sp_poll_election_id_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
@@ -867,7 +891,7 @@
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_fieldwork_start_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="sp_poll" vertex="1">
-          <mxGeometry y="180" width="400" height="30" as="geometry" />
+          <mxGeometry y="240" width="400" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_fieldwork_start_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="sp_poll_fieldwork_start_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
@@ -879,7 +903,7 @@
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_fieldwork_end_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="sp_poll" vertex="1">
-          <mxGeometry y="210" width="400" height="30" as="geometry" />
+          <mxGeometry y="270" width="400" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_fieldwork_end_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="sp_poll_fieldwork_end_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
@@ -891,7 +915,7 @@
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_sample_size_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="sp_poll" vertex="1">
-          <mxGeometry y="240" width="400" height="30" as="geometry" />
+          <mxGeometry y="300" width="400" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_sample_size_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="sp_poll_sample_size_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
@@ -903,7 +927,7 @@
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_turnout_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="sp_poll" vertex="1">
-          <mxGeometry y="270" width="400" height="30" as="geometry" />
+          <mxGeometry y="330" width="400" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_turnout_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="sp_poll_turnout_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />
@@ -915,7 +939,7 @@
           <mxGeometry x="310" width="90" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_revision_id_row" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;fillColor=none;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;strokeColor=none;whiteSpace=wrap;html=1;" parent="sp_poll" vertex="1">
-          <mxGeometry y="300" width="400" height="30" as="geometry" />
+          <mxGeometry y="360" width="400" height="30" as="geometry" />
         </mxCell>
         <mxCell id="sp_poll_revision_id_row_key" value="" style="shape=partialRectangle;fillColor=none;top=0;left=0;bottom=0;right=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=1;html=1;connectable=0;pointerEvents=0;" parent="sp_poll_revision_id_row" vertex="1">
           <mxGeometry width="55" height="30" as="geometry" />

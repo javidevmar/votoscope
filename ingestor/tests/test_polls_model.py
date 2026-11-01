@@ -71,6 +71,13 @@ def test_poll_source_election_type_and_revision():  # R3
     assert not poll.c.revision_id.nullable
 
 
+def test_poll_source_roles_are_nullable_text():  # R8, R9
+    for name in ("media", "reestimator"):
+        column = poll.c[name]
+        assert isinstance(column.type, Text)
+        assert column.nullable
+
+
 def test_poll_election_fk_is_nullable():  # R4
     assert poll.c.election_id.nullable
     assert _fk_target(poll.c.election_id) == "silver.election.id"
@@ -170,6 +177,8 @@ def test_silver_polls_page_has_complete_tables():  # R13
             "id",
             "pollster_id",
             "source",
+            "media",
+            "reestimator",
             "election_type",
             "election_id",
             "fieldwork_start",
@@ -223,3 +232,8 @@ def test_data_model_v2_describes_polls_tables():  # R15
     v2 = text.split("## Modelo v2 (vigente)")[1].split("## Fuera del MVP")[0]
     for table in ("pollster", "poll", "poll_result"):
         assert f"`silver.{table}`" in v2
+    bullet = next(
+        line for line in v2.splitlines() if line.startswith("- `silver.poll`")
+    )
+    assert "media" in bullet
+    assert "reestimator" in bullet
