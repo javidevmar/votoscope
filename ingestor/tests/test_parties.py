@@ -285,11 +285,11 @@ def test_catalog_coalitions_do_not_merge() -> None:
 
 
 def test_slugify_single_source() -> None:
-    from ingestor.elections.loaders import election
-    from ingestor.polls.loaders import polls
+    from ingestor.elections.loaders import silver as election_silver
+    from ingestor.polls.loaders import silver as polls_silver
 
-    assert not hasattr(election, "slugify")
-    assert polls.slugify is slugify
+    assert not hasattr(election_silver, "slugify")
+    assert polls_silver.slugify is slugify
     assert slugify("C's") == "c-s"
     assert slugify("U.P.N.") == "u-p-n"
     assert slugify("  ") == ""

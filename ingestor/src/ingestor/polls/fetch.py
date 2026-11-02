@@ -20,6 +20,7 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from ingestor.errors import IngestError
+from ingestor.polls import SOURCE
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,6 @@ Opener = Callable[..., IO[bytes]]  # compatible with urllib.request.urlopen
 
 DEFAULT_PAGE = "Opinion polling for the 2026 Spanish general election"
 DEFAULT_SNAPSHOT_DIR = "2026-general"
-SOURCE = "wikipedia-en"
 API_URL = "https://en.wikipedia.org/w/api.php"
 RAW_URL = "https://en.wikipedia.org/w/index.php"
 USER_AGENT = "votoscope-ingestor/0.1 (https://github.com/javidevmar/votoscope)"
