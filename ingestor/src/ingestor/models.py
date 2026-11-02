@@ -305,9 +305,12 @@ class PollResult(Base):
 
 # ----------------------------------------------------------------------- gold
 
-# Read-only views for the web frontend: they are not tables, so they have no
-# PK/FK/indexes. The migration creates them from ``gold.view_ddl()`` and
-# ``alembic/env.py`` skips them in autogenerate (``info["view"]``).
+# Read-only relations for the web frontend: they are not tables, so they have
+# no PK/FK/indexes. The four results relations are materialized views (the
+# migration creates them from ``gold.matview_ddl()`` and their indexes from
+# ``gold.index_ddl()``); the two polls relations are plain views
+# (``gold.view_ddl()``). ``alembic/env.py`` skips all of them in autogenerate
+# (``info["view"]`` / ``info["matview"]``).
 
 election_summary = Table(
     "election_summary",
@@ -324,7 +327,7 @@ election_summary = Table(
     Column("voters", BigInteger, nullable=False),
     Column("turnout_pct", Numeric, nullable=True),
     schema="gold",
-    info={"view": True},
+    info={"matview": True},
 )
 
 result_by_area = Table(
@@ -346,7 +349,7 @@ result_by_area = Table(
     Column("votes", BigInteger, nullable=False),
     Column("pct", Numeric, nullable=True),
     schema="gold",
-    info={"view": True},
+    info={"matview": True},
 )
 
 result_by_station = Table(
@@ -371,7 +374,7 @@ result_by_station = Table(
     Column("votes", BigInteger, nullable=False),
     Column("pct", Numeric, nullable=True),
     schema="gold",
-    info={"view": True},
+    info={"matview": True},
 )
 
 station_turnout = Table(
@@ -397,7 +400,7 @@ station_turnout = Table(
     Column("voters", BigInteger, nullable=False),
     Column("turnout_pct", Numeric, nullable=True),
     schema="gold",
-    info={"view": True},
+    info={"matview": True},
 )
 
 poll_flat = Table(

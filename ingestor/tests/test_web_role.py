@@ -97,7 +97,7 @@ def test_role_is_login_without_admin_attributes(db):  # R5
     assert row.rolcreaterole is False
 
 
-def test_role_has_usage_and_select_on_every_gold_view(db):  # R6
+def test_role_has_usage_and_select_on_every_gold_view(db):  # R25
     assert db.execute(
         text("SELECT has_schema_privilege(:role, 'gold', 'USAGE')"), {"role": ROLE}
     ).scalar()
@@ -106,12 +106,30 @@ def test_role_has_usage_and_select_on_every_gold_view(db):  # R6
         text(
             "SELECT c.relname FROM pg_class c "
             "JOIN pg_namespace n ON n.oid = c.relnamespace "
-            "WHERE n.nspname = 'gold' AND c.relkind = 'v' "
+            "WHERE n.nspname = 'gold' AND c.relkind IN ('v', 'm') "
             "AND NOT has_table_privilege(:role, c.oid, 'SELECT')"
         ),
         {"role": ROLE},
     ).scalars()
     assert list(missing) == []
+
+    # The four results relations are materialized views (feature 19) and keep
+    # their explicit grant; the two polls views stay plain views.
+    matviews = db.execute(
+        text(
+            "SELECT c.relname FROM pg_class c "
+            "JOIN pg_namespace n ON n.oid = c.relnamespace "
+            "WHERE n.nspname = 'gold' AND c.relkind = 'm' "
+            "AND has_table_privilege(:role, c.oid, 'SELECT')"
+        ),
+        {"role": ROLE},
+    ).scalars()
+    assert set(matviews) == {
+        "election_summary",
+        "result_by_area",
+        "result_by_station",
+        "station_turnout",
+    }
 
 
 def test_default_privileges_grant_select_on_future_gold_relations(db):  # R7
@@ -151,7 +169,7 @@ def test_role_cannot_read_silver_or_bronze(db):  # R8
         assert tables == 0, f"{ROLE} must not SELECT from {schema}"
 
 
-def test_role_cannot_write_or_create_in_gold(db):  # R8
+def test_role_cannot_write_or_create_in_gold(db):  # R26
     assert not db.execute(
         text("SELECT has_schema_privilege(:role, 'gold', 'CREATE')"), {"role": ROLE}
     ).scalar()
@@ -161,7 +179,7 @@ def test_role_cannot_write_or_create_in_gold(db):  # R8
             text(
                 "SELECT count(*) FROM pg_class c "
                 "JOIN pg_namespace n ON n.oid = c.relnamespace "
-                "WHERE n.nspname = 'gold' AND c.relkind = 'v' "
+                "WHERE n.nspname = 'gold' AND c.relkind IN ('v', 'm') "
                 "AND has_table_privilege(:role, c.oid, :privilege)"
             ),
             {"role": ROLE, "privilege": privilege},

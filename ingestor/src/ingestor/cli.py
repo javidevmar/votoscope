@@ -1,5 +1,6 @@
 """Command line entrypoints: ``ingestor load-geography``, ``ingestor ingest``,
-``ingestor fetch-polls`` and ``ingestor ingest-polls``."""
+``ingestor fetch-polls``, ``ingestor ingest-polls`` and ``ingestor refresh-gold``.
+"""
 
 from __future__ import annotations
 
@@ -11,6 +12,7 @@ from ingestor.db import SessionLocal
 from ingestor.elections.loaders.election import ingest_path
 from ingestor.elections.loaders.geography import load_geography
 from ingestor.errors import IngestError
+from ingestor.gold import refresh_gold
 from ingestor.logging import configure_logging
 from ingestor.polls.fetch import DEFAULT_PAGE, fetch_snapshot
 from ingestor.polls.loaders.polls import ingest_polls_path
@@ -69,10 +71,23 @@ def main(argv: list[str] | None = None) -> int:
         help="reload snapshots even if processed or older than the loaded revision",
     )
 
+    refresh = subparsers.add_parser(
+        "refresh-gold",
+        help="refresh the gold materialized views (--concurrently avoids read locks)",
+    )
+    refresh.add_argument(
+        "--concurrently",
+        action="store_true",
+        help="refresh with REFRESH MATERIALIZED VIEW CONCURRENTLY",
+    )
+
     args = parser.parse_args(argv)
     try:
         if args.command == "load-geography":
             load_geography(SessionLocal, settings.ine_dir)
+            return 0
+        if args.command == "refresh-gold":
+            refresh_gold(SessionLocal, concurrently=args.concurrently)
             return 0
         if args.command == "fetch-polls":
             fetch_snapshot(args.page, raw_dir=settings.raw_dir)
@@ -90,6 +105,10 @@ def main(argv: list[str] | None = None) -> int:
         outcomes = ingest_path(
             SessionLocal, args.path, settings.raw_dir, force=args.force
         )
+        # One refresh per run, outside the per-election loop: only when some
+        # election actually wrote facts.
+        if any(outcome.status == "processed" for outcome in outcomes):
+            refresh_gold(SessionLocal)
     except IngestError as error:
         logger.error("%s", error)
         return 1
