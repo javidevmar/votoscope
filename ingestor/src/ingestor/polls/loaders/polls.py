@@ -1,4 +1,4 @@
-"""Silver loader for the Wikipedia polls snapshots: bronze registry + facts.
+"""Bronze loader for the Wikipedia polls snapshots: registry + revision guard.
 
 Contract (see docs/ingestor/ingesta.md, «Comportamiento de ingest-polls»):
 
@@ -6,43 +6,27 @@ Contract (see docs/ingestor/ingesta.md, «Comportamiento de ingest-polls»):
   (source ``wikipedia-en``); a snapshot already ``processed`` is skipped.
 - Revision guard: a snapshot older than ``max(poll.revision_id)`` is ignored
   with a warning unless ``force``.
-- Silver: pollsters and parties are get-or-create; parties go through the
-  shared resolver (catalogue → existing name → creation with a warning), and
-  ``poll``/``poll_result`` are replaced in full, because silver reflects the
-  last ingested snapshot (the revision history lives in bronze).
-- Election resolution: every poll with a null ``election_id`` is linked to the
-  first national election of its type after its fieldwork; it runs on every
-  execution, also without new snapshots.
-- Validations: every row needs a signature and two parties, ranges are
-  checked, a percentage sum over the limit only warns (the page publishes no
-  "others"); a failure rolls back and marks the file ``failed``.
+- Silver: ``ingestor.polls.loaders.silver`` replaces ``poll``/``poll_result``
+  and links polls to elections in the same run.
 """
 
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from decimal import Decimal
 from pathlib import Path
 
-from sqlalchemy import delete, func, insert, select, update
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import func, select
+from sqlalchemy.orm import sessionmaker
 
-from ingestor.elections.loaders.election import sha256
+from ingestor.bronze import find_registered, mark, register, sha256
 from ingestor.errors import IngestError
-from ingestor.models import Election, Ingestion, Party, Poll, PollResult, Pollster
-from ingestor.parties import PartyResolver, load_catalog, slugify
-from ingestor.polls.adapters.wikipedia_polls import (
-    ELECTION_TYPE,
-    PollRow,
-    parse_polls,
-)
-from ingestor.polls.fetch import SOURCE
+from ingestor.models import Poll
+from ingestor.polls import SOURCE
+from ingestor.polls.adapters.wikipedia_polls import parse_polls
+from ingestor.polls.loaders.silver import load_polls, resolve_poll_elections
 
 logger = logging.getLogger(__name__)
-
-MAX_SEATS = 350  # Congress size: a seat projection cannot exceed it
-PCT_SUM_LIMIT = Decimal("100.5")
 
 
 @dataclass(frozen=True)
@@ -88,7 +72,7 @@ def ingest_snapshot(
     revision_id = _revision_id(path)
     digest = sha256(path)
     with session_factory() as session:
-        registered = session.scalar(select(Ingestion).where(Ingestion.sha256 == digest))
+        registered = find_registered(session, [digest]).get(digest)
         max_revision = session.scalar(select(func.max(Poll.revision_id)))
     if registered is not None and registered.status == "processed" and not force:
         logger.info("%s: skipped (already processed)", path)
@@ -104,15 +88,7 @@ def ingest_snapshot(
 
     if registered is None:
         with session_factory() as session:
-            session.add(
-                Ingestion(
-                    file_path=str(path.resolve().relative_to(raw_dir.resolve())),
-                    sha256=digest,
-                    size_bytes=path.stat().st_size,
-                    source=SOURCE,
-                    status="registered",
-                )
-            )
+            register(session, {path: digest}, raw_dir, SOURCE)
             session.commit()
 
     rows = parse_polls(path.read_text(encoding="utf-8"))
@@ -122,116 +98,15 @@ def ingest_snapshot(
             session.commit()
     except Exception:
         with session_factory() as session:
-            session.execute(
-                update(Ingestion)
-                .where(Ingestion.sha256 == digest)
-                .values(status="failed")
-            )
+            mark(session, [digest], "failed")
             session.commit()
         raise
 
     with session_factory() as session:
-        session.execute(
-            update(Ingestion)
-            .where(Ingestion.sha256 == digest)
-            .values(status="processed")
-        )
+        mark(session, [digest], "processed")
         session.commit()
     logger.info("%s: processed revision %s (%d polls)", path, revision_id, len(rows))
     return PollsOutcome(path, "processed", revision_id)
-
-
-def load_polls(session: Session, rows: list[PollRow], revision_id: int) -> None:
-    """Replace ``poll``/``poll_result`` with the snapshot rows (one transaction)."""
-    _validate(rows, revision_id)
-    pollster_ids = _resolve_pollsters(session, rows)
-    party_ids = _resolve_parties(session, rows)
-
-    session.execute(delete(PollResult))
-    session.execute(delete(Poll))
-
-    poll_rows = [
-        {
-            "pollster_id": pollster_ids[slugify(row.pollster_name)],
-            "source": row.source,
-            "media": row.media,
-            "reestimator": row.reestimator,
-            "election_type": ELECTION_TYPE,
-            "election_id": None,
-            "fieldwork_start": row.fieldwork_start,
-            "fieldwork_end": row.fieldwork_end,
-            "sample_size": row.sample_size,
-            "turnout": row.turnout,
-            "revision_id": revision_id,
-        }
-        for row in rows
-    ]
-    poll_ids = list(
-        session.scalars(
-            insert(Poll).returning(Poll.id, sort_by_parameter_order=True), poll_rows
-        )
-    )
-    result_rows = [
-        {
-            "poll_id": poll_id,
-            "party_id": party_ids[key],
-            "pct": result.pct,
-            "seats_min": result.seats_min,
-            "seats_max": result.seats_max,
-        }
-        for row, poll_id in zip(rows, poll_ids, strict=True)
-        for key, result in row.results.items()
-    ]
-    if result_rows:
-        session.execute(insert(PollResult), result_rows)
-    for row in rows:
-        _pct_sum_warning(row, revision_id)
-
-
-def resolve_poll_elections(session_factory: sessionmaker) -> int:
-    """Link polls without an election to the first national one after them.
-
-    Only polls with a null ``election_id`` are considered (idempotent), and
-    only elections with no community/municipality and the same type; a poll
-    without a candidate or without ``fieldwork_end`` stays null. Returns the
-    number of polls linked.
-    """
-    with session_factory() as session:
-        polls = list(session.scalars(select(Poll).where(Poll.election_id.is_(None))))
-        national: dict[str, list[Election]] = {}
-        linked = 0
-        for poll in polls:
-            if poll.fieldwork_end is None:
-                continue
-            if poll.election_type not in national:
-                national[poll.election_type] = list(
-                    session.scalars(
-                        select(Election)
-                        .where(
-                            Election.type == poll.election_type,
-                            Election.autonomous_community_ine_code.is_(None),
-                            Election.municipality_id.is_(None),
-                        )
-                        .order_by(Election.date)
-                    )
-                )
-            election = next(
-                (
-                    candidate
-                    for candidate in national[poll.election_type]
-                    if candidate.date > poll.fieldwork_end
-                ),
-                None,
-            )
-            if election is None:
-                continue
-            poll.election_id = election.id
-            linked += 1
-        if linked:
-            session.commit()
-    if linked:
-        logger.info("linked %d polls to elections", linked)
-    return linked
 
 
 def _snapshot_files(path: Path, raw_dir: Path) -> list[Path]:
@@ -253,79 +128,3 @@ def _revision_id(path: Path) -> int:
     if path.suffix != ".wikitext" or not path.stem.isdigit():
         raise IngestError(f"snapshot name must be <revision id>.wikitext: {path}")
     return int(path.stem)
-
-
-def _validate(rows: list[PollRow], revision_id: int) -> None:
-    """Structural checks; a failure aborts before touching silver."""
-    if not rows:
-        raise IngestError(f"revision {revision_id}: no polls parsed")
-    for row in rows:
-        label = f"revision {revision_id}, {row.source or '?'}"
-        if not row.source.strip() or not row.pollster_name.strip():
-            raise IngestError(f"{label}: no signature")
-        if len(row.results) < 2:
-            raise IngestError(f"{label}: fewer than two parties with a value")
-        if row.turnout is not None and not 0 <= row.turnout <= 100:
-            raise IngestError(f"{label}: turnout out of range: {row.turnout}")
-        for key, result in row.results.items():
-            if result.pct is not None and not 0 <= result.pct <= 100:
-                raise IngestError(
-                    f"{label}: {key} percentage out of range: {result.pct}"
-                )
-            for seats in (result.seats_min, result.seats_max):
-                if seats is not None and not 0 <= seats <= MAX_SEATS:
-                    raise IngestError(f"{label}: {key} seats out of range: {seats}")
-            if (
-                result.seats_min is not None
-                and result.seats_max is not None
-                and result.seats_min > result.seats_max
-            ):
-                raise IngestError(
-                    f"{label}: {key} seats out of range: "
-                    f"{result.seats_min} > {result.seats_max}"
-                )
-
-
-def _resolve_pollsters(session: Session, rows: list[PollRow]) -> dict[str, int]:
-    """Get or create the pollster of every row (slug -> id)."""
-    slugs = {slugify(row.pollster_name) for row in rows}
-    existing = {
-        pollster.slug: pollster
-        for pollster in session.scalars(
-            select(Pollster).where(Pollster.slug.in_(slugs))
-        )
-    }
-    for row in rows:
-        slug = slugify(row.pollster_name)
-        if slug not in existing:
-            existing[slug] = Pollster(name=row.pollster_name, slug=slug)
-            session.add(existing[slug])
-    session.flush()
-    return {slug: pollster.id for slug, pollster in existing.items()}
-
-
-def _resolve_parties(session: Session, rows: list[PollRow]) -> dict[str, int]:
-    """Resolve every result key (catalogue slug or raw label) to a party row."""
-    keys = {key for row in rows for key in row.results}
-    resolver = PartyResolver(session.scalars(select(Party)), load_catalog())
-    parties = {key: resolver.resolve(key) for key in keys}
-    for party in set(parties.values()):
-        session.add(party)  # no-op when the row was already persistent
-    session.flush()
-    return {key: party.id for key, party in parties.items()}
-
-
-def _pct_sum_warning(row: PollRow, revision_id: int) -> None:
-    """Warn when a poll's percentages add up to more than the limit."""
-    total = sum(
-        (result.pct for result in row.results.values() if result.pct is not None),
-        Decimal(0),
-    )
-    if total > PCT_SUM_LIMIT:
-        logger.warning(
-            "revision %s, %s: percentages add up to %s (limit %s)",
-            revision_id,
-            row.source,
-            total,
-            PCT_SUM_LIMIT,
-        )

@@ -1,21 +1,20 @@
 """Command line entrypoints: ``ingestor load-geography``, ``ingestor ingest``,
 ``ingestor fetch-polls``, ``ingestor ingest-polls`` and ``ingestor refresh-gold``.
+
+Each subcommand lives in ``ingestor.commands``; this module only wires the
+parser and injects the shared dependencies.
 """
 
 from __future__ import annotations
 
 import argparse
 import logging
-from pathlib import Path
 
+from ingestor.commands import elections, geography, gold, polls
 from ingestor.db import SessionLocal
-from ingestor.elections.loaders.election import ingest_path
-from ingestor.elections.loaders.geography import load_geography
 from ingestor.errors import IngestError
 from ingestor.gold import refresh_gold
 from ingestor.logging import configure_logging
-from ingestor.polls.fetch import DEFAULT_PAGE, fetch_snapshot
-from ingestor.polls.loaders.polls import ingest_polls_path
 from ingestor.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -25,94 +24,31 @@ def main(argv: list[str] | None = None) -> int:
     configure_logging()
     parser = argparse.ArgumentParser(prog="ingestor", description="Votoscope ingestor")
     subparsers = parser.add_subparsers(dest="command", required=True)
-
-    subparsers.add_parser(
-        "load-geography",
-        help="load the INE gazetteer (CCAA, provinces, municipalities) into silver",
-    )
-
-    ingest = subparsers.add_parser(
-        "ingest",
-        help="ingest one election directory or a root with several (skips files already processed)",
-    )
-    ingest.add_argument(
-        "path", type=Path, help="election directory or root with several"
-    )
-    ingest.add_argument(
-        "--force",
-        action="store_true",
-        help="re-ingest even if all files were already processed",
-    )
-
-    fetch = subparsers.add_parser(
-        "fetch-polls",
-        help="download the fixed-revision wikitext snapshot of the polls page",
-    )
-    fetch.add_argument(
-        "--page",
-        default=DEFAULT_PAGE,
-        help="Wikipedia page title (default: 2026 general election)",
-    )
-
-    polls = subparsers.add_parser(
-        "ingest-polls",
-        help="ingest polls snapshots into silver (skips processed; --force reloads)",
-    )
-    polls.add_argument(
-        "path",
-        type=Path,
-        nargs="?",
-        default=None,
-        help="snapshot file or directory (default: RAW_DIR/polls)",
-    )
-    polls.add_argument(
-        "--force",
-        action="store_true",
-        help="reload snapshots even if processed or older than the loaded revision",
-    )
-
-    refresh = subparsers.add_parser(
-        "refresh-gold",
-        help="refresh the gold materialized views (--concurrently avoids read locks)",
-    )
-    refresh.add_argument(
-        "--concurrently",
-        action="store_true",
-        help="refresh with REFRESH MATERIALIZED VIEW CONCURRENTLY",
-    )
+    for command in (geography, elections, polls, gold):
+        command.add_parser(subparsers)
 
     args = parser.parse_args(argv)
     try:
         if args.command == "load-geography":
-            load_geography(SessionLocal, settings.ine_dir)
-            return 0
-        if args.command == "refresh-gold":
-            refresh_gold(SessionLocal, concurrently=args.concurrently)
-            return 0
-        if args.command == "fetch-polls":
-            fetch_snapshot(args.page, raw_dir=settings.raw_dir)
-            return 0
-        if args.command == "ingest-polls":
-            outcomes = ingest_polls_path(
-                SessionLocal,
-                args.path or settings.raw_dir / "polls",
-                settings.raw_dir,
-                force=args.force,
+            return geography.run(args, session_factory=SessionLocal, settings=settings)
+        if args.command == "ingest":
+            return elections.run(
+                args,
+                session_factory=SessionLocal,
+                settings=settings,
+                refresh_gold=refresh_gold,
             )
-            for outcome in outcomes:
-                logger.info("%s: %s", outcome.file, outcome.status)
-            return 1 if any(outcome.status == "failed" for outcome in outcomes) else 0
-        outcomes = ingest_path(
-            SessionLocal, args.path, settings.raw_dir, force=args.force
-        )
-        # One refresh per run, outside the per-election loop: only when some
-        # election actually wrote facts.
-        if any(outcome.status == "processed" for outcome in outcomes):
-            refresh_gold(SessionLocal)
+        if args.command == "fetch-polls":
+            return polls.run_fetch(args, settings=settings)
+        if args.command == "ingest-polls":
+            return polls.run_ingest(
+                args, session_factory=SessionLocal, settings=settings
+            )
+        if args.command == "refresh-gold":
+            return gold.run(
+                args, session_factory=SessionLocal, refresh_gold=refresh_gold
+            )
     except IngestError as error:
         logger.error("%s", error)
         return 1
-
-    for outcome in outcomes:
-        logger.info("%s: %s", outcome.directory, outcome.status)
-    return 1 if any(outcome.status == "failed" for outcome in outcomes) else 0
+    raise AssertionError(f"unknown command: {args.command}")
