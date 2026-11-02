@@ -14,13 +14,13 @@ Votoscope es un agregador de resultados electorales de España.
 1. **Ingestador — `ingestor/` (Python)**: pipeline bronce → plata → oro sobre PostgreSQL.
    - **Bronce**: ficheros originales, inmutables, en `data/raw/`, más un registro por fichero en `bronze.ingestion` (ruta, sha256, tamaño, fuente, estado). Un fichero corregido entra como fichero nuevo.
    - **Plata**: tablas normalizadas en el esquema `silver`. Sin agregados.
-   - **Oro**: seis vistas de solo lectura en el esquema `gold`, creadas por migración desde `ingestor/src/ingestor/gold.py` (`election_summary`, `result_by_area`, `result_by_station`, `station_turnout`, `poll_flat`, `poll_trend`). Los agregados y porcentajes solo existen aquí; la web no los recalcula. Contrato pantalla ↔ vista: [`../docs/db/gold.md`](../docs/db/gold.md).
+   - **Oro**: cuatro **vistas materializadas** de resultados (`election_summary`, `result_by_area`, `result_by_station`, `station_turnout`, con índices) y dos **vistas** de sondeos (`poll_flat`, `poll_trend`), todas de solo lectura, en el esquema `gold`, creadas por migración desde `ingestor/src/ingestor/gold.py` (`matview_ddl()`, `index_ddl()` y `view_ddl()`). Las materializadas se refrescan con `uv run ingestor refresh-gold [--concurrently]` y al final de `ingest` si algún fichero quedó `processed`; entre refrescos pueden servir datos obsoletos. Los agregados y porcentajes solo existen aquí; la web no los recalcula. Contrato pantalla ↔ vista: [`../docs/db/gold.md`](../docs/db/gold.md).
 2. **Frontend — `web/` (Next.js 16, App Router, TypeScript)**: scaffold hecho con pnpm 10.28, Tailwind CSS 4 y shadcn/ui. Lee las vistas `gold` a través de un BFF obligatorio en `web/app/api/` (Route Handlers y módulos privados `_lib/`): toda llamada a PostgreSQL o a servicios externos vive ahí y el navegador no accede a la base. Render en servidor (Server Components), con el rol de solo lectura `votoscope_web`. Arranque local: `cd web && pnpm install && pnpm dev` (build: `pnpm build`; tests: `pnpm test`). Contrato de datos: [`../docs/db/gold.md`](../docs/db/gold.md).
 
 ## Flujo de datos
 
 ```
-data/raw/  →  bronze.ingestion (registro)  →  silver (normalizado)  →  gold (vistas)  →  web/
+data/raw/  →  bronze.ingestion (registro)  →  silver (normalizado)  →  gold (matviews y vistas)  →  web/
 ```
 
 El ingestador no descarga nada: trabaja sobre los ficheros que haya en `data/raw/`. Excepción acotada: los sondeos de Wikipedia se descargan por CLI (`uv run ingestor fetch-polls`), porque la revisión fija forma parte del contrato del snapshot.

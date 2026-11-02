@@ -1171,8 +1171,11 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="g_title" value="Votoscope — gold (vistas para la web)" style="text;html=1;fontSize=18;fontStyle=1;align=left;verticalAlign=middle;" parent="1" vertex="1">
+        <mxCell id="g_title" value="Votoscope — gold (vistas materializadas y vistas)" style="text;html=1;fontSize=18;fontStyle=1;align=left;verticalAlign=middle;" parent="1" vertex="1">
           <mxGeometry x="40" y="0" width="600" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="g_matviews_note" value="Vistas materializadas (refresco: ingestor refresh-gold [--concurrently]; al final de ingest si hubo ficheros procesados):&#10;election_summary — uq_gold_election_summary_election_id&#10;result_by_area — uq_gold_result_by_area_grain (NULLS NOT DISTINCT), ix_gold_result_by_area_province&#10;result_by_station — uq_gold_result_by_station_grain, ix_gold_result_by_station_municipality&#10;station_turnout — uq_gold_station_turnout_grain, ix_gold_station_turnout_municipality&#10;Vistas (no materializadas): poll_flat, poll_trend" style="text;html=1;align=left;verticalAlign=top;fontSize=12;whiteSpace=wrap;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1320" width="1560" height="180" as="geometry" />
         </mxCell>
         <mxCell id="g_election_summary" value="election_summary" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Arial;" parent="1" vertex="1">
           <mxGeometry x="40" y="100" width="400" height="360" as="geometry" />

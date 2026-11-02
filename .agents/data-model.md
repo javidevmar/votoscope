@@ -7,7 +7,7 @@ Contexto para agentes IA. Índice general: [`../AGENTS.md`](../AGENTS.md).
 - ERD de referencia: **`docs/db/schema.drawio`** (draw.io nativo, editable; una página por esquema y dominio (Bronze, Silver, Bronze polls, Silver polls, Gold)).
 - Modelos: **`ingestor/src/ingestor/models.py`** (SQLAlchemy 2).
 - Migraciones: **`ingestor/alembic/`** — son la fuente de verdad de la base de datos.
-- Esquemas: `bronze` (registro de ingestas), `silver` (hechos normalizados) y `gold` (vistas de solo lectura para el frontend).
+- Esquemas: `bronze` (registro de ingestas), `silver` (hechos normalizados) y `gold` (vistas materializadas y vistas de solo lectura para el frontend).
 
 ## Regla de sincronización (obligatoria)
 
@@ -40,26 +40,41 @@ Nunca se escribe DDL a mano ni ficheros SQL de inicialización. Nunca se edita u
 - `silver.poll`: sondeo del snapshot de Wikipedia; `election_type` obligatorio y `election_id` nullable (la fuente publica sondeos de 2026 sin elección todavía); fechas de campo, muestra, participación y `revision_id` (BIGINT); `source` guarda la cabecera literal; `media` y `reestimator` guardan el medio/comisionante y el autor de la proyección alternativa cuando el literal de la firma los distingue (nulos si no).
 - `silver.poll_result`: porcentaje y proyección de escaños (`seats_min`–`seats_max`) de un partido en un sondeo; UK (`poll_id`, `party_id`).
 
-### `gold` — vistas de solo lectura para la web
+### `gold` — vistas materializadas y vistas de solo lectura para la web
 
-Creadas por migración desde `ingestor/src/ingestor/gold.py` (`view_ddl()`); no
-son tablas y no viven en `silver`: los agregados y porcentajes solo existen
-aquí. La web no agrega hechos; contrato pantalla ↔ vista en
+Creadas por migración desde `ingestor/src/ingestor/gold.py` (`matview_ddl()`,
+`index_ddl()` y `view_ddl()`); no son tablas y no viven en `silver`: los
+agregados y porcentajes solo existen aquí. Las cuatro relaciones de resultados
+son **vistas materializadas** con índices y se refrescan con
+`uv run ingestor refresh-gold [--concurrently]` (y al final de `ingest` cuando
+algún fichero quedó `processed`); las dos de sondeos siguen siendo **vistas**.
+La web no agrega hechos; contrato pantalla ↔ vista en
 [`../docs/db/gold.md`](../docs/db/gold.md).
 
-- `gold.election_summary`: una fila por elección con censo, nulos, blancos,
+- `gold.election_summary` (materializada; `uq_gold_election_summary_election_id`
+  único por `election_id`): una fila por elección con censo, nulos, blancos,
   candidaturas, válidos, votantes y `turnout_pct`.
-- `gold.result_by_area`: una fila por (elección, nivel, área, partido), con
-  `level` en `national` | `community` | `province` | `municipality` y `pct`
-  sobre válidos del área.
-- `gold.result_by_station`: una fila por (elección, mesa, partido), con la
+- `gold.result_by_area` (materializada; `uq_gold_result_by_area_grain` único por
+  `(election_id, level, community_ine_code, province_ine_code, municipality_id,
+  party_id)` con `NULLS NOT DISTINCT` e `ix_gold_result_by_area_province` por
+  `(election_id, level, province_ine_code)`): una fila por (elección, nivel,
+  área, partido), con `level` en `national` | `community` | `province` |
+  `municipality` y `pct` sobre válidos del área.
+- `gold.result_by_station` (materializada; `uq_gold_result_by_station_grain`
+  único por `(election_id, polling_station_id, party_id)` e
+  `ix_gold_result_by_station_municipality` por `(election_id,
+  municipality_ine_code)`): una fila por (elección, mesa, partido), con la
   identidad y geografía de la mesa y `pct` sobre válidos de la mesa.
-- `gold.station_turnout`: una fila por (elección, mesa) con censo, nulos,
+- `gold.station_turnout` (materializada; `uq_gold_station_turnout_grain` único
+  por `(election_id, polling_station_id)` e
+  `ix_gold_station_turnout_municipality` por `(election_id,
+  municipality_ine_code)`): una fila por (elección, mesa) con censo, nulos,
   blancos, candidaturas, válidos, votantes y `turnout_pct`.
-- `gold.poll_flat`: una fila por (sondeo, partido) con encuestadora, fechas,
-  muestra, participación, `source`/`revision_id`, `pct` y escaños.
-- `gold.poll_trend`: la misma fila con `poll_date` =
-  `coalesce(fieldwork_end, fieldwork_start)`, ordenada por trabajo de campo.
+- `gold.poll_flat` (vista): una fila por (sondeo, partido) con encuestadora,
+  fechas, muestra, participación, `source`/`revision_id`, `pct` y escaños.
+- `gold.poll_trend` (vista): la misma fila con `poll_date` =
+  `coalesce(fieldwork_end, fieldwork_start)`, ordenada por trabajo de campo
+  (`ORDER BY poll_date, poll_id, party_slug`, contractual).
 
 ## Fuera del MVP
 
