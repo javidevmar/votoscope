@@ -279,7 +279,7 @@
         "medido en local en caliente: las consultas del contrato de resultados responden en menos de 50 ms"
       ],
       "sdd": true,
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": 20,
