@@ -14,7 +14,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
-from ingestor.gold import view_ddl
+from ingestor.gold import index_ddl, matview_ddl, view_ddl
 from ingestor.models import Base
 from ingestor.settings import settings
 
@@ -24,10 +24,13 @@ TEST_SCHEMAS = {
     "gold": "polls_test_gold",
 }
 
-# The gold views are read-only: they are created from gold.view_ddl(), never
-# by create_all, and cannot be emptied between tests.
+# The gold relations are read-only: they are created from gold.matview_ddl(),
+# gold.index_ddl() and gold.view_ddl(), never by create_all. The matviews are
+# snapshots: tests refresh them before reading (see ``_rows`` in test_gold.py).
 BASE_TABLES = [
-    table for table in Base.metadata.sorted_tables if not table.info.get("view")
+    table
+    for table in Base.metadata.sorted_tables
+    if not (table.info.get("view") or table.info.get("matview"))
 ]
 
 
@@ -55,6 +58,12 @@ def polls_engine():
             connection.execute(text(f"CREATE SCHEMA {schema}"))
     Base.metadata.create_all(engine, tables=BASE_TABLES)
     with engine.begin() as connection:
+        for statement in matview_ddl(
+            gold_schema=TEST_SCHEMAS["gold"], silver_schema=TEST_SCHEMAS["silver"]
+        ).values():
+            connection.exec_driver_sql(statement)
+        for statement in index_ddl(gold_schema=TEST_SCHEMAS["gold"]).values():
+            connection.exec_driver_sql(statement)
         for statement in view_ddl(
             gold_schema=TEST_SCHEMAS["gold"], silver_schema=TEST_SCHEMAS["silver"]
         ).values():

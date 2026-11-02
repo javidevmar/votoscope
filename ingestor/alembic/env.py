@@ -28,8 +28,9 @@ target_metadata = Base.metadata
 def include_object(
     object: Any, name: str | None, type_: str, reflected: bool, compare_to: Any
 ) -> bool:
-    """Skip gold views: they are created by the migration, not by create_table."""
-    return not (type_ == "table" and getattr(object, "info", {}).get("view"))
+    """Skip gold views and matviews: the migration creates them, not create_table."""
+    info = getattr(object, "info", {})
+    return not (type_ == "table" and (info.get("view") or info.get("matview")))
 
 
 def run_migrations_offline() -> None:

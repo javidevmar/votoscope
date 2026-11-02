@@ -29,6 +29,7 @@ Ingiere una elección, o varias, desde ficheros locales.
 - Los ficheros deben estar bajo `RAW_DIR` (por defecto `data/raw/`), porque `bronze.ingestion.file_path` es relativo a esa carpeta. La copia de trabajo es `data/raw/congreso/{código}/`.
 - Si todos los ficheros de una elección ya están `processed` en bronce (mismo sha256), la elección **se salta**; con `--force` se recarga igualmente.
 - Un error en una elección no aborta las demás: se registra y se sigue; el proceso sale con código 1 si alguna falló (0 si todo quedó `processed` o `skipped`).
+- Al terminar, si algún fichero quedó `processed`, refresca las cuatro vistas materializadas de `gold` **una sola vez** (fuera del bucle de elecciones). Si todo se saltó, no refresca nada (ver «Esquema `gold`»).
 
 ```sh
 uv run ingestor ingest ../data/raw/congreso/02202307        # una elección
@@ -60,11 +61,33 @@ Carga en `silver` los sondeos de los snapshots de Wikipedia (ficheros `.wikitext
 - **Guard de revisión**: un snapshot con `revision_id` anterior al máximo ya cargado (`max(poll.revision_id)`) se ignora con warning y no se registra en bronce; `--force` reprocesa tanto los `processed` como los anteriores.
 - Antes de decidir qué snapshots están pendientes corre el **pase de resolución de elección** (ver «Comportamiento de `ingest-polls`»); también cuando no hay ningún snapshot nuevo.
 - Un error en un snapshot no aborta los demás: se registra y se sigue; sale con código 1 si alguno falla (0 si todo queda `processed`/`skipped`, también sin snapshots pendientes).
+- No refresca las vistas materializadas de resultados: los sondeos son vistas normales y reflejan `silver` al instante.
 
 ```sh
 uv run ingestor ingest-polls                                   # todo RAW_DIR/polls/
 uv run ingestor ingest-polls ../data/raw/polls/wikipedia-en/2026-general/1380713440.wikitext
 uv run ingestor ingest-polls ../data/raw/polls --force
+```
+
+### `ingestor refresh-gold [--concurrently]`
+
+Refresca las cuatro **vistas materializadas** de resultados de `gold`
+(`election_summary`, `result_by_area`, `result_by_station`, `station_turnout`).
+
+- Sin opciones, refresca las cuatro en una transacción y actualiza estadísticas
+  (`ANALYZE`): los lectores ven el cambio de golpe.
+- `--concurrently` usa `REFRESH MATERIALIZED VIEW CONCURRENTLY`: no bloquea a
+  los lectores (algo más lento) y exige los índices únicos, que crea la
+  migración.
+- Es idempotente: ejecutarlo dos veces con los mismos datos deja el mismo
+  contenido. Sale con código 0; los errores de SQL suben como cualquier loader.
+- No toca `silver` ni bronce: solo recalcula las instantáneas de `gold`.
+- Las dos vistas de sondeos (`poll_flat`, `poll_trend`) no se refrescan: son
+  vistas normales.
+
+```sh
+uv run ingestor refresh-gold
+uv run ingestor refresh-gold --concurrently
 ```
 
 ## Configuración (entorno)
@@ -146,25 +169,33 @@ Por cada snapshot, todo el trabajo de plata va en **una transacción**; el regis
 
 ## Esquema `gold`
 
-`gold` no se carga: son seis **vistas de solo lectura** que la migración crea
-sobre `silver`. Su SQL vive en `ingestor/src/ingestor/gold.py` (`view_ddl()`),
-única fuente que consumen la migración y los tests; los agregados y porcentajes
-solo existen aquí (la web no los recalcula).
+`gold` no se carga: son **relaciones de solo lectura** que la migración crea
+sobre `silver`. Su DDL vive en `ingestor/src/ingestor/gold.py` (`matview_ddl()`,
+`index_ddl()` y `view_ddl()`), única fuente que consumen la migración y los
+tests; los agregados y porcentajes solo existen aquí (la web no los recalcula).
 
-| Vista | Grano |
-| --- | --- |
-| `gold.election_summary` | una fila por elección con censo, nulos, blancos, candidaturas, válidos, votantes y participación |
-| `gold.result_by_area` | una fila por (elección, nivel, área, partido); `level` = `national`, `community`, `province` o `municipality` |
-| `gold.result_by_station` | una fila por (elección, mesa, partido) con la identidad y geografía de la mesa |
-| `gold.station_turnout` | una fila por (elección, mesa) con censo, nulos, blancos, válidos, votantes y participación |
-| `gold.poll_flat` | una fila por (sondeo, partido): encuestadora, fechas, muestra, `pct`, escaños y snapshot (`source`/`revision_id`) |
-| `gold.poll_trend` | la misma fila con `poll_date` = fin (o inicio) del trabajo de campo, ordenada para la tendencia |
+- Las cuatro de resultados son **vistas materializadas** con índices: son
+  instantáneas y se refrescan con `ingestor refresh-gold [--concurrently]` y al
+  final de `ingest` cuando algún fichero quedó `processed`.
+- Las dos de sondeos son **vistas** normales: reflejan `silver` al instante y
+  no se refrescan (además `poll_trend` conserva su `ORDER BY` contractual).
 
-- Se aplican con `uv run alembic upgrade head` (la migración crea el esquema y
-  las seis vistas). `alembic check` las excluye del autogenerate con
-  `include_object` en `alembic/env.py`: no se crean como tablas ni se vigilan
-  como tales.
-- Un cambio de columnas o de SQL es **otra migración** con `view_ddl()`
-  actualizado; nunca se edita la vista a mano ni se duplica su SQL.
-- Contrato pantalla ↔ vista y semántica de porcentajes:
+| Relación | Tipo | Grano |
+| --- | --- | --- |
+| `gold.election_summary` | materializada | una fila por elección con censo, nulos, blancos, candidaturas, válidos, votantes y participación |
+| `gold.result_by_area` | materializada | una fila por (elección, nivel, área, partido); `level` = `national`, `community`, `province` o `municipality` |
+| `gold.result_by_station` | materializada | una fila por (elección, mesa, partido) con la identidad y geografía de la mesa |
+| `gold.station_turnout` | materializada | una fila por (elección, mesa) con censo, nulos, blancos, válidos, votantes y participación |
+| `gold.poll_flat` | vista | una fila por (sondeo, partido): encuestadora, fechas, muestra, `pct`, escaños y snapshot (`source`/`revision_id`) |
+| `gold.poll_trend` | vista | la misma fila con `poll_date` = fin (o inicio) del trabajo de campo, ordenada para la tendencia |
+
+- Se aplican con `uv run alembic upgrade head` (la migración crea el esquema,
+  las cuatro vistas materializadas —pobladas y con sus siete índices— y las dos
+  vistas). `alembic check` las excluye del autogenerate con `include_object` en
+  `alembic/env.py` (`info["view"]` y `info["matview"]`): no se crean como tablas
+  ni se vigilan como tales.
+- Un cambio de columnas o de SQL es **otra migración** con `matview_ddl()`,
+  `index_ddl()` o `view_ddl()` actualizados; nunca se edita una relación a mano
+  ni se duplica su SQL.
+- Contrato pantalla ↔ vista, índices y refresco:
   [`../db/gold.md`](../db/gold.md).

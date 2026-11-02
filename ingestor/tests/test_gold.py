@@ -1,20 +1,25 @@
-"""Gold layer: read-only views, contract documents and curated party colours.
+"""Gold layer: materialized views, views, contract documents and party colours.
 
 Metadata and document checks run without a database. The behaviour checks use
-the throwaway test schemas: ``conftest`` creates the six views there with the
-same ``gold.view_ddl()`` statements the migration applies, so the tests
-exercise the deployed SQL.
+the throwaway test schemas: ``conftest`` creates the four materialized views,
+their indexes and the two views there with the same ``gold.matview_ddl()``,
+``gold.index_ddl()`` and ``gold.view_ddl()`` statements the migration applies,
+so the tests exercise the deployed SQL.
 """
 
 from __future__ import annotations
 
 import re
+import shutil
+import subprocess
+import sys
 import xml.etree.ElementTree as ET
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
 import pytest
+from conftest import TEST_SCHEMAS
 from sqlalchemy import (
     BigInteger,
     Date,
@@ -29,7 +34,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.exc import OperationalError
 
+from ingestor import cli
 from ingestor.errors import IngestError
+from ingestor.gold import MATVIEWS, refresh_gold
 from ingestor.models import (
     AutonomousCommunity,
     Base,
@@ -49,6 +56,15 @@ from ingestor.parties import PartyResolver, load_catalog
 from ingestor.settings import settings
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# The four results relations are materialized views (feature 19); the two polls
+# relations stay plain views (a matview would not keep poll_trend's ORDER BY).
+GOLD_MATVIEWS = (
+    "election_summary",
+    "result_by_area",
+    "result_by_station",
+    "station_turnout",
+)
 
 # Expected columns of every view, in order (the contract of the web frontend).
 GOLD_VIEWS: dict[str, list[str]] = {
@@ -237,15 +253,20 @@ def _table(name: str):
 # --- Metadata: the gold views are declared in models.py (R1) ----------------
 
 
-def test_models_declare_gold_views():  # R1
+def test_models_declare_gold_views():  # R16
     for name, columns in GOLD_VIEWS.items():
         table = _table(name)
         assert table.schema == "gold"
-        assert table.info.get("view") is True
         assert [column.name for column in table.columns] == columns
         assert not list(table.primary_key.columns), f"{name} has a primary key"
         assert not any(column.foreign_keys for column in table.columns)
         assert not table.indexes
+    for name in GOLD_MATVIEWS:
+        assert _table(name).info.get("matview") is True, name
+        assert not _table(name).info.get("view"), name
+    for name in ("poll_flat", "poll_trend"):
+        assert _table(name).info.get("view") is True, name
+        assert not _table(name).info.get("matview"), name
 
 
 def test_gold_view_types():  # R1
@@ -290,22 +311,92 @@ def test_gold_view_types():  # R1
 # --- The view SQL lives only in gold.py (R2) --------------------------------
 
 
-def test_view_ddl_is_single_source():  # R2
-    from ingestor.gold import view_ddl
+def test_gold_ddl_functions():  # R3, R4, R5, R6
+    from ingestor.gold import MATVIEWS, VIEWS, index_ddl, matview_ddl, view_ddl
 
-    ddl = view_ddl()
-    assert list(ddl) == list(GOLD_VIEWS)
-    for name, statement in ddl.items():
+    assert MATVIEWS == (
+        "election_summary",
+        "result_by_area",
+        "result_by_station",
+        "station_turnout",
+    )
+    assert VIEWS == ("poll_flat", "poll_trend")
+
+    views = view_ddl()
+    assert list(views) == list(VIEWS)
+    for name, statement in views.items():
         assert statement.startswith(f"CREATE VIEW gold.{name} AS"), name
+        assert "CREATE MATERIALIZED VIEW" not in statement
 
-    custom = view_ddl(gold_schema="gold_test", silver_schema="silver_test")
-    assert list(custom) == list(ddl)
-    for name, statement in custom.items():
+    matviews = matview_ddl()
+    assert list(matviews) == list(MATVIEWS)
+    for name, statement in matviews.items():
+        assert statement.startswith(f"CREATE MATERIALIZED VIEW gold.{name} AS"), name
+
+    indexes = index_ddl()
+    assert list(indexes) == [
+        "uq_gold_election_summary_election_id",
+        "uq_gold_result_by_area_grain",
+        "ix_gold_result_by_area_province",
+        "uq_gold_result_by_station_grain",
+        "ix_gold_result_by_station_municipality",
+        "uq_gold_station_turnout_grain",
+        "ix_gold_station_turnout_municipality",
+    ]
+    for name, statement in indexes.items():
+        prefix = "CREATE UNIQUE INDEX" if name.startswith("uq_") else "CREATE INDEX"
+        assert statement.startswith(f"{prefix} {name}"), name
+        assert "ON gold." in statement, name
+    # REFRESH MATERIALIZED VIEW CONCURRENTLY needs one unique index per matview.
+    for name in MATVIEWS:
+        assert any(
+            statement.startswith("CREATE UNIQUE INDEX")
+            and f"ON gold.{name} " in statement
+            for statement in indexes.values()
+        ), name
+
+    custom_views = view_ddl(gold_schema="gold_test", silver_schema="silver_test")
+    for name, statement in custom_views.items():
         assert statement.startswith(f"CREATE VIEW gold_test.{name} AS"), name
         assert "silver_test." in statement
         assert " silver." not in statement
         assert "{gold}" not in statement
         assert "{silver}" not in statement
+
+    custom_matviews = matview_ddl(gold_schema="gold_test", silver_schema="silver_test")
+    for name, statement in custom_matviews.items():
+        assert statement.startswith(f"CREATE MATERIALIZED VIEW gold_test.{name} AS"), (
+            name
+        )
+        assert "silver_test." in statement
+        assert " silver." not in statement
+        assert "{gold}" not in statement
+        assert "{silver}" not in statement
+
+    custom_indexes = index_ddl(gold_schema="gold_test")
+    for name, statement in custom_indexes.items():
+        assert "ON gold_test." in statement, name
+        assert "{gold}" not in statement
+
+
+def test_result_by_area_sql_has_no_nullable_join():  # R1
+    from ingestor.gold import matview_ddl
+
+    sql = matview_ddl()["result_by_area"]
+    assert "IS NOT DISTINCT FROM" not in sql
+    assert "area_blank" not in sql
+    # Blanks are facts in the same CTE as the votes: four levels of votes plus
+    # four levels of blanks, joined by UNION ALL.
+    facts = sql.split("area_totals")[0]
+    assert "blank_votes" in facts
+    assert sql.count("UNION ALL") == 7
+
+
+def test_poll_trend_keeps_order_by():  # R7
+    from ingestor.gold import view_ddl
+
+    sql = view_ddl()["poll_trend"]
+    assert sql.rstrip().endswith("ORDER BY poll_date, p.id, pt.slug")
 
 
 def test_migration_executes_view_ddl():  # R2, R3
@@ -317,6 +408,42 @@ def test_migration_executes_view_ddl():  # R2, R3
     assert "view_ddl" in source
     assert "CREATE SCHEMA IF NOT EXISTS gold" in source
     assert "CREATE VIEW" not in source
+
+
+def test_migration_executes_matview_ddl():  # R3, R4, R5, R25
+    migrations = sorted(
+        (REPO_ROOT / "ingestor" / "alembic" / "versions").glob(
+            "*_gold_materialized_views.py"
+        )
+    )
+    assert len(migrations) == 1
+    source = migrations[0].read_text(encoding="utf-8")
+    assert "matview_ddl" in source
+    assert "index_ddl" in source
+    assert "MATVIEWS" in source
+    assert "DROP VIEW IF EXISTS gold." in source
+    assert "DROP MATERIALIZED VIEW IF EXISTS gold." in source
+    assert "CREATE MATERIALIZED VIEW" not in source
+    assert "votoscope_web" in source
+
+
+def test_env_skips_views_and_matviews():  # R17
+    source = (REPO_ROOT / "ingestor" / "alembic" / "env.py").read_text(encoding="utf-8")
+    assert 'info.get("view")' in source
+    assert 'info.get("matview")' in source
+
+
+def test_alembic_check_has_no_drift():  # R17
+    engine = _real_engine()
+    engine.dispose()
+    result = subprocess.run(
+        [sys.executable, "-m", "alembic", "check"],
+        cwd=REPO_ROOT / "ingestor",
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
 
 
 # --- No aggregates land in silver (R12) -------------------------------------
@@ -331,7 +458,7 @@ def test_silver_metadata_has_no_new_aggregates():  # R12
     assert actual == SILVER_TABLES
 
 
-# --- Behaviour against the throwaway schemas (gold.view_ddl() SQL) ----------
+# --- Behaviour against the throwaway schemas (gold DDL) ---------------------
 
 E1 = date(2023, 7, 23)
 E2 = date(2019, 11, 10)
@@ -457,8 +584,205 @@ def _seed(db) -> dict[str, int]:
 
 def _rows(db, view: str, *where) -> list[dict]:
     table = _table(view)
+    if table.info.get("matview"):
+        # Materialized views are snapshots: refresh before reading them.
+        refresh_gold(db, gold_schema=TEST_SCHEMAS["gold"])
     with db() as session:
         return list(session.execute(select(table).where(*where)).mappings())
+
+
+def test_test_schema_has_gold_matviews(polls_engine):  # R21, R22
+    schema = TEST_SCHEMAS["gold"]
+    assert schema != "gold"
+    inspector = inspect(polls_engine)
+    with polls_engine.connect() as connection:
+        kinds = dict(
+            connection.execute(
+                text(
+                    "SELECT c.relname, c.relkind FROM pg_class c "
+                    "JOIN pg_namespace n ON n.oid = c.relnamespace "
+                    "WHERE n.nspname = :schema"
+                ),
+                {"schema": schema},
+            ).all()
+        )
+
+    for name in GOLD_MATVIEWS:
+        assert kinds[name] == "m", name
+        columns = [
+            column["name"] for column in inspector.get_columns(name, schema=schema)
+        ]
+        assert columns == GOLD_VIEWS[name], name
+    for name in ("poll_flat", "poll_trend"):
+        assert kinds[name] == "v", name
+
+    indexes = {
+        name: {index["name"] for index in inspector.get_indexes(name, schema=schema)}
+        for name in GOLD_MATVIEWS
+    }
+    assert indexes == {
+        "election_summary": {"uq_gold_election_summary_election_id"},
+        "result_by_area": {
+            "uq_gold_result_by_area_grain",
+            "ix_gold_result_by_area_province",
+        },
+        "result_by_station": {
+            "uq_gold_result_by_station_grain",
+            "ix_gold_result_by_station_municipality",
+        },
+        "station_turnout": {
+            "uq_gold_station_turnout_grain",
+            "ix_gold_station_turnout_municipality",
+        },
+    }
+
+
+def _matview_rows(db, name: str, *where) -> list[dict]:
+    """Read a matview as it is: no implicit refresh (that is what is tested)."""
+    table = _table(name)
+    with db() as session:
+        return list(session.execute(select(table).where(*where)).mappings())
+
+
+def _pp_national(db, election_id: int) -> dict:
+    table = _table("result_by_area")
+    rows = _matview_rows(
+        db,
+        "result_by_area",
+        table.c.election_id == election_id,
+        table.c.level == "national",
+        table.c.party_slug == "pp",
+    )
+    assert len(rows) == 1
+    return rows[0]
+
+
+def _add_pp_vote(db, ids: dict[str, int], votes: int) -> None:
+    """Add votes for PP in the Olula station (which has no votes in ``_seed``)."""
+    with db() as session:
+        candidacy = session.scalar(
+            select(PartyElection).where(
+                PartyElection.election_id == ids["election"],
+                PartyElection.party_id == ids["pp"],
+            )
+        )
+        session.add(
+            Vote(
+                polling_station_id=ids["station_b1"],
+                party_election_id=candidacy.id,
+                votes=votes,
+            )
+        )
+        session.commit()
+
+
+def test_refresh_gold_updates_matviews(db):  # R10, R11, R12, R23
+    ids = _seed(db)
+    refresh_gold(db, gold_schema=TEST_SCHEMAS["gold"])
+    assert _pp_national(db, ids["election"])["votes"] == 90
+
+    _add_pp_vote(db, ids, 7)
+    # A matview is a snapshot: the new vote is invisible until refreshed.
+    assert _pp_national(db, ids["election"])["votes"] == 90
+
+    refresh_gold(db, gold_schema=TEST_SCHEMAS["gold"])
+    pp = _pp_national(db, ids["election"])
+    assert pp["votes"] == 97
+    # 97 / (157 candidature votes + 7 blanks) = 59.15
+    assert pp["pct"] == Decimal("59.15")
+
+
+def test_refresh_gold_is_idempotent(db):  # R12, R23
+    _seed(db)
+    refresh_gold(db, gold_schema=TEST_SCHEMAS["gold"])
+    first = {name: _matview_rows(db, name) for name in GOLD_MATVIEWS}
+    assert first["result_by_area"]
+
+    refresh_gold(db, gold_schema=TEST_SCHEMAS["gold"])
+    assert {name: _matview_rows(db, name) for name in GOLD_MATVIEWS} == first
+
+
+def _station_turnout(db, election_id: int, station_id: int) -> dict:
+    table = _table("station_turnout")
+    rows = _matview_rows(
+        db,
+        "station_turnout",
+        table.c.election_id == election_id,
+        table.c.polling_station_id == station_id,
+    )
+    assert len(rows) == 1
+    return rows[0]
+
+
+def test_refresh_gold_concurrently(db):  # R13, R14, R24
+    ids = _seed(db)
+    refresh_gold(db, gold_schema=TEST_SCHEMAS["gold"])
+    assert _pp_national(db, ids["election"])["votes"] == 90
+    assert (
+        _station_turnout(db, ids["election"], ids["station_b1"])["candidature_votes"]
+        == 0
+    )
+
+    _add_pp_vote(db, ids, 7)
+    refresh_gold(db, gold_schema=TEST_SCHEMAS["gold"], concurrently=True)
+
+    # Two different matviews see the new facts after the concurrent refresh.
+    assert _pp_national(db, ids["election"])["votes"] == 97
+    turnout = _station_turnout(db, ids["election"], ids["station_b1"])
+    assert turnout["candidature_votes"] == 7
+    assert turnout["valid_votes"] == 7
+    assert turnout["voters"] == 7
+
+
+class _RecordingConnection:
+    """Fake connection that records the SQL strings executed on it."""
+
+    def __init__(self) -> None:
+        self.statements: list[str] = []
+
+    def execute(self, statement) -> None:
+        self.statements.append(str(statement))
+
+
+class _RecordingSession:
+    """Fake session: records the connection options and the commits."""
+
+    def __init__(self) -> None:
+        self.connection_ = _RecordingConnection()
+        self.execution_options: dict | None = None
+        self.commits = 0
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        return False
+
+    def connection(self, execution_options=None):
+        self.execution_options = execution_options
+        return self.connection_
+
+    def commit(self) -> None:
+        self.commits += 1
+
+
+def test_refresh_gold_concurrently_emits_concurrently():  # R13
+    """``concurrently=True`` really emits REFRESH ... CONCURRENTLY, not a plain one."""
+    session = _RecordingSession()
+    refresh_gold(lambda: session, concurrently=True)
+
+    statements = session.connection_.statements
+    for name in MATVIEWS:
+        assert f"REFRESH MATERIALIZED VIEW CONCURRENTLY gold.{name}" in statements, name
+        assert f"ANALYZE gold.{name}" in statements, name
+    # No plain refresh and no commit: CONCURRENTLY is forbidden inside a
+    # transaction block, so the connection must be autocommit.
+    assert not any(
+        statement.startswith("REFRESH MATERIALIZED VIEW gold.")
+        for statement in statements
+    )
+    assert session.execution_options == {"isolation_level": "AUTOCOMMIT"}
+    assert session.commits == 0
 
 
 def test_election_summary_aggregates(db):  # R5, R11
@@ -570,9 +894,9 @@ def test_result_by_area_pct_over_valid_votes(db):  # R6, R11
 
     # A row only exists for a party with votes, so the denominator cannot be 0
     # here: the NULL branch is guarded in the SQL with nullif.
-    from ingestor.gold import view_ddl
+    from ingestor.gold import matview_ddl
 
-    assert "nullif(" in view_ddl()["result_by_area"]
+    assert "nullif(" in matview_ddl()["result_by_area"]
 
 
 def test_result_by_station_identity_and_pct(db):  # R7
@@ -833,34 +1157,125 @@ def _real_engine():
     return engine
 
 
-def test_live_gold_views_match_models():  # R1, R3
+def _type_matches(reflected, declared) -> bool:
+    """Whether a reflected column type matches the one declared in models.py."""
+    if isinstance(declared, BigInteger):
+        return isinstance(reflected, BigInteger)
+    if isinstance(declared, Integer):
+        return isinstance(reflected, Integer) and not isinstance(reflected, BigInteger)
+    if isinstance(declared, Text):
+        return isinstance(reflected, Text)
+    if isinstance(declared, String):
+        return isinstance(reflected, String) and reflected.length == declared.length
+    if isinstance(declared, Numeric):
+        if not isinstance(reflected, Numeric):
+            return False
+        return (reflected.precision, reflected.scale) == (
+            declared.precision,
+            declared.scale,
+        )
+    return isinstance(reflected, type(declared))
+
+
+def test_live_gold_relations_match_models():  # R3, R6, R21, R22
     engine = _real_engine()
     try:
         inspector = inspect(engine)
         if "gold" not in inspector.get_schema_names():
             pytest.skip("gold schema missing (uv run alembic upgrade head)")
-        existing = set(inspector.get_view_names(schema="gold"))
-        missing = sorted(set(GOLD_VIEWS) - existing)
+        relations = set(inspector.get_view_names(schema="gold")) | set(
+            inspector.get_materialized_view_names(schema="gold")
+        )
+        missing = sorted(set(GOLD_VIEWS) - relations)
         if missing:
-            pytest.skip(f"gold views missing: {missing} (uv run alembic upgrade head)")
-        for name, columns in GOLD_VIEWS.items():
-            reflected = [
-                column["name"] for column in inspector.get_columns(name, schema="gold")
-            ]
-            assert reflected == columns, name
+            pytest.skip(
+                f"gold relations missing: {missing} (uv run alembic upgrade head)"
+            )
 
-        summary = {
-            column["name"]: column["type"]
-            for column in inspector.get_columns("election_summary", schema="gold")
+        # The four results relations are materialized, the two polls ones views.
+        assert set(inspector.get_materialized_view_names(schema="gold")) == set(
+            GOLD_MATVIEWS
+        )
+        assert set(inspector.get_view_names(schema="gold")) == {
+            "poll_flat",
+            "poll_trend",
         }
-        assert str(summary["census"]) == "BIGINT"
-        assert isinstance(summary["turnout_pct"], Numeric)
-        flat = {
-            column["name"]: column["type"]
-            for column in inspector.get_columns("poll_flat", schema="gold")
+
+        for name, columns in GOLD_VIEWS.items():
+            reflected = inspector.get_columns(name, schema="gold")
+            assert [column["name"] for column in reflected] == columns, name
+            declared = _table(name)
+            for column in reflected:
+                expected = declared.c[column["name"]].type
+                assert _type_matches(column["type"], expected), (
+                    name,
+                    column["name"],
+                    column["type"],
+                    expected,
+                )
+    finally:
+        engine.dispose()
+
+
+def test_live_gold_matview_indexes():  # R4, R5
+    engine = _real_engine()
+    try:
+        inspector = inspect(engine)
+        if "gold" not in inspector.get_schema_names():
+            pytest.skip("gold schema missing (uv run alembic upgrade head)")
+        if not inspector.get_materialized_view_names(schema="gold"):
+            pytest.skip("gold matviews missing (uv run alembic upgrade head)")
+
+        actual = {
+            index["name"]: index["column_names"]
+            for name in GOLD_MATVIEWS
+            for index in inspector.get_indexes(name, schema="gold")
         }
-        assert str(flat["revision_id"]) == "BIGINT"
-        assert isinstance(flat["pct"], Numeric)
+        # Contract filters: election + level + area, and election + station /
+        # municipality; the unique index is what CONCURRENTLY requires.
+        assert actual == {
+            "uq_gold_election_summary_election_id": ["election_id"],
+            "uq_gold_result_by_area_grain": [
+                "election_id",
+                "level",
+                "community_ine_code",
+                "province_ine_code",
+                "municipality_id",
+                "party_id",
+            ],
+            "ix_gold_result_by_area_province": [
+                "election_id",
+                "level",
+                "province_ine_code",
+            ],
+            "uq_gold_result_by_station_grain": [
+                "election_id",
+                "polling_station_id",
+                "party_id",
+            ],
+            "ix_gold_result_by_station_municipality": [
+                "election_id",
+                "municipality_ine_code",
+            ],
+            "uq_gold_station_turnout_grain": ["election_id", "polling_station_id"],
+            "ix_gold_station_turnout_municipality": [
+                "election_id",
+                "municipality_ine_code",
+            ],
+        }
+
+        with engine.connect() as connection:
+            unique = set(
+                connection.execute(
+                    text(
+                        "SELECT c.relname FROM pg_index i "
+                        "JOIN pg_class c ON c.oid = i.indrelid "
+                        "JOIN pg_namespace n ON n.oid = c.relnamespace "
+                        "WHERE n.nspname = 'gold' AND i.indisunique"
+                    )
+                ).scalars()
+            )
+        assert set(GOLD_MATVIEWS) <= unique
     finally:
         engine.dispose()
 
@@ -985,6 +1400,407 @@ def test_live_poll_brands_colored():  # R22
         engine.dispose()
 
 
+# --- CLI: refresh-gold and the refresh at the end of ingest (R8, R9, R10,
+# R11, R13, R14, R15) -------------------------------------------------------
+
+
+def test_cli_refresh_gold(monkeypatch):  # R10, R11, R13, R14
+    calls: list[bool] = []
+    monkeypatch.setattr(cli, "configure_logging", lambda: None)
+    monkeypatch.setattr(
+        cli,
+        "refresh_gold",
+        lambda factory, concurrently=False: calls.append(concurrently),
+    )
+
+    assert cli.main(["refresh-gold"]) == 0
+    assert cli.main(["refresh-gold", "--concurrently"]) == 0
+    assert calls == [False, True]
+
+
+RELOAD_FIXTURES = Path(__file__).resolve().parent / "fixtures" / "party_reload"
+POLL_FIXTURES = Path(__file__).resolve().parent / "fixtures" / "wikipedia_polls"
+
+
+def _use_cli(db, tmp_path, monkeypatch) -> None:
+    """Point the CLI at the test factory and a temporary bronze root."""
+    monkeypatch.setattr(cli, "SessionLocal", db)
+    monkeypatch.setattr(cli, "configure_logging", lambda: None)
+    monkeypatch.setattr(cli.settings, "raw_dir", tmp_path)
+
+
+def _copy_elections(tmp_path: Path, *codes: str) -> Path:
+    """Copy ``fixtures/party_reload/<code>/`` dirs to the bronze root; return it."""
+    root = tmp_path / "congreso"
+    for code in codes:
+        shutil.copytree(RELOAD_FIXTURES / code, root / code)
+    return root
+
+
+def _seed_geography(db) -> None:
+    """CCAA 01 + province 04, the geography the election fixtures use."""
+    with db() as session:
+        session.add(AutonomousCommunity(ine_code="01", name="Andalucía"))
+        session.flush()
+        session.add(
+            Province(ine_code="04", autonomous_community_ine_code="01", name="Almería")
+        )
+        session.commit()
+
+
+def test_ingest_refreshes_gold_once(db, tmp_path, monkeypatch):  # R8
+    _seed_geography(db)
+    _use_cli(db, tmp_path, monkeypatch)
+    calls: list[object] = []
+    monkeypatch.setattr(cli, "refresh_gold", lambda factory: calls.append(factory))
+    # Two elections: a refresh per election would be two calls.
+    root = _copy_elections(tmp_path, "02200806", "02201905")
+
+    assert cli.main(["ingest", str(root)]) == 0
+    assert len(calls) == 1
+    # Both elections really went through (two processed elections, one refresh).
+    with db() as session:
+        assert len(list(session.scalars(select(Election)))) == 2
+
+
+def test_ingest_skipped_does_not_refresh(db, tmp_path, monkeypatch):  # R9
+    _seed_geography(db)
+    _use_cli(db, tmp_path, monkeypatch)
+    calls: list[object] = []
+    monkeypatch.setattr(cli, "refresh_gold", lambda factory: calls.append(factory))
+    root = _copy_elections(tmp_path, "02200806", "02201905")
+
+    assert cli.main(["ingest", str(root)]) == 0
+    assert len(calls) == 1
+    # Every file is processed now: the second run skips and does not refresh.
+    assert cli.main(["ingest", str(root)]) == 0
+    assert len(calls) == 1
+
+
+def test_ingest_polls_does_not_refresh(db, tmp_path, monkeypatch):  # R15
+    _use_cli(db, tmp_path, monkeypatch)
+    calls: list[object] = []
+    monkeypatch.setattr(cli, "refresh_gold", lambda *args, **kwargs: calls.append(args))
+    snapshot = tmp_path / "polls" / "wikipedia-en" / "2026-general" / "200.wikitext"
+    snapshot.parent.mkdir(parents=True)
+    snapshot.write_text(
+        (POLL_FIXTURES / "load_small.wikitext").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+    assert cli.main(["ingest-polls", str(snapshot)]) == 0
+    assert calls == []
+
+
+# Contract queries of the results screens (docs/db/gold.md) with their filters.
+CONTRACT_QUERIES: dict[str, str] = {
+    "portada": (
+        "SELECT * FROM gold.election_summary ORDER BY election_date DESC LIMIT 1"
+    ),
+    "nacional": (
+        "SELECT * FROM gold.result_by_area "
+        "WHERE election_id = :election AND level = 'national'"
+    ),
+    "ccaa": (
+        "SELECT * FROM gold.result_by_area "
+        "WHERE election_id = :election AND level = 'community'"
+    ),
+    "provincia": (
+        "SELECT * FROM gold.result_by_area "
+        "WHERE election_id = :election AND level = 'province' "
+        "AND community_ine_code = :community"
+    ),
+    "municipio": (
+        "SELECT * FROM gold.result_by_area "
+        "WHERE election_id = :election AND level = 'municipality' "
+        "AND province_ine_code = :province"
+    ),
+    "mesa_turnout": (
+        "SELECT * FROM gold.station_turnout "
+        "WHERE election_id = :election AND polling_station_id = :station"
+    ),
+    "mesa_resultados": (
+        "SELECT * FROM gold.result_by_station "
+        "WHERE election_id = :election AND polling_station_id = :station"
+    ),
+    "mesas_turnout": (
+        "SELECT * FROM gold.station_turnout "
+        "WHERE election_id = :election AND municipality_ine_code = :municipality"
+    ),
+    "mesas_resultados": (
+        "SELECT * FROM gold.result_by_station "
+        "WHERE election_id = :election AND municipality_ine_code = :municipality"
+    ),
+}
+
+
+def _explain_ms(connection, sql: str, params: dict) -> float:
+    plan = connection.execute(
+        text("EXPLAIN (ANALYZE, FORMAT JSON) " + sql), params
+    ).scalar()
+    return float(plan[0]["Execution Time"])
+
+
+def test_results_contract_under_50ms():  # R27
+    engine = _real_engine()
+    try:
+        inspector = inspect(engine)
+        if "gold" not in inspector.get_schema_names():
+            pytest.skip("gold schema missing (uv run alembic upgrade head)")
+        if not inspector.get_materialized_view_names(schema="gold"):
+            pytest.skip("gold matviews missing (uv run alembic upgrade head)")
+        with engine.connect() as connection:
+            params: dict[str, object] = {}
+            params["election"] = connection.execute(
+                text("SELECT id FROM silver.election ORDER BY date DESC LIMIT 1")
+            ).scalar()
+            if params["election"] is None:
+                pytest.skip(
+                    "no elections loaded (uv run ingestor ingest ../data/raw/congreso)"
+                )
+            params["community"] = connection.execute(
+                text(
+                    "SELECT community_ine_code FROM gold.result_by_area "
+                    "WHERE election_id = :election AND level = 'community' LIMIT 1"
+                ),
+                {"election": params["election"]},
+            ).scalar()
+            params["province"] = connection.execute(
+                text(
+                    "SELECT province_ine_code FROM gold.result_by_area "
+                    "WHERE election_id = :election AND level = 'municipality' LIMIT 1"
+                ),
+                {"election": params["election"]},
+            ).scalar()
+            params["municipality"] = connection.execute(
+                text(
+                    "SELECT municipality_ine_code FROM gold.station_turnout "
+                    "WHERE election_id = :election LIMIT 1"
+                ),
+                {"election": params["election"]},
+            ).scalar()
+            params["station"] = connection.execute(
+                text(
+                    "SELECT polling_station_id FROM gold.station_turnout "
+                    "WHERE election_id = :election LIMIT 1"
+                ),
+                {"election": params["election"]},
+            ).scalar()
+            if None in params.values():
+                pytest.skip("the gold matviews have no results to measure")
+
+            timings: dict[str, float] = {}
+            for name, sql in CONTRACT_QUERIES.items():
+                _explain_ms(connection, sql, params)  # warm-up
+                timings[name] = min(
+                    _explain_ms(connection, sql, params) for _ in range(3)
+                )
+
+        slow = {name: ms for name, ms in timings.items() if ms >= 50}
+        assert not slow, timings
+    finally:
+        engine.dispose()
+
+
+# --- Regression: the new SQL returns what the old one returned (R2) ---------
+
+# The pre-feature definition of result_by_area, frozen here as the oracle: the
+# area_blank CTE joined with IS NOT DISTINCT FROM.
+LEGACY_RESULT_BY_AREA = """WITH area_votes AS (
+    SELECT pe.election_id, 'national'::text AS level,
+           NULL::text AS community_ine_code, NULL::text AS community_name,
+           NULL::text AS province_ine_code, NULL::text AS province_name,
+           NULL::integer AS municipality_id, NULL::text AS municipality_ine_code,
+           NULL::text AS municipality_name,
+           pe.party_id, sum(v.votes) AS votes
+    FROM silver.vote v
+    JOIN silver.party_election pe ON pe.id = v.party_election_id
+    GROUP BY 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+    UNION ALL
+    SELECT pe.election_id, 'community',
+           p.autonomous_community_ine_code, c.name, NULL::text, NULL::text,
+           NULL::integer, NULL::text, NULL::text,
+           pe.party_id, sum(v.votes)
+    FROM silver.vote v
+    JOIN silver.party_election pe ON pe.id = v.party_election_id
+    JOIN silver.polling_station s ON s.id = v.polling_station_id
+    JOIN silver.municipality m ON m.id = s.municipality_id
+    JOIN silver.province p ON p.ine_code = m.province_ine_code
+    JOIN silver.autonomous_community c ON c.ine_code = p.autonomous_community_ine_code
+    GROUP BY 1, 3, 4, 10
+    UNION ALL
+    SELECT pe.election_id, 'province',
+           p.autonomous_community_ine_code, c.name, p.ine_code, p.name,
+           NULL::integer, NULL::text, NULL::text,
+           pe.party_id, sum(v.votes)
+    FROM silver.vote v
+    JOIN silver.party_election pe ON pe.id = v.party_election_id
+    JOIN silver.polling_station s ON s.id = v.polling_station_id
+    JOIN silver.municipality m ON m.id = s.municipality_id
+    JOIN silver.province p ON p.ine_code = m.province_ine_code
+    JOIN silver.autonomous_community c ON c.ine_code = p.autonomous_community_ine_code
+    GROUP BY 1, 3, 4, 5, 6, 10
+    UNION ALL
+    SELECT pe.election_id, 'municipality',
+           p.autonomous_community_ine_code, c.name, p.ine_code, p.name,
+           m.id, m.ine_code, m.name,
+           pe.party_id, sum(v.votes)
+    FROM silver.vote v
+    JOIN silver.party_election pe ON pe.id = v.party_election_id
+    JOIN silver.polling_station s ON s.id = v.polling_station_id
+    JOIN silver.municipality m ON m.id = s.municipality_id
+    JOIN silver.province p ON p.ine_code = m.province_ine_code
+    JOIN silver.autonomous_community c ON c.ine_code = p.autonomous_community_ine_code
+    GROUP BY 1, 3, 4, 5, 6, 7, 8, 9, 10
+),
+area_blank AS (
+    SELECT t.election_id, 'national'::text AS level,
+           NULL::text AS community_ine_code, NULL::text AS province_ine_code,
+           NULL::integer AS municipality_id,
+           sum(t.blank_votes) AS blank_votes
+    FROM silver.turnout t
+    GROUP BY 1, 2, 3, 4, 5
+    UNION ALL
+    SELECT t.election_id, 'community', p.autonomous_community_ine_code, NULL::text,
+           NULL::integer, sum(t.blank_votes)
+    FROM silver.turnout t
+    JOIN silver.polling_station s ON s.id = t.polling_station_id
+    JOIN silver.municipality m ON m.id = s.municipality_id
+    JOIN silver.province p ON p.ine_code = m.province_ine_code
+    GROUP BY 1, 2, 3, 4, 5
+    UNION ALL
+    SELECT t.election_id, 'province', p.autonomous_community_ine_code, p.ine_code,
+           NULL::integer, sum(t.blank_votes)
+    FROM silver.turnout t
+    JOIN silver.polling_station s ON s.id = t.polling_station_id
+    JOIN silver.municipality m ON m.id = s.municipality_id
+    JOIN silver.province p ON p.ine_code = m.province_ine_code
+    GROUP BY 1, 2, 3, 4, 5
+    UNION ALL
+    SELECT t.election_id, 'municipality', p.autonomous_community_ine_code, p.ine_code,
+           m.id, sum(t.blank_votes)
+    FROM silver.turnout t
+    JOIN silver.polling_station s ON s.id = t.polling_station_id
+    JOIN silver.municipality m ON m.id = s.municipality_id
+    JOIN silver.province p ON p.ine_code = m.province_ine_code
+    GROUP BY 1, 2, 3, 4, 5
+),
+area_totals AS (
+    SELECT av.*,
+           sum(av.votes) OVER (
+               PARTITION BY av.election_id, av.level, av.community_ine_code,
+                            av.province_ine_code, av.municipality_id
+           ) AS candidature_votes
+    FROM area_votes av
+)
+SELECT at.election_id, at.level,
+       at.community_ine_code, at.community_name,
+       at.province_ine_code, at.province_name,
+       at.municipality_id, at.municipality_ine_code, at.municipality_name,
+       p.id AS party_id, p.slug AS party_slug, p.name AS party_name,
+       p.color AS party_color,
+       at.votes,
+       round(at.votes * 100.0 / nullif(at.candidature_votes + ab.blank_votes, 0), 2) AS pct
+FROM area_totals at
+JOIN area_blank ab
+  ON ab.election_id = at.election_id
+ AND ab.level = at.level
+ AND ab.community_ine_code IS NOT DISTINCT FROM at.community_ine_code
+ AND ab.province_ine_code IS NOT DISTINCT FROM at.province_ine_code
+ AND ab.municipality_id IS NOT DISTINCT FROM at.municipality_id
+JOIN silver.party p ON p.id = at.party_id"""
+
+
+def test_result_by_area_regression_seeded(db):  # R2
+    """Deterministic regression on the seeded fixture (CI, no local data)."""
+    ids = _seed(db)
+    rows = _rows(
+        db, "result_by_area", _table("result_by_area").c.election_id == ids["election"]
+    )
+    actual = {
+        (row["level"], row["party_slug"]): (row["votes"], row["pct"]) for row in rows
+    }
+    # 90 PP and 60 PSOE over 157 valid votes (150 candidatures + 7 blanks).
+    expected = {
+        (level, party): (votes, pct)
+        for level in ("national", "community", "province", "municipality")
+        for party, votes, pct in (
+            ("pp", 90, Decimal("57.32")),
+            ("psoe", 60, Decimal("38.22")),
+        )
+    }
+    assert actual == expected
+
+
+def test_result_by_area_matches_legacy_sql_on_local():  # R2
+    """Row-by-row regression of the latest local election against the old SQL.
+
+    The oracle is the pre-feature definition (nullable ``area_blank`` join). It
+    is run for the latest election only: the full local comparison takes minutes
+    because that join cannot be hashed — the very reason of this feature. The
+    seeded test covers every level deterministically.
+    """
+    engine = _real_engine()
+    try:
+        inspector = inspect(engine)
+        if "gold" not in inspector.get_schema_names():
+            pytest.skip("gold schema missing (uv run alembic upgrade head)")
+        if "result_by_area" not in inspector.get_materialized_view_names(schema="gold"):
+            pytest.skip(
+                "result_by_area is not materialized (uv run alembic upgrade head)"
+            )
+        with engine.connect() as connection:
+            election = connection.execute(
+                text("SELECT id FROM silver.election ORDER BY date DESC LIMIT 1")
+            ).scalar()
+            if election is None:
+                pytest.skip(
+                    "no elections loaded (uv run ingestor ingest ../data/raw/congreso)"
+                )
+
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "CREATE TEMP TABLE legacy_result_by_area ON COMMIT DROP AS "
+                    "SELECT * FROM ("
+                    + LEGACY_RESULT_BY_AREA
+                    + ") legacy WHERE legacy.election_id = :election"
+                ),
+                {"election": election},
+            )
+            rows = connection.execute(
+                text(
+                    "SELECT count(*) FROM gold.result_by_area "
+                    "WHERE election_id = :election"
+                ),
+                {"election": election},
+            ).scalar()
+            legacy_rows = connection.execute(
+                text("SELECT count(*) FROM legacy_result_by_area")
+            ).scalar()
+            only_new = connection.execute(
+                text(
+                    "SELECT count(*) FROM ("
+                    "SELECT * FROM gold.result_by_area WHERE election_id = :election "
+                    "EXCEPT SELECT * FROM legacy_result_by_area) s"
+                ),
+                {"election": election},
+            ).scalar()
+            only_legacy = connection.execute(
+                text(
+                    "SELECT count(*) FROM ("
+                    "SELECT * FROM legacy_result_by_area "
+                    "EXCEPT SELECT * FROM gold.result_by_area "
+                    "WHERE election_id = :election) s"
+                ),
+                {"election": election},
+            ).scalar()
+        assert (only_new, only_legacy) == (0, 0)
+        assert rows == legacy_rows
+    finally:
+        engine.dispose()
+
+
 # --- ERD: the Gold page of docs/db/schema.drawio (R15) ----------------------
 
 DRAWIO = REPO_ROOT / "docs" / "db" / "schema.drawio"
@@ -1016,7 +1832,7 @@ def _descendants(cells: list[ET.Element], cell_id: str) -> list[ET.Element]:
     return out
 
 
-def test_drawio_gold_page():  # R15
+def test_drawio_gold_page():  # R18
     pages = _drawio_pages()
     assert set(pages) == {
         "Bronze",
@@ -1034,6 +1850,24 @@ def test_drawio_gold_page():  # R15
         if "text;" in (cell.get("style") or "")
     ]
     assert any("gold" in title.lower() for title in titles)
+    assert any("materializada" in title.lower() for title in titles)
+
+    note = next(cell for cell in cells if cell.get("id") == "g_matviews_note")
+    note_value = note.get("value") or ""
+    assert "materializada" in note_value.lower()
+    assert "refresh-gold" in note_value
+    for name in GOLD_MATVIEWS:
+        assert name in note_value, name
+    for index in (
+        "uq_gold_election_summary_election_id",
+        "uq_gold_result_by_area_grain",
+        "ix_gold_result_by_area_province",
+        "uq_gold_result_by_station_grain",
+        "ix_gold_result_by_station_municipality",
+        "uq_gold_station_turnout_grain",
+        "ix_gold_station_turnout_municipality",
+    ):
+        assert index in note_value, index
 
     for name, columns in GOLD_VIEWS.items():
         containers = [
@@ -1063,7 +1897,7 @@ def _doc(*parts: str) -> str:
     return REPO_ROOT.joinpath(*parts).read_text(encoding="utf-8")
 
 
-def test_docs_gold_contract():  # R13
+def test_docs_gold_contract():  # R19
     text = _doc("docs", "db", "gold.md")
     for view in GOLD_VIEWS:
         assert f"`{view}`" in text, view
@@ -1090,8 +1924,19 @@ def test_docs_gold_contract():  # R13
         "solo lectura",
         "silver",
         "alembic upgrade head",
+        # Feature 19: which relations are materialized and how they refresh.
+        "materializada",
+        "refresh-gold",
+        "--concurrently",
+        "ingest-polls",
+        "uq_gold_result_by_area_grain",
+        "ix_gold_result_by_station_municipality",
     ):
         assert token in text, token
+    for name in GOLD_MATVIEWS:
+        assert f"| `{name}` | materializada |" in text, name
+    for name in ("poll_flat", "poll_trend"):
+        assert f"| `{name}` | vista |" in text, name
 
 
 def test_docs_environment_topology():  # R14
@@ -1110,7 +1955,7 @@ def test_docs_environment_topology():  # R14
         assert token in text, token
 
 
-def test_docs_data_model_gold():  # R16
+def test_docs_data_model_gold():  # R19
     text = _doc(".agents", "data-model.md")
     assert "una página por esquema y dominio" in text
     assert "(Bronze, Silver, Bronze polls, Silver polls, Gold)" in text
@@ -1121,13 +1966,30 @@ def test_docs_data_model_gold():  # R16
     assert "`silver.party.color`" in v2 or "party.color" in v2
     assert "party_catalog.toml" in v2
     assert "resolver" in v2
+    # Feature 19: matviews with indexes and their refresh.
+    assert "vistas materializadas" in v2.lower()
+    assert "matview_ddl" in v2
+    assert "refresh-gold" in v2
+    for token in (
+        "uq_gold_result_by_area_grain",
+        "ix_gold_result_by_area_province",
+        "uq_gold_result_by_station_grain",
+        "uq_gold_station_turnout_grain",
+        "NULLS NOT DISTINCT",
+    ):
+        assert token in v2, token
 
 
-def test_docs_ingesta_and_agents_gold():  # R17
+def test_docs_ingesta_and_agents_gold():  # R19, R20
     ingesta = _doc("docs", "ingestor", "ingesta.md")
     for token in (
         "## Esquema `gold`",
         "view_ddl",
+        "matview_ddl",
+        "index_ddl",
+        "refresh-gold",
+        "--concurrently",
+        "vistas materializadas",
         "alembic upgrade head",
         "election_summary",
         "result_by_area",
@@ -1141,13 +2003,26 @@ def test_docs_ingesta_and_agents_gold():  # R17
     agents = _doc("ingestor", "AGENTS.md")
     assert "gold.py" in agents
     assert "view_ddl" in agents
+    assert "matview_ddl" in agents
+    assert "index_ddl" in agents
+    assert "refresh_gold" in agents
+    assert "refresh-gold" in agents
     assert "include_object" in agents
     assert "gold.election_summary" in agents
     assert "- Vistas `gold`." not in agents
 
+    status = _doc(".agents", "status.md")
+    assert "bd22327c1d90" in status
+    assert "gold_matviews" in status
+    # The stale claim of the feature-15 bullet must not come back.
+    assert "seis vistas" not in status.lower()
+
     architecture = _doc(".agents", "architecture.md")
     assert "esquema `gold`" in architecture
     assert "docs/db/gold.md" in architecture
+    assert "vistas materializadas" in architecture.lower()
+    assert "refresh-gold" in architecture
+    assert "gold (matviews y vistas)" in architecture
 
     web = _doc("web", "AGENTS.md")
     assert "docs/db/gold.md" in web
