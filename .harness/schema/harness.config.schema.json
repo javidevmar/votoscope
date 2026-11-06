@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/harness/harness.config.schema.json",
+  "title": "Harness project adapter",
+  "type": "object",
+  "required": ["project", "checks"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "harness_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "language": {
+      "type": "string"
+    },
+    "feature_queue": {
+      "type": "boolean"
+    },
+    "paths": {
+      "type": "object",
+      "properties": {
+        "feature_list": {
+          "type": "string"
+        },
+        "specs": {
+          "type": "string"
+        },
+        "progress": {
+          "type": "string"
+        },
+        "agents": {
+          "type": "string"
+        }
+      }
+    },
+    "setup": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "required": ["command"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "command": {
+                "type": "string",
+                "minLength": 1
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "timeout": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        ]
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "command"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "timeout": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "git": {
+      "type": "object",
+      "properties": {
+        "require_user_approval": {
+          "type": "boolean"
+        },
+        "protected_branches": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "commit_style": {
+          "type": "string"
+        }
+      }
+    },
+    "agents": {
+      "type": "object",
+      "properties": {
+        "max_features_in_progress": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "protected_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "sdd": {
+      "type": "object",
+      "properties": {
+        "default": {
+          "type": "boolean"
+        },
+        "require_human_spec_approval": {
+          "type": "boolean"
+        },
+        "require_human_commit_approval": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "./.harness/schema/harness.config.schema.json",
+  "project": "votoscope",
+  "description": "Agregador de resultados electorales de España.",
+  "harness_version": 1,
+  "language": "en",
+  "paths": {
+    "feature_list": "feature_list.json",
+    "specs": "specs",
+    "progress": "progress",
+    "agents": ".agents"
+  },
+  "setup": [
+    "cd ingestor && uv sync --quiet"
+  ],
+  "checks": [
+    {
+      "name": "ruff check",
+      "command": "cd ingestor && uv run ruff check . --quiet",
+      "required": true
+    },
+    {
+      "name": "ruff format",
+      "command": "cd ingestor && uv run ruff format --check . --quiet",
+      "required": true
+    },
+    {
+      "name": "pytest",
+      "command": "cd ingestor && uv run pytest -q",
+      "required": true
+    },
+    {
+      "name": "web tests",
+      "command": "cd web && pnpm --silent test",
+      "required": false
+    },
+    {
+      "name": "web lint",
+      "command": "cd web && pnpm --silent lint",
+      "required": false
+    },
+    {
+      "name": "alembic check",
+      "command": "cd ingestor && uv run alembic check",
+      "required": false
+    }
+  ],
+  "git": {
+    "require_user_approval": true,
+    "protected_branches": ["main"],
+    "commit_style": "conventional"
+  },
+  "agents": {
+    "max_features_in_progress": 1,
+    "protected_paths": []
+  },
+  "sdd": {
+    "default": false,
+    "require_human_spec_approval": true,
+    "require_human_commit_approval": true
+  }
+}
